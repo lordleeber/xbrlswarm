@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前實作的是 **階段 0：Schema 前來源探索的工具與契約骨架**。此 PR 提供步驟 0–4 所需的固定案例、原始回應擷取器與欄位矩陣契約，但**尚未加入實際 MOPS capture fixtures，也不代表步驟 2/3 的來源實證研究已完成**。在實際 fixture 與 evidence-backed matrix 完成前，不應進入正式 Schema 定版。
+目前已完成 **Step-2：擷取原始 MOPS 回應**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures；raw body 以 lossless gzip 保存，SHA-256 與 size 仍針對解壓後的原始 response bytes 驗證，並另外保存 response headers 與 request/response provenance。**Step-3 的欄位可取得性結論仍未完成**；在 evidence-backed matrix 完成前，不應進入正式 Schema 定版。
 
 ## 資料來源順序
 
@@ -49,7 +49,16 @@ FY
 python -m xbrlswarm.discovery list-cases
 ```
 
-在來源研究中確認公開請求後，擷取一份完全原始的 MOPS 回應：
+Step-2 使用官方 MOPS XBRL 下載介面，批次擷取 12 個固定案例：
+
+```bash
+python -m xbrlswarm.discovery capture-mops-cases
+python -m xbrlswarm.discovery verify-mops-captures
+```
+
+批次擷取固定使用 2024 Q1/Q2/Q3/FY，並將 FY 對應到 MOPS season=4。此步驟只保存官方回應，不解析或推導欄位。
+
+若研究中需要額外擷取單一公開請求，也可使用：
 
 ```bash
 python -m xbrlswarm.discovery capture \
@@ -89,7 +98,7 @@ pytest
 
 此 PR 不實作：
 
-- 實際 MOPS 來源探索 fixture 與已證實欄位結論
+- 根據 capture 內容完成的欄位可取得性結論（Step-3）
 - 最終正式 Schema
 - evidence 資料表
 - 任務 lease

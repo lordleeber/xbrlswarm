@@ -15,3 +15,22 @@ tests/fixtures/discovery/mops/
 ```
 
 使用 `python -m xbrlswarm.discovery capture ...` 建立這些檔案。
+
+## Step-2 固定批次擷取
+
+使用官方 MOPS XBRL 下載介面一次擷取 12 個固定案例：
+
+```bash
+python -m xbrlswarm.discovery capture-mops-cases
+python -m xbrlswarm.discovery verify-mops-captures
+```
+
+固定 capture 名稱為 `xbrl-consolidated`，raw body 以 `xbrl-consolidated.bin.gz` lossless 保存，避免把大型 iXBRL HTML 當成 Git 文字 diff；metadata 的 SHA-256 與 `size_bytes` 仍針對解壓後的原始 response bytes。
+
+`verify-mops-captures` 不連網，只驗證：
+
+- 12 個固定案例的 body / headers / metadata 三件組都存在
+- metadata 指向預期的官方 MOPS URL
+- HTTP status 為 200
+- raw body SHA-256 與大小和 metadata 一致
+- response headers 的保存格式有效
