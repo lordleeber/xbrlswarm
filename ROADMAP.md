@@ -347,7 +347,7 @@ full suite
 
 # 階段 0 — Schema 前的來源探索
 
-## 步驟 0 — 定義研究問題
+## Step-0 — 定義研究問題
 
 在定版 Schema 前，先回答：
 
@@ -366,7 +366,7 @@ full suite
 
 ---
 
-## 步驟 1 — 建立來源探索案例
+## Step-1 — 建立來源探索案例
 
 固定研究：
 
@@ -395,7 +395,7 @@ FY
 
 ---
 
-## 步驟 2 — 擷取原始 MOPS 回應
+## Step-2 — 擷取原始 MOPS 回應
 
 保存：
 
@@ -417,7 +417,7 @@ HTTP headers
 
 ---
 
-## 步驟 3 — 建立欄位可取得性矩陣
+## Step-3 — 建立欄位可取得性矩陣
 
 建立：
 
@@ -446,7 +446,7 @@ derived with deterministic rule
 
 ---
 
-## 步驟 4 — 記錄尚未解決的歷史 `confirmed_at`
+## Step-4 — 記錄尚未解決的歷史 `confirmed_at`
 
 文件明確寫：
 
@@ -471,7 +471,7 @@ batch-queryable
 
 # 階段 1 — 領域契約
 
-## 步驟 5 — 定義報告識別候選方案
+## Step-5 — 定義報告識別候選方案
 
 先從：
 
@@ -502,7 +502,7 @@ individual
 
 ---
 
-## 步驟 6 — 定義報告期別
+## Step-6 — 定義報告期別
 
 內部統一：
 
@@ -531,7 +531,7 @@ FY
 
 ---
 
-## 步驟 7 — 定義證據類型
+## Step-7 — 定義證據類型
 
 至少區分：
 
@@ -555,7 +555,7 @@ published_at
 
 只有 階段 0 來源探索 完成後才能做。
 
-## 步驟 8 — 建立 task 資料表
+## Step-8 — 建立 task 資料表
 
 至少：
 
@@ -582,7 +582,7 @@ updated_at
 
 ---
 
-## 步驟 9 — 定義 engine 列舉
+## Step-9 — 定義 engine 列舉
 
 固定：
 
@@ -596,7 +596,7 @@ grounded_ai
 
 ---
 
-## 步驟 10 — 建立 證據資料表
+## Step-10 — 建立 證據資料表
 
 第一版只放已證實可取得 / 可產生欄位：
 
@@ -635,7 +635,7 @@ xbrl_confirmed_at NOT NULL
 
 ---
 
-## 步驟 11 — 可選的解析後 metadata
+## Step-11 — 可選的解析後 metadata
 
 只有 來源明確提供才填：
 
@@ -655,7 +655,7 @@ company_name
 
 # 階段 3 — 證據冪等性
 
-## 步驟 12 — 定義邏輯證據識別
+## Step-12 — 定義邏輯證據識別
 
 只追加不代表每次抓都新增重複資料列。
 
@@ -673,7 +673,7 @@ same payload
 
 ---
 
-## 步驟 13 — 加入重複資料防護
+## Step-13 — 加入重複資料防護
 
 測試：
 
@@ -694,7 +694,7 @@ different source
 
 ---
 
-## 步驟 14 — 保留修訂歷史
+## Step-14 — 保留修訂歷史
 
 支援：
 
@@ -711,7 +711,7 @@ unknown
 
 # 階段 4 — 時間語意
 
-## 步驟 15 — 定義 `announcement_at`
+## Step-15 — 定義 `announcement_at`
 
 當來源明確提供：
 
@@ -737,7 +737,7 @@ event_type=material_announcement
 
 ---
 
-## 步驟 16 — 不得捏造 XBRL 確認時間
+## Step-16 — 不得捏造 XBRL 確認時間
 
 禁止：
 
@@ -765,7 +765,7 @@ xbrl_confirmed_at
 
 ---
 
-## 步驟 17 — 保留時間精度
+## Step-17 — 保留時間精度
 
 如果只有日期：
 
@@ -801,7 +801,7 @@ precision = second
 
 # 階段 5 — 發布時間窗規則
 
-## 步驟 18 — 實作期別邊界
+## Step-18 — 實作期別邊界
 
 第一版先處理曆年制公司：
 
@@ -814,7 +814,7 @@ FY → 12/31
 
 ---
 
-## 步驟 19 — 導入法規規則介面
+## Step-19 — 導入法規規則介面
 
 建立：
 
@@ -841,7 +841,7 @@ rule_id
 
 ---
 
-## 步驟 20 — 對歷史規則進行版本化
+## Step-20 — 對歷史規則進行版本化
 
 規則必須：
 
@@ -857,7 +857,7 @@ rule_id
 
 # 階段 6 — 會計年度曆研究閘門
 
-## 步驟 21 — 研究非曆年制公司
+## Step-21 — 研究非曆年制公司
 
 在 全市場任務產生 前確認：
 
@@ -869,7 +869,7 @@ rule_id
 
 ---
 
-## 步驟 22 — 僅在來源已證實時加入會計年度曆
+## Step-22 — 僅在來源已證實時加入會計年度曆
 
 如果能可靠取得，再建模：
 
@@ -889,7 +889,7 @@ calendar-year companies only
 
 # 階段 7 — 分散式任務伺服器
 
-## 步驟 23 — 實作 Worker API
+## Step-23 — 實作 Worker API
 
 核心：
 
@@ -903,7 +903,7 @@ GET  /healthz
 
 ---
 
-## 步驟 24 — 原子化 lease
+## Step-24 — 原子化 lease
 
 ```text
 undone
@@ -922,7 +922,7 @@ dispatched_at
 
 ---
 
-## 步驟 25 — 延遲回收 lease
+## Step-25 — 延遲回收 lease
 
 Worker 消失：
 
@@ -938,7 +938,7 @@ undone
 
 # 階段 8 — 全域失敗狀態機
 
-## 步驟 26 — 定義語意耗盡
+## Step-26 — 定義語意耗盡
 
 以下代表目前 engine 已嘗試但沒有可信答案：
 
@@ -955,7 +955,7 @@ rejected
 
 ---
 
-## 步驟 27 — 定義可重試的基礎設施失敗
+## Step-27 — 定義可重試的基礎設施失敗
 
 以下不得升級到下一來源：
 
@@ -974,7 +974,7 @@ retry later
 
 ---
 
-## 步驟 28 — 固定 engine 順序
+## Step-28 — 固定 engine 順序
 
 ```text
 mops
@@ -994,7 +994,7 @@ terminal unresolved
 
 # 階段 9 — MOPS Worker
 
-## 步驟 29 — 定版 MOPS 測試 fixture
+## Step-29 — 定版 MOPS 測試 fixture
 
 建立：
 
@@ -1018,7 +1018,7 @@ unexpected layout
 
 ---
 
-## 步驟 30 — 只解析已證實的欄位
+## Step-30 — 只解析已證實的欄位
 
 解析器 只能輸出 階段 0 來源欄位矩陣已證實欄位。
 
@@ -1026,7 +1026,7 @@ unexpected layout
 
 ---
 
-## 步驟 31 — 保存原始回應
+## Step-31 — 保存原始回應
 
 已接受的 MOPS 證據至少保存：
 
@@ -1042,7 +1042,7 @@ raw_snapshot_id/path
 
 ---
 
-## 步驟 32 — MOPS 試點
+## Step-32 — MOPS 試點
 
 固定跑：
 
@@ -1062,7 +1062,7 @@ docs/mops-pilot-report.md
 
 ---
 
-## 步驟 33 — MOPS 閘門
+## Step-33 — MOPS 閘門
 
 只有：
 
@@ -1082,7 +1082,7 @@ pilot audited
 
 Goodinfo 是 MOPS 後第一個備援來源。
 
-## 步驟 34 — 實作公告清單查詢
+## Step-34 — 實作公告清單查詢
 
 使用：
 
@@ -1097,7 +1097,7 @@ END_DT
 
 ---
 
-## 步驟 35 — 定義保守搜尋時間窗
+## Step-35 — 定義保守搜尋時間窗
 
 例如：
 
@@ -1112,7 +1112,7 @@ FY → Jan ~ Mar
 
 ---
 
-## 步驟 36 — 解析清單候選項目
+## Step-36 — 解析清單候選項目
 
 先從清單尋找：
 
@@ -1127,7 +1127,7 @@ FY → Jan ~ Mar
 
 ---
 
-## 步驟 37 — 解析詳細頁面
+## Step-37 — 解析詳細頁面
 
 詳細頁面可以抽取：
 
@@ -1145,7 +1145,7 @@ audit_committee_date
 
 ---
 
-## 步驟 38 — 保存 `announcement_at`
+## Step-38 — 保存 `announcement_at`
 
 如果：
 
@@ -1165,7 +1165,7 @@ precision  = second
 
 ---
 
-## 步驟 39 — Goodinfo 冪等性
+## Step-39 — Goodinfo 冪等性
 
 詳細頁 URL / 定位資訊 可用：
 
@@ -1179,7 +1179,7 @@ SUBJECT
 
 ---
 
-## 步驟 40 — Goodinfo 操作防護
+## Step-40 — Goodinfo 操作防護
 
 Goodinfo 為第三方備援。
 
@@ -1199,7 +1199,7 @@ avoid duplicate date-range queries
 
 # 階段 11 — Goodinfo 試點閘門
 
-## 步驟 41 — 試點案例
+## Step-41 — 試點案例
 
 至少：
 
@@ -1218,7 +1218,7 @@ avoid duplicate date-range queries
 
 ---
 
-## 步驟 42 — 驗證歷史涵蓋率
+## Step-42 — 驗證歷史涵蓋率
 
 量：
 
@@ -1231,7 +1231,7 @@ seconds precision coverage
 
 ---
 
-## 步驟 43 — 將所有失敗案例轉成測試 fixture
+## Step-43 — 將所有失敗案例轉成測試 fixture
 
 任何：
 
@@ -1249,7 +1249,7 @@ multiple announcements same day
 
 # 階段 12 — Yahoo Worker
 
-## 步驟 44 — 定版 Yahoo 測試 fixture
+## Step-44 — 定版 Yahoo 測試 fixture
 
 至少：
 
@@ -1266,7 +1266,7 @@ unexpected page
 
 ---
 
-## 步驟 45 — Yahoo 查詢建構器
+## Step-45 — Yahoo 查詢建構器
 
 查詢至少包含：
 
@@ -1287,7 +1287,7 @@ report_period
 
 ---
 
-## 步驟 46 — 優先採用 MOPS 形式的公告鏡像
+## Step-46 — 優先採用 MOPS 形式的公告鏡像
 
 優先接受包含：
 
@@ -1302,7 +1302,7 @@ report_period
 
 ---
 
-## 步驟 47 — 區分文章時間與公告時間
+## Step-47 — 區分文章時間與公告時間
 
 如果 Yahoo 頁面只有：
 
@@ -1322,7 +1322,7 @@ announcement_at
 
 # 階段 13 — Google Worker
 
-## 步驟 48 — 跨站鏡像探索
+## Step-48 — 跨站鏡像探索
 
 Google 用來找：
 
@@ -1336,7 +1336,7 @@ other MOPS mirrors
 
 ---
 
-## 步驟 49 — 各來源專用解析器
+## Step-49 — 各來源專用解析器
 
 若網域是：
 
@@ -1358,7 +1358,7 @@ cnyes.com
 
 ---
 
-## 步驟 50 — 重用共用驗證
+## Step-50 — 重用共用驗證
 
 Google 候選結果必須通過：
 
@@ -1375,7 +1375,7 @@ financial-report intent
 
 # 階段 14 — Grounded AI 備援
 
-## 步驟 51 — 要求可追溯依據
+## Step-51 — 要求可追溯依據
 
 模型結果必須有：
 
@@ -1387,7 +1387,7 @@ traceable source
 
 ---
 
-## 步驟 52 — 分離來源證據與模型主張
+## Step-52 — 分離來源證據與模型主張
 
 ```text
 來源表示 X
@@ -1403,7 +1403,7 @@ traceable source
 
 ---
 
-## 步驟 53 — 終止於未解決狀態
+## Step-53 — 終止於未解決狀態
 
 Grounded AI 仍無可信來源：
 
@@ -1417,7 +1417,7 @@ terminal unresolved
 
 # 階段 15 — 證據驗證
 
-## 步驟 54 — 驗證狀態
+## Step-54 — 驗證狀態
 
 至少：
 
@@ -1432,7 +1432,7 @@ resolved
 
 ---
 
-## 步驟 55 — 來源獨立性
+## Step-55 — 來源獨立性
 
 兩個 URL 不代表兩個獨立來源。
 
@@ -1459,7 +1459,7 @@ same event corroborated by mirrors
 
 ---
 
-## 步驟 56 — 保留衝突
+## Step-56 — 保留衝突
 
 若：
 
@@ -1479,7 +1479,7 @@ conflicted
 
 # 階段 16 — 人工裁決
 
-## 步驟 57 — 人工審查資料表
+## Step-57 — 人工審查資料表
 
 保存：
 
@@ -1492,7 +1492,7 @@ reviewed_at
 
 ---
 
-## 步驟 58 — 永不修改來源證據
+## Step-58 — 永不修改來源證據
 
 人工決策：
 
@@ -1510,7 +1510,7 @@ UPDATE original evidence
 
 # 階段 17 — 匯出
 
-## 步驟 59 — 定義 JSONL 匯出
+## Step-59 — 定義 JSONL 匯出
 
 例如：
 
@@ -1531,7 +1531,7 @@ UPDATE original evidence
 
 ---
 
-## 步驟 60 — 決定性匯出
+## Step-60 — 決定性匯出
 
 相同 資料庫狀態：
 
@@ -1543,7 +1543,7 @@ export twice
 
 ---
 
-## 步驟 61 — 不得捏造統一的 published_at
+## Step-61 — 不得捏造統一的 published_at
 
 匯出時不要硬塞：
 
@@ -1557,7 +1557,7 @@ published_at
 
 # 階段 18 — 全市場任務產生
 
-## 步驟 62 — 建立歷史股票集合
+## Step-62 — 建立歷史股票集合
 
 不能只使用：
 
@@ -1569,13 +1569,13 @@ currently listed companies
 
 ---
 
-## 步驟 63 — 尊重上市櫃生命週期
+## Step-63 — 尊重上市櫃生命週期
 
 避免產生公司尚未上市櫃時期的 task。
 
 ---
 
-## 步驟 64 — 套用會計年度曆閘門
+## Step-64 — 套用會計年度曆閘門
 
 非曆年制公司如果尚未建模：
 
@@ -1589,7 +1589,7 @@ mark unsupported
 
 ---
 
-## 步驟 65 — 以冪等方式產生任務
+## Step-65 — 以冪等方式產生任務
 
 重跑：
 
@@ -1602,7 +1602,7 @@ no duplicates
 
 # 階段 19 — 維運
 
-## 步驟 66 — `/stats`
+## Step-66 — `/stats`
 
 至少：
 
@@ -1618,7 +1618,7 @@ terminal unresolved
 
 ---
 
-## 步驟 67 — `/status`
+## Step-67 — `/status`
 
 人類可讀：
 
@@ -1633,7 +1633,7 @@ recent throughput
 
 ---
 
-## 步驟 68 — `/healthz`
+## Step-68 — `/healthz`
 
 只代表：
 
@@ -1645,7 +1645,7 @@ server alive
 
 # 階段 20 — 失敗復原
 
-## 步驟 69 — 伺服器重啟測試
+## Step-69 — 伺服器重啟測試
 
 確認：
 
@@ -1658,7 +1658,7 @@ fail_count preserved
 
 ---
 
-## 步驟 70 — Worker 消失測試
+## Step-70 — Worker 消失測試
 
 ```text
 lease
@@ -1672,7 +1672,7 @@ task returns undone
 
 ---
 
-## 步驟 71 — 重複結果重試測試
+## Step-71 — 重複結果重試測試
 
 網路重試 不得造成：
 
@@ -1686,7 +1686,7 @@ wrong fail_count
 
 # 階段 21 — 未解決尾端稽核
 
-## 步驟 72 — 產生未解決報告
+## Step-72 — 產生未解決報告
 
 產出：
 
@@ -1709,7 +1709,7 @@ unsupported fiscal calendar
 
 ---
 
-## 步驟 73 — 將真實失敗轉成回歸測試
+## Step-73 — 將真實失敗轉成回歸測試
 
 任何 正式環境失敗：
 
@@ -1729,7 +1729,7 @@ permanent test
 
 只有 正確性 穩定後才優化。
 
-## 步驟 74 — 建立基準線
+## Step-74 — 建立基準線
 
 記錄：
 
@@ -1747,7 +1747,7 @@ terminal unresolved rate
 
 ---
 
-## 步驟 75 — 保守調校 Goodinfo
+## Step-75 — 保守調校 Goodinfo
 
 只調：
 
@@ -1762,7 +1762,7 @@ date-window size
 
 ---
 
-## 步驟 76 — 驗證 SQLite
+## Step-76 — 驗證 SQLite
 
 先量：
 
