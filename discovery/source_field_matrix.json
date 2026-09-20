@@ -1,0 +1,17 @@
+{
+  "source": "mops",
+  "scope": "階段 0 來源探索；只有在實際擷取的原始證據支持時才能更新欄位狀態",
+  "fields": [
+    {"field":"stock_id","status":"not_verified","evidence":[],"notes":"在實際擷取的回應證明此欄位是直接存在，或只是 request context 以前，不得提升狀態。"},
+    {"field":"company_name","status":"not_verified","evidence":[],"notes":"等待具代表性的 MOPS fixture。"},
+    {"field":"fiscal_year","status":"not_verified","evidence":[],"notes":"可能由來源直接提供，也可能可由 source locator 決定性推導；完成來源探索後才能定版。"},
+    {"field":"report_period","status":"not_verified","evidence":[],"notes":"必須區分 Q1/Q2/Q3/FY；沒有經測試的來源規則時，絕不能推定 FY=Q4。"},
+    {"field":"report_scope","status":"not_verified","evidence":[],"notes":"研究同一公司 / 期別是否會同時存在 consolidated 與 individual 報告。"},
+    {"field":"filing_identifier","status":"not_verified","evidence":[],"notes":"研究是否存在穩定的公開 filing identifier 或 locator。"},
+    {"field":"filing_date","status":"not_verified","evidence":[],"notes":"不得用 announcement date 或 retrieval date 代替。"},
+    {"field":"filing_time","status":"not_verified","evidence":[],"notes":"不得用 announcement time、article time 或 HTTP metadata 代替。"},
+    {"field":"xbrl_confirmed_at","status":"not_verified","evidence":[],"notes":"公開歷史 confirmation timestamp 仍屬 NOT PUBLICLY VERIFIED。"},
+    {"field":"filing_kind","status":"not_verified","evidence":[],"notes":"研究 original / amendment / supplemental filing 的表示方式。"},
+    {"field":"source_locator","status":"not_verified","evidence":[],"notes":"研究歷史 filing 是否存在穩定、可重播的 locator。"}
+  ]
+}

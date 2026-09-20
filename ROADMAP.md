@@ -1,10 +1,10 @@
-# xbrlswarm — ROADMAP
+# xbrlswarm — 開發路線圖
 
-## 1. Project Goal
+## 1. 專案目標
 
 `xbrlswarm` 的目標是建立一套針對台灣上市櫃公司的：
 
-> **歷史財務報告 / XBRL publication evidence 蒐集、驗證與來源追溯系統**
+> **歷史財務報告 / XBRL 發布證據 蒐集、驗證與來源追溯系統**
 
 本專案關注的是：
 
@@ -36,35 +36,35 @@ FY != Q4
 
 ---
 
-# 2. Scope
+# 2. 範圍
 
 本專案負責：
 
 - 研究並取得 MOPS / XBRL 公開資料
-- 保存財報文件 / filing evidence
-- 搜尋歷史財報公告 evidence
+- 保存財報文件 / 申報證據
+- 搜尋歷史財報公告 證據
 - 保存重大訊息發言時間
-- 區分財報文件 evidence 與 announcement evidence
-- 保存來源 provenance
-- 保存 original / amendment / supplemental evidence
-- 保存不同來源間的 corroboration / conflict
-- 分散式 task leasing
-- retry / rate-limit / failure handling
-- deterministic export
-- unresolved tail audit
+- 區分財報文件 證據 與 公告證據
+- 保存來源 來源追溯資訊
+- 保存 原始 / 更正 / 補充證據
+- 保存不同來源間的 交叉佐證 / 衝突
+- 分散式 任務 lease
+- 重試 / 限流 / 失敗處理
+- 決定性匯出
+- 未解決尾端稽核
 
 本專案不負責：
 
-- EPS / revenue / assets 等財報數值分析
-- 財務指標 canonicalization
-- adjusted price
-- backtesting
-- trading strategy
+- EPS / 營收 / 資產 等財報數值分析
+- 財務指標 正規化
+- 還原股價
+- 回測
+- 交易策略
 - 財務報表投資分析
 
 ---
 
-# 3. Core Research Conclusions
+# 3. 核心研究結論
 
 目前已確認：
 
@@ -79,11 +79,11 @@ TWSE 申報系統存在：
 確認與否
 ```
 
-因此「秒級 filing-related timestamp」是真實存在於官方系統的資訊。
+因此「秒級 申報相關時間戳」是真實存在於官方系統的資訊。
 
 但是：
 
-> **目前尚未找到一個公開、可重播、可批次查歷史資料的方式，可以直接取得 historical `xbrl_confirmed_at`。**
+> **目前尚未找到一個公開、可重播、可批次查歷史資料的方式，可以直接取得 歷史 `xbrl_confirmed_at`。**
 
 所以第一版禁止假設：
 
@@ -91,11 +91,11 @@ TWSE 申報系統存在：
 xbrl_confirmed_at
 ```
 
-一定能從公開 historical endpoint 取得。
+一定能從公開 歷史端點 取得。
 
 ---
 
-## 3.2 XBRL confirmation 與重大訊息 announcement 是不同事件
+## 3.2 XBRL 確認 與重大訊息 公告 是不同事件
 
 目前必須分開：
 
@@ -109,7 +109,7 @@ XBRL submission / confirmation
 MOPS material announcement
 ```
 
-第三方 mirror 如 Goodinfo / Yahoo / Cnyes 保存的：
+第三方鏡像 如 Goodinfo / Yahoo / Cnyes 保存的：
 
 ```text
 發言日期
@@ -128,11 +128,11 @@ announcement_at
 xbrl_confirmed_at
 ```
 
-除非未來有正式 evidence 證明兩者相同。
+除非未來有正式 證據 證明兩者相同。
 
 ---
 
-## 3.3 Yahoo / Goodinfo / Google 可以找到有價值的 announcement evidence
+## 3.3 Yahoo / Goodinfo / Google 可以找到有價值的 公告證據
 
 實測可取得：
 
@@ -154,11 +154,11 @@ source_url
 
 但不是每個來源 / 每筆資料都會提供全部欄位。
 
-所有 parser 必須允許 nullable optional fields。
+所有解析器 必須允許 可為空的選用欄位。
 
 ---
 
-## 3.4 Goodinfo 可以直接做 historical announcement lookup
+## 3.4 Goodinfo 可以直接做 歷史公告查詢
 
 Goodinfo 公開頁面可用：
 
@@ -179,7 +179,7 @@ date range
 
 列歷史公告。
 
-Detail page 可提供：
+詳細頁面 可提供：
 
 ```text
 CLAIM_TIME
@@ -189,11 +189,11 @@ SUBJECT
 
 以及公告內容。
 
-因此 Goodinfo 值得成為正式 fallback worker。
+因此 Goodinfo 值得成為正式備援 Worker。
 
 ---
 
-# 4. Source Order
+# 4. 資料來源順序
 
 固定順序：
 
@@ -219,10 +219,10 @@ Goodinfo
 = structured MOPS announcement mirror
 
 Yahoo
-= historical announcement search
+= 歷史 announcement search
 
 Google
-= cross-site historical mirror discovery
+= cross-site 歷史 mirror discovery
 
 Grounded AI
 = final long-tail recovery
@@ -230,9 +230,9 @@ Grounded AI
 
 ---
 
-# 5. Mandatory TDD Rule
+# 5. 強制 TDD 規則
 
-所有 production code 必須遵守：
+所有 正式程式碼 必須遵守：
 
 ```text
 RED
@@ -260,7 +260,7 @@ refactor
 
 ---
 
-## 5.1 禁止先寫 code 再補 test
+## 5.1 禁止先寫程式碼再補測試
 
 以下流程禁止：
 
@@ -276,9 +276,9 @@ refactor
 
 ---
 
-## 5.2 每個 Step 的標準流程
+## 5.2 每個步驟的標準流程
 
-### 1. Write failing test
+### 1. 先寫會失敗的測試
 
 先新增適用的：
 
@@ -288,7 +288,7 @@ integration test
 regression test
 ```
 
-### 2. Confirm RED
+### 2. 確認 RED
 
 失敗原因必須是：
 
@@ -305,11 +305,11 @@ wrong import
 bad test setup
 ```
 
-### 3. Implement minimum code
+### 3. 實作最小必要程式碼
 
-只寫讓測試通過所需的最少 production code。
+只寫讓測試通過所需的最少 正式程式碼。
 
-### 4. Confirm GREEN
+### 4. 確認 GREEN
 
 依序執行：
 
@@ -321,15 +321,15 @@ full suite
 
 全部通過。
 
-### 5. Refactor
+### 5. 重構
 
 只能在 GREEN 狀態下整理。
 
 ---
 
-## 5.3 Bug fix rule
+## 5.3 錯誤修正規則
 
-任何 bug：
+任何錯誤：
 
 ```text
 先建立 failing regression
@@ -345,16 +345,16 @@ full suite
 
 ---
 
-# Phase 0 — Discovery Before Schema
+# 階段 0 — Schema 前的來源探索
 
-## Step 0 — Define research questions
+## 步驟 0 — 定義研究問題
 
-在 freeze schema 前，先回答：
+在定版 Schema 前，先回答：
 
 ```text
 1. 公開 MOPS/XBRL 能取得哪些欄位？
-2. 能否取得 historical filing date？
-3. 能否取得 historical filing time？
+2. 能否取得 歷史 filing date？
+3. 能否取得 歷史 filing time？
 4. 能否取得 confirmation timestamp？
 5. consolidated / individual 是否都存在？
 6. 同公司同季度是否同時有多種 report scope？
@@ -366,7 +366,7 @@ full suite
 
 ---
 
-## Step 1 — Create discovery cases
+## 步驟 1 — 建立來源探索案例
 
 固定研究：
 
@@ -395,7 +395,7 @@ FY
 
 ---
 
-## Step 2 — Capture raw MOPS responses
+## 步驟 2 — 擷取原始 MOPS 回應
 
 保存：
 
@@ -413,11 +413,11 @@ download listing
 HTTP headers
 ```
 
-此 Step 不做 final schema。
+此步驟不做最終 Schema。
 
 ---
 
-## Step 3 — Build field availability matrix
+## 步驟 3 — 建立欄位可取得性矩陣
 
 建立：
 
@@ -442,16 +442,16 @@ direct
 derived with deterministic rule
 ```
 
-才能進 production schema。
+才能進正式 Schema。
 
 ---
 
-## Step 4 — Record unresolved historical confirmed_at
+## 步驟 4 — 記錄尚未解決的歷史 `confirmed_at`
 
 文件明確寫：
 
 ```text
-historical xbrl_confirmed_at
+歷史 xbrl_confirmed_at
 =
 NOT PUBLICLY VERIFIED
 ```
@@ -465,13 +465,13 @@ replayable
 batch-queryable
 ```
 
-的來源前，不建立 required production column。
+的來源前，不建立 正式 Schema 的必填欄位。
 
 ---
 
-# Phase 1 — Domain Contract
+# 階段 1 — 領域契約
 
-## Step 5 — Define report identity candidate
+## 步驟 5 — 定義報告識別候選方案
 
 先從：
 
@@ -481,7 +481,7 @@ batch-queryable
 
 開始。
 
-但在 discovery 後確認是否需要：
+但在 來源探索後確認是否需要：
 
 ```text
 report_scope
@@ -494,7 +494,7 @@ consolidated
 individual
 ```
 
-且兩者都要追蹤，task identity 改為：
+且兩者都要追蹤，任務識別 改為：
 
 ```text
 (stock_id, fiscal_year, report_period, report_scope)
@@ -502,7 +502,7 @@ individual
 
 ---
 
-## Step 6 — Define report period
+## 步驟 6 — 定義報告期別
 
 內部統一：
 
@@ -513,7 +513,7 @@ Q3
 FY
 ```
 
-如果 source 使用：
+如果 來源使用：
 
 ```text
 Q4
@@ -527,11 +527,11 @@ source Q4
 FY
 ```
 
-這個 mapping 必須有 fixture + test。
+這個 對應規則 必須有 測試 fixture 與測試。
 
 ---
 
-## Step 7 — Define evidence types
+## 步驟 7 — 定義證據類型
 
 至少區分：
 
@@ -551,11 +551,11 @@ published_at
 
 ---
 
-# Phase 2 — Minimal Schema Freeze
+# 階段 2 — 最小 Schema 定版
 
-只有 Phase 0 discovery 完成後才能做。
+只有 階段 0 來源探索 完成後才能做。
 
-## Step 8 — Create tasks table
+## 步驟 8 — 建立 task 資料表
 
 至少：
 
@@ -582,7 +582,7 @@ updated_at
 
 ---
 
-## Step 9 — Define engine enum
+## 步驟 9 — 定義 engine 列舉
 
 固定：
 
@@ -596,7 +596,7 @@ grounded_ai
 
 ---
 
-## Step 10 — Create evidence table
+## 步驟 10 — 建立 證據資料表
 
 第一版只放已證實可取得 / 可產生欄位：
 
@@ -635,9 +635,9 @@ xbrl_confirmed_at NOT NULL
 
 ---
 
-## Step 11 — Optional parsed metadata
+## 步驟 11 — 可選的解析後 metadata
 
-只有 source 明確提供才填：
+只有 來源明確提供才填：
 
 ```text
 period_start
@@ -649,15 +649,15 @@ audit_committee_date
 company_name
 ```
 
-這些欄位 nullable。
+這些欄位可為空。
 
 ---
 
-# Phase 3 — Evidence Idempotency
+# 階段 3 — 證據冪等性
 
-## Step 12 — Define logical evidence identity
+## 步驟 12 — 定義邏輯證據識別
 
-Append-only 不代表每次抓都新增重複 row。
+只追加不代表每次抓都新增重複資料列。
 
 需要定義：
 
@@ -669,11 +669,11 @@ same event
 same payload
 ```
 
-是否是同一 logical evidence。
+是否是同一邏輯證據。
 
 ---
 
-## Step 13 — Add duplicate protection
+## 步驟 13 — 加入重複資料防護
 
 測試：
 
@@ -690,11 +690,11 @@ new announcement
 different source
 ```
 
-才新增 evidence。
+才新增 證據。
 
 ---
 
-## Step 14 — Preserve revisions
+## 步驟 14 — 保留修訂歷史
 
 支援：
 
@@ -705,13 +705,13 @@ supplemental
 unknown
 ```
 
-禁止 amendment overwrite original。
+禁止 更正申報覆蓋原始申報。
 
 ---
 
-# Phase 4 — Time Semantics
+# 階段 4 — 時間語意
 
-## Step 15 — Define `announcement_at`
+## 步驟 15 — 定義 `announcement_at`
 
 當來源明確提供：
 
@@ -737,7 +737,7 @@ event_type=material_announcement
 
 ---
 
-## Step 16 — Do not invent XBRL confirmation time
+## 步驟 16 — 不得捏造 XBRL 確認時間
 
 禁止：
 
@@ -765,7 +765,7 @@ xbrl_confirmed_at
 
 ---
 
-## Step 17 — Preserve precision
+## 步驟 17 — 保留時間精度
 
 如果只有日期：
 
@@ -799,11 +799,11 @@ precision = second
 
 ---
 
-# Phase 5 — Publication Window Rules
+# 階段 5 — 發布時間窗規則
 
-## Step 18 — Implement period boundaries
+## 步驟 18 — 實作期別邊界
 
-calendar-year 第一版：
+第一版先處理曆年制公司：
 
 ```text
 Q1 → 03/31
@@ -814,7 +814,7 @@ FY → 12/31
 
 ---
 
-## Step 19 — Introduce regulation-rule interface
+## 步驟 19 — 導入法規規則介面
 
 建立：
 
@@ -841,7 +841,7 @@ rule_id
 
 ---
 
-## Step 20 — Version historical rules
+## 步驟 20 — 對歷史規則進行版本化
 
 規則必須：
 
@@ -855,11 +855,11 @@ rule_id
 
 ---
 
-# Phase 6 — Fiscal Calendar Research Gate
+# 階段 6 — 會計年度曆研究閘門
 
-## Step 21 — Research non-calendar-year companies
+## 步驟 21 — 研究非曆年制公司
 
-在 full-market task generation 前確認：
+在 全市場任務產生 前確認：
 
 ```text
 哪些公司不是 12/31 year-end？
@@ -869,9 +869,9 @@ rule_id
 
 ---
 
-## Step 22 — Add fiscal calendar only if source is proven
+## 步驟 22 — 僅在來源已證實時加入會計年度曆
 
-如果能可靠取得，再 model：
+如果能可靠取得，再建模：
 
 ```text
 fiscal_year_end
@@ -883,13 +883,13 @@ fiscal_year_end
 calendar-year companies only
 ```
 
-不能偷偷套用錯誤 period boundary。
+不能偷偷套用錯誤 期別邊界。
 
 ---
 
-# Phase 7 — Distributed Task Server
+# 階段 7 — 分散式任務伺服器
 
-## Step 23 — Implement worker API
+## 步驟 23 — 實作 Worker API
 
 核心：
 
@@ -903,7 +903,7 @@ GET  /healthz
 
 ---
 
-## Step 24 — Atomic lease
+## 步驟 24 — 原子化 lease
 
 ```text
 undone
@@ -918,13 +918,13 @@ worker_id
 dispatched_at
 ```
 
-兩個 worker 不得拿到同一 task。
+兩個 Worker 不得拿到同一任務。
 
 ---
 
-## Step 25 — Lazy lease reclaim
+## 步驟 25 — 延遲回收 lease
 
-worker 消失：
+Worker 消失：
 
 ```text
 dispatched
@@ -932,13 +932,13 @@ dispatched
 undone
 ```
 
-不需要 background scheduler。
+不需要 背景排程器。
 
 ---
 
-# Phase 8 — Global Failure State Machine
+# 階段 8 — 全域失敗狀態機
 
-## Step 26 — Define semantic exhaustion
+## 步驟 26 — 定義語意耗盡
 
 以下代表目前 engine 已嘗試但沒有可信答案：
 
@@ -955,9 +955,9 @@ rejected
 
 ---
 
-## Step 27 — Define retryable infrastructure failures
+## 步驟 27 — 定義可重試的基礎設施失敗
 
-以下不得 escalation：
+以下不得升級到下一來源：
 
 ```text
 rate_limited
@@ -974,7 +974,7 @@ retry later
 
 ---
 
-## Step 28 — Fixed engine order
+## 步驟 28 — 固定 engine 順序
 
 ```text
 mops
@@ -992,9 +992,9 @@ terminal unresolved
 
 ---
 
-# Phase 9 — MOPS Worker
+# 階段 9 — MOPS Worker
 
-## Step 29 — Freeze MOPS fixtures
+## 步驟 29 — 定版 MOPS 測試 fixture
 
 建立：
 
@@ -1018,23 +1018,23 @@ unexpected layout
 
 ---
 
-## Step 30 — Parse only proven fields
+## 步驟 30 — 只解析已證實的欄位
 
-Parser 只能輸出 Phase 0 source-field-matrix 已證實欄位。
+解析器 只能輸出 階段 0 來源欄位矩陣已證實欄位。
 
 禁止因為「應該有」就造欄位。
 
 ---
 
-## Step 31 — Preserve raw response
+## 步驟 31 — 保存原始回應
 
-accepted MOPS evidence 至少保存：
+已接受的 MOPS 證據至少保存：
 
 ```text
 raw_payload_hash
 ```
 
-如果 raw snapshot policy 開啟：
+如果 原始快照政策 開啟：
 
 ```text
 raw_snapshot_id/path
@@ -1042,7 +1042,7 @@ raw_snapshot_id/path
 
 ---
 
-## Step 32 — MOPS pilot
+## 步驟 32 — MOPS 試點
 
 固定跑：
 
@@ -1062,7 +1062,7 @@ docs/mops-pilot-report.md
 
 ---
 
-## Step 33 — MOPS gate
+## 步驟 33 — MOPS 閘門
 
 只有：
 
@@ -1074,15 +1074,15 @@ failure semantics stable
 pilot audited
 ```
 
-後才啟用 Goodinfo fallback。
+後才啟用 Goodinfo 備援。
 
 ---
 
-# Phase 10 — Goodinfo Worker
+# 階段 10 — Goodinfo Worker
 
-Goodinfo 是 MOPS 後第一個 fallback。
+Goodinfo 是 MOPS 後第一個備援來源。
 
-## Step 34 — Implement announcement-list lookup
+## 步驟 34 — 實作公告清單查詢
 
 使用：
 
@@ -1093,11 +1093,11 @@ START_DT
 END_DT
 ```
 
-建立 historical announcement list。
+建立 歷史公告清單。
 
 ---
 
-## Step 35 — Define conservative search window
+## 步驟 35 — 定義保守搜尋時間窗
 
 例如：
 
@@ -1108,13 +1108,13 @@ Q3 → Oct ~ Nov
 FY → Jan ~ Mar
 ```
 
-實際 window 必須由 regulation rules 決定。
+實際時間窗 必須由 法規規則 決定。
 
 ---
 
-## Step 36 — Parse list candidates
+## 步驟 36 — 解析清單候選項目
 
-先從 list 找：
+先從清單尋找：
 
 ```text
 財務報告
@@ -1127,9 +1127,9 @@ FY → Jan ~ Mar
 
 ---
 
-## Step 37 — Parse detail page
+## 步驟 37 — 解析詳細頁面
 
-Detail 可以抽：
+詳細頁面可以抽取：
 
 ```text
 stock_id
@@ -1145,7 +1145,7 @@ audit_committee_date
 
 ---
 
-## Step 38 — Save `announcement_at`
+## 步驟 38 — 保存 `announcement_at`
 
 如果：
 
@@ -1161,13 +1161,13 @@ event_at   = 2024-05-10 14:48:53
 precision  = second
 ```
 
-不得標成 XBRL confirmation。
+不得標成 XBRL 確認。
 
 ---
 
-## Step 39 — Goodinfo idempotency
+## 步驟 39 — Goodinfo 冪等性
 
-Detail URL / locator 可用：
+詳細頁 URL / 定位資訊 可用：
 
 ```text
 STOCK_ID
@@ -1175,13 +1175,13 @@ CLAIM_TIME
 SUBJECT
 ```
 
-做 logical evidence dedupe 的一部分。
+作為邏輯證據去重的一部分。
 
 ---
 
-## Step 40 — Goodinfo operational guard
+## 步驟 40 — Goodinfo 操作防護
 
-Goodinfo 為第三方 fallback。
+Goodinfo 為第三方備援。
 
 要求：
 
@@ -1193,13 +1193,13 @@ cache
 avoid duplicate date-range queries
 ```
 
-不要當 massive primary crawler。
+不要當 大規模主要爬蟲。
 
 ---
 
-# Phase 11 — Goodinfo Pilot Gate
+# 階段 11 — Goodinfo 試點閘門
 
-## Step 41 — Pilot cases
+## 步驟 41 — 試點案例
 
 至少：
 
@@ -1218,7 +1218,7 @@ avoid duplicate date-range queries
 
 ---
 
-## Step 42 — Validate historical coverage
+## 步驟 42 — 驗證歷史涵蓋率
 
 量：
 
@@ -1231,7 +1231,7 @@ seconds precision coverage
 
 ---
 
-## Step 43 — Turn all failures into fixtures
+## 步驟 43 — 將所有失敗案例轉成測試 fixture
 
 任何：
 
@@ -1247,9 +1247,9 @@ multiple announcements same day
 
 ---
 
-# Phase 12 — Yahoo Worker
+# 階段 12 — Yahoo Worker
 
-## Step 44 — Freeze Yahoo fixtures
+## 步驟 44 — 定版 Yahoo 測試 fixture
 
 至少：
 
@@ -1266,9 +1266,9 @@ unexpected page
 
 ---
 
-## Step 45 — Yahoo query builder
+## 步驟 45 — Yahoo 查詢建構器
 
-query 至少包含：
+查詢至少包含：
 
 ```text
 stock_id
@@ -1287,7 +1287,7 @@ report_period
 
 ---
 
-## Step 46 — Prefer MOPS-style announcement mirrors
+## 步驟 46 — 優先採用 MOPS 形式的公告鏡像
 
 優先接受包含：
 
@@ -1302,7 +1302,7 @@ report_period
 
 ---
 
-## Step 47 — Distinguish article time from announcement time
+## 步驟 47 — 區分文章時間與公告時間
 
 如果 Yahoo 頁面只有：
 
@@ -1320,9 +1320,9 @@ announcement_at
 
 ---
 
-# Phase 13 — Google Worker
+# 階段 13 — Google Worker
 
-## Step 48 — Cross-site mirror discovery
+## 步驟 48 — 跨站鏡像探索
 
 Google 用來找：
 
@@ -1336,15 +1336,15 @@ other MOPS mirrors
 
 ---
 
-## Step 49 — Source-specific parsers
+## 步驟 49 — 各來源專用解析器
 
-若 domain 是：
+若網域是：
 
 ```text
 goodinfo.tw
 ```
 
-用 Goodinfo parser。
+用 Goodinfo 解析器。
 
 若是：
 
@@ -1352,15 +1352,15 @@ goodinfo.tw
 cnyes.com
 ```
 
-用 Cnyes parser。
+用 Cnyes 解析器。
 
-不要全部只靠 generic snippet parser。
+不要全部只靠 通用摘要解析器。
 
 ---
 
-## Step 50 — Reuse shared validation
+## 步驟 50 — 重用共用驗證
 
-Google candidate 必須通過：
+Google 候選結果必須通過：
 
 ```text
 stock/company match
@@ -1373,9 +1373,9 @@ financial-report intent
 
 ---
 
-# Phase 14 — Grounded AI Fallback
+# 階段 14 — Grounded AI 備援
 
-## Step 51 — Require grounding
+## 步驟 51 — 要求可追溯依據
 
 模型結果必須有：
 
@@ -1387,25 +1387,25 @@ traceable source
 
 ---
 
-## Step 52 — Separate source evidence from model claim
+## 步驟 52 — 分離來源證據與模型主張
 
 ```text
-source says X
+來源表示 X
 ```
 
 與：
 
 ```text
-model says X
+模型表示 X
 ```
 
 必須分開保存。
 
 ---
 
-## Step 53 — Terminal unresolved
+## 步驟 53 — 終止於未解決狀態
 
-Grounded AI 仍無可信 source：
+Grounded AI 仍無可信來源：
 
 ```text
 terminal unresolved
@@ -1415,9 +1415,9 @@ terminal unresolved
 
 ---
 
-# Phase 15 — Evidence Verification
+# 階段 15 — 證據驗證
 
-## Step 54 — Verification states
+## 步驟 54 — 驗證狀態
 
 至少：
 
@@ -1432,7 +1432,7 @@ resolved
 
 ---
 
-## Step 55 — Source independence
+## 步驟 55 — 來源獨立性
 
 兩個 URL 不代表兩個獨立來源。
 
@@ -1443,7 +1443,7 @@ Goodinfo
 Cnyes
 ```
 
-若只是同一筆 MOPS 重大訊息 mirror：
+若只是同一筆 MOPS 重大訊息鏡像：
 
 ```text
 same upstream event
@@ -1455,11 +1455,11 @@ same upstream event
 same event corroborated by mirrors
 ```
 
-不能誤認為兩個不同 filing event。
+不能誤認為兩個不同 申報事件。
 
 ---
 
-## Step 56 — Preserve conflicts
+## 步驟 56 — 保留衝突
 
 若：
 
@@ -1473,13 +1473,13 @@ source A ≠ source B
 conflicted
 ```
 
-禁止 overwrite。
+禁止覆蓋。
 
 ---
 
-# Phase 16 — Manual Adjudication
+# 階段 16 — 人工裁決
 
-## Step 57 — Manual review table
+## 步驟 57 — 人工審查資料表
 
 保存：
 
@@ -1492,7 +1492,7 @@ reviewed_at
 
 ---
 
-## Step 58 — Never mutate source evidence
+## 步驟 58 — 永不修改來源證據
 
 人工決策：
 
@@ -1508,9 +1508,9 @@ UPDATE original evidence
 
 ---
 
-# Phase 17 — Export
+# 階段 17 — 匯出
 
-## Step 59 — Define JSONL export
+## 步驟 59 — 定義 JSONL 匯出
 
 例如：
 
@@ -1531,33 +1531,33 @@ UPDATE original evidence
 
 ---
 
-## Step 60 — Deterministic export
+## 步驟 60 — 決定性匯出
 
-相同 DB state：
+相同 資料庫狀態：
 
 ```text
 export twice
 ```
 
-必須 byte-for-byte identical。
+必須 逐位元組完全一致。
 
 ---
 
-## Step 61 — Do not fake unified published_at
+## 步驟 61 — 不得捏造統一的 published_at
 
-Export 不要硬塞：
+匯出時不要硬塞：
 
 ```text
 published_at
 ```
 
-除非 evidence type 已定義該時間的 event semantics。
+除非證據類型已定義該時間的事件語意。
 
 ---
 
-# Phase 18 — Full-Market Task Generation
+# 階段 18 — 全市場任務產生
 
-## Step 62 — Build historical stock universe
+## 步驟 62 — 建立歷史股票集合
 
 不能只使用：
 
@@ -1565,19 +1565,19 @@ published_at
 currently listed companies
 ```
 
-需要歷史 universe。
+需要歷史股票集合。
 
 ---
 
-## Step 63 — Respect listing lifecycle
+## 步驟 63 — 尊重上市櫃生命週期
 
 避免產生公司尚未上市櫃時期的 task。
 
 ---
 
-## Step 64 — Apply fiscal-calendar gate
+## 步驟 64 — 套用會計年度曆閘門
 
-非曆年制公司如果尚未 model：
+非曆年制公司如果尚未建模：
 
 ```text
 skip
@@ -1585,13 +1585,13 @@ or
 mark unsupported
 ```
 
-不能用錯誤 quarter boundary。
+不能用錯誤 季度邊界。
 
 ---
 
-## Step 65 — Generate tasks idempotently
+## 步驟 65 — 以冪等方式產生任務
 
-rerun：
+重跑：
 
 ```text
 same task count
@@ -1600,9 +1600,9 @@ no duplicates
 
 ---
 
-# Phase 19 — Operations
+# 階段 19 — 維運
 
-## Step 66 — `/stats`
+## 步驟 66 — `/stats`
 
 至少：
 
@@ -1618,9 +1618,9 @@ terminal unresolved
 
 ---
 
-## Step 67 — `/status`
+## 步驟 67 — `/status`
 
-human-readable：
+人類可讀：
 
 ```text
 MOPS queue
@@ -1633,7 +1633,7 @@ recent throughput
 
 ---
 
-## Step 68 — `/healthz`
+## 步驟 68 — `/healthz`
 
 只代表：
 
@@ -1643,9 +1643,9 @@ server alive
 
 ---
 
-# Phase 20 — Failure Recovery
+# 階段 20 — 失敗復原
 
-## Step 69 — Server restart test
+## 步驟 69 — 伺服器重啟測試
 
 確認：
 
@@ -1658,7 +1658,7 @@ fail_count preserved
 
 ---
 
-## Step 70 — Worker disappearance test
+## 步驟 70 — Worker 消失測試
 
 ```text
 lease
@@ -1672,9 +1672,9 @@ task returns undone
 
 ---
 
-## Step 71 — Duplicate-result retry test
+## 步驟 71 — 重複結果重試測試
 
-network retry 不得造成：
+網路重試 不得造成：
 
 ```text
 duplicate logical evidence
@@ -1684,9 +1684,9 @@ wrong fail_count
 
 ---
 
-# Phase 21 — Unresolved Tail Audit
+# 階段 21 — 未解決尾端稽核
 
-## Step 72 — Generate unresolved report
+## 步驟 72 — 產生未解決報告
 
 產出：
 
@@ -1709,9 +1709,9 @@ unsupported fiscal calendar
 
 ---
 
-## Step 73 — Convert real failures into regression tests
+## 步驟 73 — 將真實失敗轉成回歸測試
 
-任何 production failure：
+任何 正式環境失敗：
 
 ```text
 fixture
@@ -1725,11 +1725,11 @@ permanent test
 
 ---
 
-# Phase 22 — Performance
+# 階段 22 — 效能
 
-只有 correctness 穩定後才優化。
+只有 正確性 穩定後才優化。
 
-## Step 74 — Establish baseline
+## 步驟 74 — 建立基準線
 
 記錄：
 
@@ -1747,7 +1747,7 @@ terminal unresolved rate
 
 ---
 
-## Step 75 — Tune Goodinfo conservatively
+## 步驟 75 — 保守調校 Goodinfo
 
 只調：
 
@@ -1758,11 +1758,11 @@ cache
 date-window size
 ```
 
-不要用暴力 concurrency。
+不要用暴力 併發。
 
 ---
 
-## Step 76 — Validate SQLite
+## 步驟 76 — 驗證 SQLite
 
 先量：
 
@@ -1774,18 +1774,18 @@ transaction duration
 write contention
 ```
 
-有實際瓶頸才考慮更重的 infrastructure。
+有實際瓶頸才考慮更重的 基礎設施。
 
 ---
 
-# Definition of Done
+# 完成定義
 
 第一個穩定版本完成條件：
 
 ```text
 ✓ source discovery completed before schema freeze
 
-✓ public historical xbrl_confirmed_at status explicitly documented
+✓ public 歷史 xbrl_confirmed_at status explicitly documented
 
 ✓ strict TDD workflow
 
@@ -1799,7 +1799,7 @@ write contention
 
 ✓ time semantics separated by event type
 
-✓ historical regulation rules versioned
+✓ 歷史 regulation rules versioned
 
 ✓ MOPS worker
 
@@ -1836,9 +1836,9 @@ write contention
 
 ---
 
-# Non-Negotiable Rules
+# 不可妥協規則
 
-## Rule 1 — Test before code
+## 規則 1 — 測試先於程式碼
 
 ```text
 NO FAILING TEST
@@ -1848,7 +1848,7 @@ NO PRODUCTION CODE
 
 ---
 
-## Rule 2 — Real source before schema
+## 規則 2 — 真實來源先於 Schema
 
 ```text
 NO PROVEN SOURCE FIELD
@@ -1858,7 +1858,7 @@ NO REQUIRED PRODUCTION COLUMN
 
 ---
 
-## Rule 3 — Never fabricate XBRL confirmation time
+## 規則 3 — 絕不捏造 XBRL 確認時間
 
 ```text
 announcement_at
@@ -1875,7 +1875,7 @@ xbrl_confirmed_at
 
 ---
 
-## Rule 4 — Source order
+## 規則 4 — 資料來源順序
 
 ```text
 MOPS
@@ -1891,7 +1891,7 @@ Grounded AI
 
 ---
 
-## Rule 5 — Retryable error stays on same engine
+## 規則 5 — 可重試錯誤留在同一 engine
 
 ```text
 rate_limited
@@ -1899,11 +1899,11 @@ transport_error
 temporary_error
 ```
 
-不得直接 escalation。
+不得直接 升級到下一來源。
 
 ---
 
-## Rule 6 — Unknown != absent
+## 規則 6 — 未知不等於不存在
 
 ```text
 查不到
@@ -1917,7 +1917,7 @@ temporary_error
 
 ---
 
-## Rule 7 — Evidence is append-only
+## 規則 7 — 證據只能追加
 
 ```text
 new evidence
@@ -1926,13 +1926,13 @@ correction
 new mirror
 ```
 
-不得 overwrite historical evidence。
+不得覆蓋歷史證據。
 
 ---
 
-## Rule 8 — Duplicate crawl is not new evidence
+## 規則 8 — 重複抓取不是新證據
 
-同一 logical evidence 重抓：
+同一邏輯證據重抓：
 
 ```text
 dedupe
@@ -1946,7 +1946,7 @@ INSERT another duplicate row
 
 ---
 
-## Rule 9 — Third-party mirror is not official truth
+## 規則 9 — 第三方鏡像不是官方真值
 
 Goodinfo / Yahoo / Google：
 
@@ -1964,7 +1964,7 @@ source_locator
 
 ---
 
-## Rule 10 — Production failures become permanent tests
+## 規則 10 — 正式環境失敗必須成為永久測試
 
 ```text
 real failure
@@ -1980,61 +1980,61 @@ GREEN
 
 ---
 
-# Recommended Development Order
+# 建議開發順序
 
 ```text
-Phase 0   Discovery Before Schema
+階段 0   Discovery Before Schema
   ↓
-Phase 1   Domain Contract
+階段 1   領域契約
   ↓
-Phase 2   Minimal Schema Freeze
+階段 2   最小 Schema 定版
   ↓
-Phase 3   Evidence Idempotency
+階段 3   證據冪等性
   ↓
-Phase 4   Time Semantics
+階段 4   時間語意
   ↓
-Phase 5   Publication Window Rules
+階段 5   發布時間窗規則
   ↓
-Phase 6   Fiscal Calendar Research Gate
+階段 6   會計年度曆研究閘門
   ↓
-Phase 7   Distributed Server
+階段 7   分散式伺服器
   ↓
-Phase 8   Global Failure State Machine
+階段 8   全域失敗狀態機
   ↓
-Phase 9   MOPS Worker
+階段 9   MOPS Worker
   ↓
 ──────────── MOPS Gate ────────────
   ↓
-Phase 10  Goodinfo Worker
+階段 10  Goodinfo Worker
   ↓
-Phase 11  Goodinfo Pilot
+階段 11  Goodinfo 試點
   ↓
-Phase 12  Yahoo Worker
+階段 12  Yahoo Worker
   ↓
-Phase 13  Google Worker
+階段 13  Google Worker
   ↓
-Phase 14  Grounded AI
+階段 14  Grounded AI
   ↓
-Phase 15  Evidence Verification
+階段 15  證據驗證
   ↓
-Phase 16  Manual Adjudication
+階段 16  人工裁決
   ↓
-Phase 17  Export
+階段 17  匯出
   ↓
-Phase 18  Full-Market Tasks
+階段 18  全市場任務
   ↓
-Phase 19  Operations
+階段 19  維運
   ↓
-Phase 20  Failure Recovery
+階段 20  失敗復原
   ↓
-Phase 21  Unresolved Tail Audit
+階段 21  未解決尾端稽核
   ↓
-Phase 22  Performance
+階段 22  效能
 ```
 
 ---
 
-# Milestone 1 — Source Contract
+# 里程碑 1 — 來源契約
 
 必須能回答：
 
@@ -2047,7 +2047,7 @@ MOPS 公開端到底能取得哪些欄位？
 
 ---
 
-# Milestone 2 — Cold-Stock Announcement Recovery
+# 里程碑 2 — 冷門股票公告回復能力
 
 至少用：
 
@@ -2063,7 +2063,7 @@ Goodinfo
 ↓
 stock_id + date range
 ↓
-historical announcement
+歷史 announcement
 ↓
 second-level announcement_at
 ```
@@ -2072,7 +2072,7 @@ second-level announcement_at
 
 ---
 
-# Milestone 3 — Semantic Separation
+# 里程碑 3 — 語意分離
 
 必須證明資料庫不會混淆：
 
@@ -2085,7 +2085,7 @@ crawler retrieved_at
 
 ---
 
-# Milestone 4 — Full Historical Recovery
+# 里程碑 4 — 完整歷史資料回復能力
 
 必須可以量化：
 
@@ -2099,4 +2099,4 @@ terminal unresolved
 manual review
 ```
 
-每一層 recovery rate 都要能獨立統計。
+每一層 回復率 都要能獨立統計。
