@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
 from datetime import datetime, timezone
 from email.message import Message
 from pathlib import Path
@@ -19,6 +20,8 @@ class FakeResponse:
         headers = Message()
         headers["Content-Type"] = "text/html; charset=utf-8"
         headers["X-Test"] = "fixture"
+        headers["Set-Cookie"] = "a=1"
+        headers["Set-Cookie"] = "b=2"
         self.headers = headers
 
     def read(self) -> bytes:
@@ -64,7 +67,8 @@ def test_capture_preserves_exact_bytes_and_provenance(tmp_path: Path) -> None:
     assert seen["timeout"] == 30.0
 
     headers = json.loads(result.headers_path.read_text())
-    assert headers["Content-Type"] == "text/html; charset=utf-8"
+    assert {"name": "Content-Type", "value": "text/html; charset=utf-8"} in headers
+    assert [item["value"] for item in headers if item["name"] == "Set-Cookie"] == ["a=1", "b=2"]
 
     meta = json.loads(result.metadata_path.read_text())
     assert meta["case"] == {
@@ -114,10 +118,17 @@ def test_capture_requires_timezone_aware_retrieval_time(tmp_path: Path) -> None:
         )
 
 
-def test_capture_rejects_unsafe_name_and_non_https_url() -> None:
+def test_capture_rejects_unsafe_name_extension_and_non_https_url() -> None:
     case = DiscoveryCase("2330", "台積電", 2024, ReportPeriod.Q2)
     with pytest.raises(ValueError):
         CaptureRequest(case=case, name="../escape", url="https://mops.twse.com.tw/example")
+    with pytest.raises(ValueError):
+        CaptureRequest(
+            case=case,
+            name="safe",
+            url="https://mops.twse.com.tw/example",
+            extension="headers.json",
+        )
     with pytest.raises(ValueError):
         CaptureRequest(case=case, name="safe", url="http://mops.twse.com.tw/example")
 
@@ -148,3 +159,51 @@ def test_capture_preflight_prevents_partial_fixture_when_sibling_exists(tmp_path
     assert called is False
     assert not (case_root / "listing.html").exists()
     assert not (case_root / "listing.meta.json").exists()
+
+
+def test_capture_lock_prevents_concurrent_writers(tmp_path: Path) -> None:
+    case = DiscoveryCase("2330", "台積電", 2024, ReportPeriod.Q1)
+    request = CaptureRequest(
+        case=case,
+        name="listing",
+        url="https://mops.twse.com.tw/example",
+        extension="html",
+    )
+    entered = threading.Event()
+    release = threading.Event()
+    errors: list[BaseException] = []
+    calls = 0
+
+    def opener(request, timeout: float):
+        nonlocal calls
+        calls += 1
+        entered.set()
+        assert release.wait(2)
+        return FakeResponse(b"first")
+
+    def first_capture() -> None:
+        try:
+            capture_raw_response(request, tmp_path, opener=opener)
+        except BaseException as exc:
+            errors.append(exc)
+
+    thread = threading.Thread(target=first_capture)
+    thread.start()
+    assert entered.wait(2)
+    try:
+        with pytest.raises(FileExistsError, match="另一個擷取程序"):
+            capture_raw_response(
+                request,
+                tmp_path,
+                opener=lambda request, timeout: FakeResponse(b"second"),
+                overwrite=True,
+            )
+    finally:
+        release.set()
+        thread.join(2)
+
+    assert errors == []
+    assert calls == 1
+    case_root = tmp_path / "2330" / "2024" / "Q1"
+    assert (case_root / "listing.html").read_bytes() == b"first"
+    assert not (case_root / ".listing.capture.lock").exists()

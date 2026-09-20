@@ -23,3 +23,8 @@ def test_report_period_rejects_q4_and_unknown() -> None:
 def test_find_case_returns_fixed_case() -> None:
     case = find_case("4542", 2024, ReportPeriod.Q1)
     assert case == DiscoveryCase("4542", "科嶠", 2024, ReportPeriod.Q1)
+
+
+def test_discovery_case_rejects_unsafe_stock_id() -> None:
+    with pytest.raises(ValueError, match="stock_id"):
+        DiscoveryCase("../../outside", "測試", 2024, ReportPeriod.Q1)

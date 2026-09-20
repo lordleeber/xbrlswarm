@@ -14,6 +14,7 @@ from urllib.request import Request, urlopen
 from .models import DiscoveryCase
 
 _SAFE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+_SAFE_EXTENSION = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 _SENSITIVE_HEADERS = {"authorization", "cookie", "proxy-authorization", "x-api-key"}
 
 
@@ -46,8 +47,8 @@ class CaptureRequest:
     def __post_init__(self) -> None:
         if not _SAFE_NAME.fullmatch(self.name):
             raise ValueError("name 只能包含英文字母、數字、句點、底線或連字號")
-        if not _SAFE_NAME.fullmatch(self.extension):
-            raise ValueError("extension 必須是簡單且安全的副檔名")
+        if not _SAFE_EXTENSION.fullmatch(self.extension):
+            raise ValueError("extension 只能包含英文字母、數字、底線或連字號，且不得包含句點")
         method = self.method.upper()
         if method not in {"GET", "POST"}:
             raise ValueError("階段 0 擷取器只支援 GET 與 POST")
@@ -72,11 +73,11 @@ def _redact_headers(headers: Mapping[str, str]) -> dict[str, str]:
     }
 
 
-def _headers_to_dict(headers: object) -> dict[str, str]:
+def _headers_to_list(headers: object) -> list[dict[str, str]]:
     items = getattr(headers, "items", None)
     if items is None:
-        return {}
-    return {str(key): str(value) for key, value in items()}
+        return []
+    return [{"name": str(key), "value": str(value)} for key, value in items()]
 
 
 def _atomic_write(path: Path, data: bytes, *, overwrite: bool) -> None:
@@ -98,6 +99,27 @@ def _atomic_write(path: Path, data: bytes, *, overwrite: bool) -> None:
             os.unlink(temp_name)
         except FileNotFoundError:
             pass
+
+
+def _acquire_capture_lock(lock_path: Path) -> int:
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    except FileExistsError as exc:
+        raise FileExistsError(f"已有另一個擷取程序正在處理同一組 fixture：{lock_path}") from exc
+    try:
+        os.write(fd, f"pid={os.getpid()}\n".encode())
+        os.fsync(fd)
+    except BaseException:
+        os.close(fd)
+        lock_path.unlink(missing_ok=True)
+        raise
+    return fd
+
+
+def _release_capture_lock(fd: int, lock_path: Path) -> None:
+    os.close(fd)
+    lock_path.unlink(missing_ok=True)
 
 
 def capture_raw_response(
@@ -125,77 +147,87 @@ def capture_raw_response(
     headers_path = case_root / f"{capture.name}.headers.json"
     metadata_path = case_root / f"{capture.name}.meta.json"
 
-    if not overwrite:
-        existing = [path for path in (body_path, headers_path, metadata_path) if path.exists()]
-        if existing:
-            joined = ", ".join(str(path) for path in existing)
-            raise FileExistsError(f"拒絕覆寫既有擷取檔案：{joined}")
+    target_paths = (body_path, headers_path, metadata_path)
+    if len(set(target_paths)) != len(target_paths):
+        raise ValueError("擷取輸出路徑彼此衝突")
 
-    request_headers = {
-        "User-Agent": "xbrlswarm-discovery/0.1 (+source-research)",
-        "Accept": "*/*",
-        **dict(capture.request_headers),
-    }
-    request = Request(
-        capture.url,
-        data=capture.body,
-        headers=request_headers,
-        method=capture.method,
-    )
+    lock_path = case_root / f".{capture.name}.capture.lock"
+    lock_fd = _acquire_capture_lock(lock_path)
+    try:
+        if not overwrite:
+            existing = [path for path in (body_path, headers_path, metadata_path) if path.exists()]
+            if existing:
+                joined = ", ".join(str(path) for path in existing)
+                raise FileExistsError(f"拒絕覆寫既有擷取檔案：{joined}")
 
-    with opener(request, timeout=timeout) as response:
-        body = response.read()
-        status = int(response.status)
-        final_url = response.geturl()
-        response_headers = _headers_to_dict(response.headers)
+        request_headers = {
+            "User-Agent": "xbrlswarm-discovery/0.1 (+source-research)",
+            "Accept": "*/*",
+            **dict(capture.request_headers),
+        }
+        request = Request(
+            capture.url,
+            data=capture.body,
+            headers=request_headers,
+            method=capture.method,
+        )
 
-    digest = hashlib.sha256(body).hexdigest()
-    retrieved_at = (now or (lambda: datetime.now(timezone.utc)))()
-    if retrieved_at.tzinfo is None:
-        raise ValueError("retrieved_at 必須包含時區資訊")
+        with opener(request, timeout=timeout) as response:
+            body = response.read()
+            status = int(response.status)
+            final_url = response.geturl()
+            response_headers = _headers_to_list(response.headers)
 
-    request_body_hash = hashlib.sha256(capture.body).hexdigest() if capture.body is not None else None
-    metadata = {
-        "case": {
-            "stock_id": capture.case.stock_id,
-            "company_name": capture.case.company_name,
-            "fiscal_year": capture.case.fiscal_year,
-            "report_period": capture.case.report_period.value,
-        },
-        "request": {
-            "method": capture.method,
-            "url": capture.url,
-            "headers": _redact_headers(request_headers),
-            "body_sha256": request_body_hash,
-            "body_size_bytes": len(capture.body) if capture.body is not None else 0,
-        },
-        "response": {
-            "status": status,
-            "final_url": final_url,
-            "headers_file": headers_path.name,
-            "body_file": body_path.name,
-            "sha256": digest,
-            "size_bytes": len(body),
-        },
-        "retrieved_at": retrieved_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
-    }
+        digest = hashlib.sha256(body).hexdigest()
+        retrieved_at = (now or (lambda: datetime.now(timezone.utc)))()
+        if retrieved_at.tzinfo is None:
+            raise ValueError("retrieved_at 必須包含時區資訊")
 
-    _atomic_write(body_path, body, overwrite=overwrite)
-    _atomic_write(
-        headers_path,
-        (json.dumps(response_headers, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode(),
-        overwrite=overwrite,
-    )
-    _atomic_write(
-        metadata_path,
-        (json.dumps(metadata, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode(),
-        overwrite=overwrite,
-    )
+        request_body_hash = hashlib.sha256(capture.body).hexdigest() if capture.body is not None else None
+        metadata = {
+            "case": {
+                "stock_id": capture.case.stock_id,
+                "company_name": capture.case.company_name,
+                "fiscal_year": capture.case.fiscal_year,
+                "report_period": capture.case.report_period.value,
+            },
+            "request": {
+                "method": capture.method,
+                "url": capture.url,
+                "headers": _redact_headers(request_headers),
+                "body_sha256": request_body_hash,
+                "body_size_bytes": len(capture.body) if capture.body is not None else 0,
+            },
+            "response": {
+                "status": status,
+                "final_url": final_url,
+                "headers_file": headers_path.name,
+                "body_file": body_path.name,
+                "sha256": digest,
+                "size_bytes": len(body),
+            },
+            "retrieved_at": retrieved_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+        }
 
-    return CaptureResult(
-        body_path=body_path,
-        headers_path=headers_path,
-        metadata_path=metadata_path,
-        sha256=digest,
-        size_bytes=len(body),
-    )
+        _atomic_write(body_path, body, overwrite=overwrite)
+        _atomic_write(
+            headers_path,
+            (json.dumps(response_headers, ensure_ascii=False, indent=2) + "\n").encode(),
+            overwrite=overwrite,
+        )
+        _atomic_write(
+            metadata_path,
+            (json.dumps(metadata, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode(),
+            overwrite=overwrite,
+        )
+
+        return CaptureResult(
+            body_path=body_path,
+            headers_path=headers_path,
+            metadata_path=metadata_path,
+            sha256=digest,
+            size_bytes=len(body),
+        )
+
+    finally:
+        _release_capture_lock(lock_fd, lock_path)

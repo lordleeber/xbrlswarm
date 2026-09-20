@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from enum import StrEnum
+
+_STOCK_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 
 
 class ReportPeriod(StrEnum):
@@ -27,8 +30,8 @@ class DiscoveryCase:
     report_period: ReportPeriod
 
     def __post_init__(self) -> None:
-        if not self.stock_id.strip():
-            raise ValueError("stock_id 不得為空白")
+        if not _STOCK_ID.fullmatch(self.stock_id):
+            raise ValueError("stock_id 只能包含英文字母、數字、底線或連字號")
         if not self.company_name.strip():
             raise ValueError("company_name 不得為空白")
         if self.fiscal_year < 1900 or self.fiscal_year > 2200:
