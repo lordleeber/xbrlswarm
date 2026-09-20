@@ -1980,6 +1980,39 @@ GREEN
 
 ---
 
+## 規則 11 — 單一 Step 的正式程式碼超過 800 行時必須拆分
+
+實作任何 `Step-N` 時，如果預估或實際的正式程式碼超過 800 行，必須拆成更小的子步驟。
+
+行數計算不包含：
+
+```text
+tests
+test fixtures
+test helpers
+```
+
+子步驟依序命名：
+
+```text
+Step-N-a
+Step-N-b
+Step-N-c
+...
+```
+
+例如：
+
+```text
+Step-29-a
+Step-29-b
+Step-29-c
+```
+
+每個子步驟都必須維持可獨立實作、測試與 review 的範圍，並持續遵守 RED → GREEN → REFACTOR。
+
+---
+
 # 建議開發順序
 
 ```text
