@@ -9,6 +9,7 @@ from .cases import DISCOVERY_CASES, find_case
 from .matrix import load_matrix, render_markdown
 from .models import DiscoveryCase, ReportPeriod
 from .mops import capture_mops_discovery_cases, verify_mops_capture_set
+from .mops_analysis import analyze_mops_capture_set, render_mops_field_observations
 
 
 def _header(value: str) -> tuple[str, str]:
@@ -53,6 +54,21 @@ def _build_parser() -> argparse.ArgumentParser:
         "--output-root",
         type=Path,
         default=Path("tests/fixtures/discovery/mops"),
+    )
+
+    analyze = sub.add_parser(
+        "analyze-mops-captures",
+        help="分析固定 MOPS captures 並產生 Step-3 欄位證據",
+    )
+    analyze.add_argument(
+        "--output-root",
+        type=Path,
+        default=Path("tests/fixtures/discovery/mops"),
+    )
+    analyze.add_argument(
+        "--output",
+        type=Path,
+        default=Path("discovery/mops_field_observations.json"),
     )
 
     matrix = sub.add_parser("render-matrix", help="驗證並產生來源欄位矩陣")
@@ -111,6 +127,13 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "verify-mops-captures":
         verified = verify_mops_capture_set(args.output_root)
         print(f"已驗證 {len(verified)} 個固定案例")
+        return 0
+    if args.command == "analyze-mops-captures":
+        observations = analyze_mops_capture_set(args.output_root)
+        content = render_mops_field_observations(observations)
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(content, encoding="utf-8")
+        print(f"已分析 {len(observations)} 個固定案例：{args.output}")
         return 0
     if args.command == "render-matrix":
         return _render_matrix(args)

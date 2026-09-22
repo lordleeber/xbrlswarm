@@ -1,0 +1,276 @@
+{
+  "capture_count": 12,
+  "cases": [
+    {
+      "case": "2330-2024-Q1",
+      "derived": {
+        "report_period": "Q1"
+      },
+      "facts": {
+        "tifrs-notes:CompanyChineseName": "台灣積體電路製造股份有限公司",
+        "tifrs-notes:CompanyID": "2330",
+        "tifrs-notes:Quarter": "1",
+        "tifrs-notes:ReportCategory": "Consolidated report",
+        "tifrs-notes:ReportType": "Financial report (general)",
+        "tifrs-notes:Year": "2024"
+      },
+      "normalized": {
+        "report_scope": "consolidated"
+      },
+      "sha256": "68117c2ed0caa105921d9cfe27afe9ed02472dcc33066ead9b31e1603a77357c",
+      "source_url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=2330&year=2024&season=1&report_id=C"
+    },
+    {
+      "case": "2330-2024-Q2",
+      "derived": {
+        "report_period": "Q2"
+      },
+      "facts": {
+        "tifrs-notes:CompanyChineseName": "台灣積體電路製造股份有限公司",
+        "tifrs-notes:CompanyID": "2330",
+        "tifrs-notes:Quarter": "2",
+        "tifrs-notes:ReportCategory": "Consolidated report",
+        "tifrs-notes:ReportType": "Financial report (general)",
+        "tifrs-notes:Year": "2024"
+      },
+      "normalized": {
+        "report_scope": "consolidated"
+      },
+      "sha256": "9be8d57b462692580e572a5e0597a33879a096c086cccf6c02ffd2e9dd16152b",
+      "source_url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=2330&year=2024&season=2&report_id=C"
+    },
+    {
+      "case": "2330-2024-Q3",
+      "derived": {
+        "report_period": "Q3"
+      },
+      "facts": {
+        "tifrs-notes:CompanyChineseName": "台灣積體電路製造股份有限公司",
+        "tifrs-notes:CompanyID": "2330",
+        "tifrs-notes:Quarter": "3",
+        "tifrs-notes:ReportCategory": "Consolidated report",
+        "tifrs-notes:ReportType": "Financial report (general)",
+        "tifrs-notes:Year": "2024"
+      },
+      "normalized": {
+        "report_scope": "consolidated"
+      },
+      "sha256": "c89f1074e9a84ab40080c095dc5adc0295f4c4f6900ff80e7eefe8d5ecba0cdd",
+      "source_url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=2330&year=2024&season=3&report_id=C"
+    },
+    {
+      "case": "2330-2024-FY",
+      "derived": {
+        "report_period": "FY"
+      },
+      "facts": {
+        "tifrs-notes:CompanyChineseName": "台灣積體電路製造股份有限公司",
+        "tifrs-notes:CompanyID": "2330",
+        "tifrs-notes:Quarter": "4",
+        "tifrs-notes:ReportCategory": "Consolidated report",
+        "tifrs-notes:ReportType": "Financial report (general)",
+        "tifrs-notes:Year": "2024"
+      },
+      "normalized": {
+        "report_scope": "consolidated"
+      },
+      "sha256": "45a7f1e2008d4077320a3841a2ab5f2382e28a7af057144185ebbe33962ebfde",
+      "source_url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=2330&year=2024&season=4&report_id=C"
+    },
+    {
+      "case": "6147-2024-Q1",
+      "derived": {
+        "report_period": "Q1"
+      },
+      "facts": {
+        "tifrs-notes:CompanyChineseName": "頎邦科技股份有限公司",
+        "tifrs-notes:CompanyID": "6147",
+        "tifrs-notes:Quarter": "1",
+        "tifrs-notes:ReportCategory": "Consolidated report",
+        "tifrs-notes:ReportType": "Financial report (general)",
+        "tifrs-notes:Year": "2024"
+      },
+      "normalized": {
+        "report_scope": "consolidated"
+      },
+      "sha256": "3db1987326db1c3f05d09b2c595b1c266a3fe43de8f70c2c04c5d997e7d2de39",
+      "source_url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=6147&year=2024&season=1&report_id=C"
+    },
+    {
+      "case": "6147-2024-Q2",
+      "derived": {
+        "report_period": "Q2"
+      },
+      "facts": {
+        "tifrs-notes:CompanyChineseName": "頎邦科技股份有限公司",
+        "tifrs-notes:CompanyID": "6147",
+        "tifrs-notes:Quarter": "2",
+        "tifrs-notes:ReportCategory": "Consolidated report",
+        "tifrs-notes:ReportType": "Financial report (general)",
+        "tifrs-notes:Year": "2024"
+      },
+      "normalized": {
+        "report_scope": "consolidated"
+      },
+      "sha256": "3e99c36c3607bf198492e2253c213269b805fb3db1663791a279ae4d57231d09",
+      "source_url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=6147&year=2024&season=2&report_id=C"
+    },
+    {
+      "case": "6147-2024-Q3",
+      "derived": {
+        "report_period": "Q3"
+      },
+      "facts": {
+        "tifrs-notes:CompanyChineseName": "頎邦科技股份有限公司",
+        "tifrs-notes:CompanyID": "6147",
+        "tifrs-notes:Quarter": "3",
+        "tifrs-notes:ReportCategory": "Consolidated report",
+        "tifrs-notes:ReportType": "Financial report (general)",
+        "tifrs-notes:Year": "2024"
+      },
+      "normalized": {
+        "report_scope": "consolidated"
+      },
+      "sha256": "43ef36c02522c884e65933fe6df7b7c441971fd9c9fc15c1744e9fe55a760a45",
+      "source_url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=6147&year=2024&season=3&report_id=C"
+    },
+    {
+      "case": "6147-2024-FY",
+      "derived": {
+        "report_period": "FY"
+      },
+      "facts": {
+        "tifrs-notes:CompanyChineseName": "頎邦科技股份有限公司",
+        "tifrs-notes:CompanyID": "6147",
+        "tifrs-notes:Quarter": "4",
+        "tifrs-notes:ReportCategory": "Consolidated report",
+        "tifrs-notes:ReportType": "Financial report (general)",
+        "tifrs-notes:Year": "2024"
+      },
+      "normalized": {
+        "report_scope": "consolidated"
+      },
+      "sha256": "878efb08396bf971510cfff2058ef4ebc5e20cf4e5b69ec889960d6f8689594a",
+      "source_url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=6147&year=2024&season=4&report_id=C"
+    },
+    {
+      "case": "4542-2024-Q1",
+      "derived": {
+        "report_period": "Q1"
+      },
+      "facts": {
+        "tifrs-notes:CompanyChineseName": "科嶠工業股份有限公司",
+        "tifrs-notes:CompanyID": "4542",
+        "tifrs-notes:Quarter": "1",
+        "tifrs-notes:ReportCategory": "Consolidated report",
+        "tifrs-notes:ReportType": "Financial report (general)",
+        "tifrs-notes:Year": "2024"
+      },
+      "normalized": {
+        "report_scope": "consolidated"
+      },
+      "sha256": "5ecd37ef38e8b9bbdaaa897a33bb8a8212a9e5b07598a5a069349ad67105094a",
+      "source_url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=4542&year=2024&season=1&report_id=C"
+    },
+    {
+      "case": "4542-2024-Q2",
+      "derived": {
+        "report_period": "Q2"
+      },
+      "facts": {
+        "tifrs-notes:CompanyChineseName": "科嶠工業股份有限公司",
+        "tifrs-notes:CompanyID": "4542",
+        "tifrs-notes:Quarter": "2",
+        "tifrs-notes:ReportCategory": "Consolidated report",
+        "tifrs-notes:ReportType": "Financial report (general)",
+        "tifrs-notes:Year": "2024"
+      },
+      "normalized": {
+        "report_scope": "consolidated"
+      },
+      "sha256": "8a591904e277a6841a4c917b45dc16e3a8e2bb328bff9fef0ba65ded3532b6f8",
+      "source_url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=4542&year=2024&season=2&report_id=C"
+    },
+    {
+      "case": "4542-2024-Q3",
+      "derived": {
+        "report_period": "Q3"
+      },
+      "facts": {
+        "tifrs-notes:CompanyChineseName": "科嶠工業股份有限公司",
+        "tifrs-notes:CompanyID": "4542",
+        "tifrs-notes:Quarter": "3",
+        "tifrs-notes:ReportCategory": "Consolidated report",
+        "tifrs-notes:ReportType": "Financial report (general)",
+        "tifrs-notes:Year": "2024"
+      },
+      "normalized": {
+        "report_scope": "consolidated"
+      },
+      "sha256": "1e394fb65b6b3107c986947bedbf0c025b0db6172a6603a2e40458d8ce518b0a",
+      "source_url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=4542&year=2024&season=3&report_id=C"
+    },
+    {
+      "case": "4542-2024-FY",
+      "derived": {
+        "report_period": "FY"
+      },
+      "facts": {
+        "tifrs-notes:CompanyChineseName": "科嶠工業股份有限公司",
+        "tifrs-notes:CompanyID": "4542",
+        "tifrs-notes:Quarter": "4",
+        "tifrs-notes:ReportCategory": "Consolidated report",
+        "tifrs-notes:ReportType": "Financial report (general)",
+        "tifrs-notes:Year": "2024"
+      },
+      "normalized": {
+        "report_scope": "consolidated"
+      },
+      "sha256": "d6d165834e59302b2738114bc5ae88e9b94ae225cc5b3d135efbb3dd676dbd2a",
+      "source_url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=4542&year=2024&season=4&report_id=C"
+    }
+  ],
+  "cautions": [
+    "DateAndProceduresOfAuthorisationForIssueOfFinancialStatements is a board-authorisation disclosure, not a filing timestamp.",
+    "retrieved_at and HTTP headers are capture metadata, not filing or confirmation timestamps.",
+    "ReportType=Financial report (general) does not identify original, amendment, correction, or supplemental filing kind.",
+    "Only consolidated captures were sampled; coexistence with individual reports remains outside this evidence set."
+  ],
+  "coverage": {
+    "tifrs-notes:CompanyChineseName": "12/12",
+    "tifrs-notes:CompanyID": "12/12",
+    "tifrs-notes:Quarter": "12/12",
+    "tifrs-notes:ReportCategory": "12/12",
+    "tifrs-notes:ReportType": "12/12",
+    "tifrs-notes:Year": "12/12"
+  },
+  "not_observed": [
+    "filing_identifier",
+    "filing_date",
+    "filing_time",
+    "xbrl_confirmed_at",
+    "filing_kind"
+  ],
+  "period_rule": {
+    "1": "Q1",
+    "2": "Q2",
+    "3": "Q3",
+    "4": "FY"
+  },
+  "schema_version": 1,
+  "scope": "Step-3 field availability evidence from the 12 fixed Step-2 captures",
+  "scope_rule": {
+    "Consolidated report": "consolidated",
+    "Individual report": "individual"
+  },
+  "semantic_review": {
+    "candidate_fact_names": [
+      "tifrs-notes:ApplicationOfNewlyIssuedOrAmendedStandardsAndInterpretations",
+      "tifrs-notes:DateAndProceduresOfAuthorisationForIssueOfFinancialStatements",
+      "tifrs-notes:ReportType"
+    ],
+    "distinct_fact_name_count": 494,
+    "method": "Review all distinct fact names for filing/submission/confirmation/amendment/correction/supplement and adjacent authorisation/report-type semantics."
+  },
+  "source": "mops-xbrl-download"
+}
