@@ -2,16 +2,16 @@
   "source": "mops",
   "scope": "階段 0 來源探索；只有在實際擷取的原始證據支持時才能更新欄位狀態",
   "fields": [
-    {"field":"stock_id","status":"not_verified","evidence":[],"notes":"在實際擷取的回應證明此欄位是直接存在，或只是 request context 以前，不得提升狀態。"},
-    {"field":"company_name","status":"not_verified","evidence":[],"notes":"等待具代表性的 MOPS fixture。"},
-    {"field":"fiscal_year","status":"not_verified","evidence":[],"notes":"可能由來源直接提供，也可能可由 source locator 決定性推導；完成來源探索後才能定版。"},
-    {"field":"report_period","status":"not_verified","evidence":[],"notes":"必須區分 Q1/Q2/Q3/FY；沒有經測試的來源規則時，絕不能推定 FY=Q4。"},
-    {"field":"report_scope","status":"not_verified","evidence":[],"notes":"研究同一公司 / 期別是否會同時存在 consolidated 與 individual 報告。"},
-    {"field":"filing_identifier","status":"not_verified","evidence":[],"notes":"研究是否存在穩定的公開 filing identifier 或 locator。"},
-    {"field":"filing_date","status":"not_verified","evidence":[],"notes":"不得用 announcement date 或 retrieval date 代替。"},
-    {"field":"filing_time","status":"not_verified","evidence":[],"notes":"不得用 announcement time、article time 或 HTTP metadata 代替。"},
-    {"field":"xbrl_confirmed_at","status":"not_verified","evidence":[],"notes":"公開歷史 confirmation timestamp 仍屬 NOT PUBLICLY VERIFIED。"},
-    {"field":"filing_kind","status":"not_verified","evidence":[],"notes":"研究 original / amendment / supplemental filing 的表示方式。"},
-    {"field":"source_locator","status":"not_verified","evidence":[],"notes":"研究歷史 filing 是否存在穩定、可重播的 locator。"}
+    {"field":"stock_id","status":"direct","evidence":["discovery/mops_field_observations.json：12/12 captures 的 tifrs-notes:CompanyID"],"notes":"iXBRL fact 直接提供公司代號，且逐筆與 capture case 一致。"},
+    {"field":"company_name","status":"direct","evidence":["discovery/mops_field_observations.json：12/12 captures 的 tifrs-notes:CompanyChineseName"],"notes":"iXBRL fact 直接提供公司中文法定全名；不等同案例使用的簡稱。"},
+    {"field":"fiscal_year","status":"direct","evidence":["discovery/mops_field_observations.json：12/12 captures 的 tifrs-notes:Year"],"notes":"iXBRL fact 直接提供西元會計年度，且逐筆與 capture case 一致。"},
+    {"field":"report_period","status":"derived","evidence":["discovery/mops_field_observations.json：12/12 captures 的 tifrs-notes:Quarter 與 period_rule"],"notes":"決定性映射為 1→Q1、2→Q2、3→Q3、4→FY；4 是 MOPS request / fact 值，領域模型仍維持 FY != Q4。"},
+    {"field":"report_scope","status":"direct","evidence":["discovery/mops_field_observations.json：12/12 captures 的 tifrs-notes:ReportCategory=Consolidated report"],"notes":"來源直接表示本組 fixtures 為合併報告；本組未擷取個體報告，因此不能據此判定兩種 scope 是否同時存在。"},
+    {"field":"filing_identifier","status":"not_verified","evidence":["discovery/mops_field_observations.json：Step-3 對 12 個 payload 的語意欄位盤點"],"notes":"本次 XBRL download endpoint 的 12 個 payload 未觀察到穩定 filing identifier；此證據不足以外推整體 MOPS 來源不可得。"},
+    {"field":"filing_date","status":"not_verified","evidence":["discovery/mops_field_observations.json：Step-3 cautions 與 not_observed","ROADMAP.md：官方申報系統已知存在申報日期"],"notes":"本次 endpoint 未觀察到申報日期；payload 中的 DateAndProceduresOfAuthorisationForIssueOfFinancialStatements 是董事會核准／通過發布日期，retrieved_at 亦不得替代。"},
+    {"field":"filing_time","status":"not_verified","evidence":["discovery/mops_field_observations.json：Step-3 cautions 與 not_observed","ROADMAP.md：官方申報系統已知存在申報時間"],"notes":"本次 endpoint 未觀察到申報時間，但官方系統已知存在此資訊；不得用董事會日期、retrieved_at 或 HTTP metadata 代替。"},
+    {"field":"xbrl_confirmed_at","status":"not_verified","evidence":["discovery/mops_field_observations.json：12 個 payload 均未觀察到 confirmation timestamp","docs/historical-xbrl-confirmed-at.md：公開歷史來源契約"],"notes":"本 endpoint 不提供 confirmation timestamp；但單一 endpoint 的缺失不足以證明所有公開歷史來源皆不可得，因此維持 NOT PUBLICLY VERIFIED。"},
+    {"field":"filing_kind","status":"not_verified","evidence":["discovery/mops_field_observations.json：12/12 captures 僅有 tifrs-notes:ReportType=Financial report (general)"],"notes":"本次 endpoint 的 ReportType 不足以區分 original / amendment / correction / supplemental；尚未驗證其他 MOPS 來源是否提供。"},
+    {"field":"source_locator","status":"derived","evidence":["discovery/mops_field_observations.json：12/12 request URLs","src/xbrlswarm/discovery/mops.py：build_mops_xbrl_capture 的決定性 query rule"],"notes":"可由官方 endpoint 加上 functionName、step、co_id、year、season、report_id 決定性重建；它是 source locator，不是 filing identifier。"}
   ]
 }

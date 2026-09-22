@@ -61,3 +61,22 @@ def test_verify_mops_captures_command_reports_verified_count(monkeypatch, tmp_pa
     assert main(["verify-mops-captures", "--output-root", str(tmp_path)]) == 0
     assert called == {"output_root": tmp_path}
     assert "已驗證 3 個固定案例" in capsys.readouterr().out
+
+
+def test_analyze_mops_captures_command_writes_evidence(monkeypatch, tmp_path: Path, capsys) -> None:
+    output = tmp_path / "observations.json"
+    monkeypatch.setattr(cli, "analyze_mops_capture_set", lambda root: (object(), object()))
+    monkeypatch.setattr(cli, "render_mops_field_observations", lambda items: "{\n}\n")
+
+    assert main(
+        [
+            "analyze-mops-captures",
+            "--output-root",
+            str(tmp_path / "fixtures"),
+            "--output",
+            str(output),
+        ]
+    ) == 0
+
+    assert output.read_text(encoding="utf-8") == "{\n}\n"
+    assert "已分析 2 個固定案例" in capsys.readouterr().out
