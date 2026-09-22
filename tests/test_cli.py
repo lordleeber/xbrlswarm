@@ -1,5 +1,7 @@
 from pathlib import Path
+from types import SimpleNamespace
 
+import xbrlswarm.discovery.cli as cli
 from xbrlswarm.discovery.cli import main
 
 
@@ -18,3 +20,44 @@ def test_render_matrix_writes_document(tmp_path: Path) -> None:
     text = output.read_text(encoding="utf-8")
     assert "MOPS 來源欄位可取得性矩陣" in text
     assert "xbrl_confirmed_at" in text
+
+
+def test_capture_mops_cases_command_uses_fixed_batch_capture(monkeypatch, tmp_path: Path, capsys) -> None:
+    called: dict[str, object] = {}
+
+    def fake_capture(output_root: Path, *, overwrite: bool = False):
+        called["output_root"] = output_root
+        called["overwrite"] = overwrite
+        return (
+            SimpleNamespace(body_path=output_root / "2330/2024/Q1/xbrl-consolidated.bin"),
+            SimpleNamespace(body_path=output_root / "2330/2024/Q2/xbrl-consolidated.bin"),
+        )
+
+    monkeypatch.setattr(cli, "capture_mops_discovery_cases", fake_capture)
+
+    assert main(
+        [
+            "capture-mops-cases",
+            "--output-root",
+            str(tmp_path),
+            "--overwrite",
+        ]
+    ) == 0
+
+    assert called == {"output_root": tmp_path, "overwrite": True}
+    output = capsys.readouterr().out
+    assert "已擷取 2 個固定案例" in output
+
+
+def test_verify_mops_captures_command_reports_verified_count(monkeypatch, tmp_path: Path, capsys) -> None:
+    called: dict[str, object] = {}
+
+    def fake_verify(output_root: Path):
+        called["output_root"] = output_root
+        return (object(), object(), object())
+
+    monkeypatch.setattr(cli, "verify_mops_capture_set", fake_verify)
+
+    assert main(["verify-mops-captures", "--output-root", str(tmp_path)]) == 0
+    assert called == {"output_root": tmp_path}
+    assert "已驗證 3 個固定案例" in capsys.readouterr().out

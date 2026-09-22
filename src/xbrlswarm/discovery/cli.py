@@ -8,6 +8,7 @@ from .capture import CaptureRequest, capture_raw_response
 from .cases import DISCOVERY_CASES, find_case
 from .matrix import load_matrix, render_markdown
 from .models import DiscoveryCase, ReportPeriod
+from .mops import capture_mops_discovery_cases, verify_mops_capture_set
 
 
 def _header(value: str) -> tuple[str, str]:
@@ -38,6 +39,21 @@ def _build_parser() -> argparse.ArgumentParser:
     capture.add_argument("--extension", default="bin")
     capture.add_argument("--output-root", type=Path, default=Path("tests/fixtures/discovery/mops"))
     capture.add_argument("--overwrite", action="store_true")
+
+    capture_all = sub.add_parser("capture-mops-cases", help="從官方 MOPS 擷取全部 12 個固定案例")
+    capture_all.add_argument(
+        "--output-root",
+        type=Path,
+        default=Path("tests/fixtures/discovery/mops"),
+    )
+    capture_all.add_argument("--overwrite", action="store_true")
+
+    verify = sub.add_parser("verify-mops-captures", help="離線驗證固定 MOPS capture 三件組")
+    verify.add_argument(
+        "--output-root",
+        type=Path,
+        default=Path("tests/fixtures/discovery/mops"),
+    )
 
     matrix = sub.add_parser("render-matrix", help="驗證並產生來源欄位矩陣")
     matrix.add_argument("--input", type=Path, default=Path("discovery/source_field_matrix.json"))
@@ -88,6 +104,14 @@ def main(argv: list[str] | None = None) -> int:
         return _list_cases()
     if args.command == "capture":
         return _capture(args)
+    if args.command == "capture-mops-cases":
+        results = capture_mops_discovery_cases(args.output_root, overwrite=args.overwrite)
+        print(f"已擷取 {len(results)} 個固定案例")
+        return 0
+    if args.command == "verify-mops-captures":
+        verified = verify_mops_capture_set(args.output_root)
+        print(f"已驗證 {len(verified)} 個固定案例")
+        return 0
     if args.command == "render-matrix":
         return _render_matrix(args)
     parser.error("未知指令")

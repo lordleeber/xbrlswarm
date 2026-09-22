@@ -1,0 +1,30 @@
+{
+  "case": {
+    "company_name": "台積電",
+    "fiscal_year": 2024,
+    "report_period": "Q2",
+    "stock_id": "2330"
+  },
+  "request": {
+    "body_sha256": null,
+    "body_size_bytes": 0,
+    "headers": {
+      "Accept": "*/*",
+      "Referer": "https://mopsov.twse.com.tw/mops/web/t203sb01",
+      "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36 xbrlswarm-discovery/0.1"
+    },
+    "method": "GET",
+    "url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=2330&year=2024&season=2&report_id=C"
+  },
+  "response": {
+    "body_file": "xbrl-consolidated.bin.gz",
+    "content_encoding": "gzip",
+    "final_url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=2330&year=2024&season=2&report_id=C",
+    "headers_file": "xbrl-consolidated.headers.json",
+    "sha256": "9be8d57b462692580e572a5e0597a33879a096c086cccf6c02ffd2e9dd16152b",
+    "size_bytes": 800160,
+    "status": 200,
+    "stored_size_bytes": 800243
+  },
+  "retrieved_at": "2026-09-20T06:44:22.779069Z"
+}

@@ -1,0 +1,30 @@
+{
+  "case": {
+    "company_name": "科嶠",
+    "fiscal_year": 2024,
+    "report_period": "Q2",
+    "stock_id": "4542"
+  },
+  "request": {
+    "body_sha256": null,
+    "body_size_bytes": 0,
+    "headers": {
+      "Accept": "*/*",
+      "Referer": "https://mopsov.twse.com.tw/mops/web/t203sb01",
+      "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36 xbrlswarm-discovery/0.1"
+    },
+    "method": "GET",
+    "url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=4542&year=2024&season=2&report_id=C"
+  },
+  "response": {
+    "body_file": "xbrl-consolidated.bin.gz",
+    "content_encoding": "gzip",
+    "final_url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=4542&year=2024&season=2&report_id=C",
+    "headers_file": "xbrl-consolidated.headers.json",
+    "sha256": "8a591904e277a6841a4c917b45dc16e3a8e2bb328bff9fef0ba65ded3532b6f8",
+    "size_bytes": 643165,
+    "status": 200,
+    "stored_size_bytes": 643233
+  },
+  "retrieved_at": "2026-09-20T06:45:30.835004Z"
+}

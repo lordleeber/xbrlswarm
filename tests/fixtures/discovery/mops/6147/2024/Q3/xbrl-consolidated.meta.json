@@ -1,0 +1,30 @@
+{
+  "case": {
+    "company_name": "頎邦",
+    "fiscal_year": 2024,
+    "report_period": "Q3",
+    "stock_id": "6147"
+  },
+  "request": {
+    "body_sha256": null,
+    "body_size_bytes": 0,
+    "headers": {
+      "Accept": "*/*",
+      "Referer": "https://mopsov.twse.com.tw/mops/web/t203sb01",
+      "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36 xbrlswarm-discovery/0.1"
+    },
+    "method": "GET",
+    "url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=6147&year=2024&season=3&report_id=C"
+  },
+  "response": {
+    "body_file": "xbrl-consolidated.bin.gz",
+    "content_encoding": "gzip",
+    "final_url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=6147&year=2024&season=3&report_id=C",
+    "headers_file": "xbrl-consolidated.headers.json",
+    "sha256": "43ef36c02522c884e65933fe6df7b7c441971fd9c9fc15c1744e9fe55a760a45",
+    "size_bytes": 571115,
+    "status": 200,
+    "stored_size_bytes": 571178
+  },
+  "retrieved_at": "2026-09-20T06:45:00.755053Z"
+}
