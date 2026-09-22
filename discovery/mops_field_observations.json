@@ -260,8 +260,7 @@
   "schema_version": 1,
   "scope": "Step-3 field availability evidence from the 12 fixed Step-2 captures",
   "scope_rule": {
-    "Consolidated report": "consolidated",
-    "Individual report": "individual"
+    "Consolidated report": "consolidated"
   },
   "semantic_review": {
     "candidate_fact_names": [

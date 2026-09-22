@@ -15,10 +15,10 @@ def test_repository_matrix_is_valid_and_keeps_confirmed_at_unverified() -> None:
     assert statuses["fiscal_year"] is FieldStatus.DIRECT
     assert statuses["report_period"] is FieldStatus.DERIVED
     assert statuses["report_scope"] is FieldStatus.DIRECT
-    assert statuses["filing_identifier"] is FieldStatus.NOT_AVAILABLE
-    assert statuses["filing_date"] is FieldStatus.NOT_AVAILABLE
-    assert statuses["filing_time"] is FieldStatus.NOT_AVAILABLE
-    assert statuses["filing_kind"] is FieldStatus.NOT_AVAILABLE
+    assert statuses["filing_identifier"] is FieldStatus.NOT_VERIFIED
+    assert statuses["filing_date"] is FieldStatus.NOT_VERIFIED
+    assert statuses["filing_time"] is FieldStatus.NOT_VERIFIED
+    assert statuses["filing_kind"] is FieldStatus.NOT_VERIFIED
     assert statuses["source_locator"] is FieldStatus.DERIVED
     confirmed = next(record for record in records if record.field == "xbrl_confirmed_at")
     assert confirmed.status is FieldStatus.NOT_VERIFIED

@@ -26,7 +26,6 @@ _PERIOD_BY_QUARTER = {
 }
 _SCOPE_BY_CATEGORY = {
     "Consolidated report": "consolidated",
-    "Individual report": "individual",
 }
 _NOT_OBSERVED = (
     "filing_identifier",

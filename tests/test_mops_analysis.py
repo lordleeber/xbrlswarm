@@ -54,6 +54,7 @@ def test_repository_captures_produce_twelve_evidence_backed_observations() -> No
     }
     assert {item.fiscal_year for item in observations} == {2024}
     assert {item.report_scope for item in observations} == {"consolidated"}
+    assert {item.report_type for item in observations} == {"Financial report (general)"}
     assert {item.source_quarter for item in observations} == {1, 2, 3, 4}
     assert {item.company_name for item in observations if item.stock_id == "2330"} == {
         "台灣積體電路製造股份有限公司"
@@ -81,6 +82,18 @@ def test_analysis_rejects_fact_that_disagrees_with_capture_case() -> None:
             case,
             _ixbrl(stock_id="6147"),
             source_url="https://mops.example/download?season=1",
+            sha256="a" * 64,
+        )
+
+
+def test_analysis_rejects_unobserved_individual_scope_mapping() -> None:
+    case = DiscoveryCase("2330", "台積電", 2024, ReportPeriod.Q1)
+
+    with pytest.raises(ValueError, match="ReportCategory"):
+        extract_mops_field_observation(
+            case,
+            _ixbrl(category="Individual report"),
+            source_url="https://mops.example/download?report_id=A",
             sha256="a" * 64,
         )
 
@@ -121,6 +134,7 @@ def test_repository_observation_artifact_is_deterministic() -> None:
     assert document["coverage"]["tifrs-notes:CompanyID"] == "12/12"
     assert document["coverage"]["tifrs-notes:ReportCategory"] == "12/12"
     assert document["period_rule"] == {"1": "Q1", "2": "Q2", "3": "Q3", "4": "FY"}
+    assert document["scope_rule"] == {"Consolidated report": "consolidated"}
     assert document["semantic_review"]["distinct_fact_name_count"] == 494
     assert document["semantic_review"]["candidate_fact_names"] == [
         "tifrs-notes:ApplicationOfNewlyIssuedOrAmendedStandardsAndInterpretations",

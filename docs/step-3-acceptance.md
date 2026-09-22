@@ -73,11 +73,11 @@ tifrs-notes:ReportType
 | `fiscal_year` | `direct` | 12/12 由 `Year` 直接提供 |
 | `report_period` | `derived` | `Quarter` 以 1→Q1、2→Q2、3→Q3、4→FY 映射 |
 | `report_scope` | `direct` | 12/12 的 `ReportCategory` 為 `Consolidated report` |
-| `filing_identifier` | `not_available` | 本 endpoint / payload 未提供 |
-| `filing_date` | `not_available` | 董事會核准日期不是申報日期 |
-| `filing_time` | `not_available` | 本 endpoint / payload 未提供 |
+| `filing_identifier` | `not_verified` | 本 endpoint / payload 未觀察到；不能外推整體 MOPS 來源不可得 |
+| `filing_date` | `not_verified` | 本 endpoint 未觀察到；官方系統已知存在申報日期，且董事會核准日期不是申報日期 |
+| `filing_time` | `not_verified` | 本 endpoint 未觀察到；官方系統已知存在申報時間 |
 | `xbrl_confirmed_at` | `not_verified` | 本 endpoint 未提供，但不能外推成所有公開來源皆不可得 |
-| `filing_kind` | `not_available` | `Financial report (general)` 無法區分原始、更正或補充申報 |
+| `filing_kind` | `not_verified` | 本 endpoint 的 `Financial report (general)` 無法區分原始、更正或補充申報；其他 MOPS 來源尚未驗證 |
 | `source_locator` | `derived` | 可由官方 endpoint 與固定 query rule 決定性重建 |
 
 ## 保守界線
@@ -85,6 +85,7 @@ tifrs-notes:ReportType
 - `DateAndProceduresOfAuthorisationForIssueOfFinancialStatements` 是董事會核准／通過發布的敘述，不是 MOPS filing timestamp。
 - `retrieved_at` 與 HTTP headers 是擷取 metadata，不是 filing 或 confirmation timestamp。
 - 本證據集只有 `report_id=C` 的合併報告，不能據此判定個體與合併報告是否同時存在。
+- `Individual report → individual` 尚無原始 fixture 支持，不列入本 Step 的已驗證 scope rule。
 - `source_locator` 是可重播請求位置，不是官方 filing identifier。
 - 單一 endpoint 沒有 `xbrl_confirmed_at`，不足以證明所有公開歷史來源皆不存在該欄位。
 
