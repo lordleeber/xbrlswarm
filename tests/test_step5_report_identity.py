@@ -1,10 +1,12 @@
 import json
+from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
 
 CONTRACT_PATH = Path("contracts/report-identity-candidate.json")
 MATRIX_PATH = Path("discovery/source_field_matrix.json")
+OBSERVATIONS_PATH = Path("discovery/mops_field_observations.json")
 DECISION_PATH = Path("docs/report-identity-candidate.md")
 ACCEPTANCE_PATH = Path("docs/step-5-acceptance.md")
 
@@ -61,6 +63,29 @@ def test_candidate_evidence_is_auditable_and_does_not_claim_nonexistence() -> No
         Path("docs/step-3-acceptance.md"),
     }
     assert all(path.is_file() for path in evidence_paths)
+
+
+def test_scope_decision_matches_observed_evidence() -> None:
+    contract = _load_json(CONTRACT_PATH)
+    observations = _load_json(OBSERVATIONS_PATH)
+    scopes_by_identity: dict[tuple[str, str, str], set[str]] = defaultdict(set)
+
+    for case in observations["cases"]:
+        identity = (
+            case["facts"]["tifrs-notes:CompanyID"],
+            case["facts"]["tifrs-notes:Year"],
+            case["derived"]["report_period"],
+        )
+        scopes_by_identity[identity].add(case["normalized"]["report_scope"])
+
+    observed_scopes = set().union(*scopes_by_identity.values())
+    scope_decision = contract["report_scope_decision"]
+
+    assert observed_scopes == set(scope_decision["observed_scopes"])
+    assert "individual_scope_not_captured" in contract["limitations"]
+    assert "individual" not in observed_scopes
+    assert "same_report_scope_coexistence_not_verified" in contract["limitations"]
+    assert all(len(scopes) == 1 for scopes in scopes_by_identity.values())
 
 
 def test_decision_document_preserves_identity_boundaries() -> None:

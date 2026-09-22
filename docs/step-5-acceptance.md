@@ -18,7 +18,8 @@ Step-5 依階段 0 已保存的來源證據，定義 provisional task identity�
 - 三個候選欄位在來源矩陣中只能是 `direct` 或 `derived`。
 - `report_scope` 必須因 scope coexistence 尚未驗證而排除，不得宣稱個體報告不存在。
 - 擴充 identity 必須同時要求「同一期兩種 scope 共存」與「兩種 scope 都要追蹤」。
-- 契約引用的 evidence artifacts 必須存在。
+- 契約引用的 evidence artifacts 必須存在，且 `observed_scopes` 必須與 observation artifact 的實際 scope 集合相同。
+- observation artifact 中目前不得有同一組三欄位 identity 對應多個 scope；一旦出現，測試必須轉 RED 並要求重新做 identity 決策。
 - 文件必須區分 task、filing、locator 與 evidence identity。
 
 測試先因機器可讀契約與決策文件尚未存在而失敗。
