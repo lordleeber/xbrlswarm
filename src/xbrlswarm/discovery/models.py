@@ -2,24 +2,10 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from enum import StrEnum
+
+from xbrlswarm.domain import ReportPeriod
 
 _STOCK_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
-
-
-class ReportPeriod(StrEnum):
-    Q1 = "Q1"
-    Q2 = "Q2"
-    Q3 = "Q3"
-    FY = "FY"
-
-    @classmethod
-    def parse(cls, value: str) -> "ReportPeriod":
-        try:
-            return cls(value.upper())
-        except ValueError as exc:
-            allowed = ", ".join(item.value for item in cls)
-            raise ValueError(f"無效的報告期別 {value!r}；應為以下其中之一：{allowed}") from exc
 
 
 @dataclass(frozen=True, slots=True)

@@ -21,19 +21,14 @@ from .capture import (
     capture_raw_response,
 )
 from .cases import DISCOVERY_CASES
-from .models import DiscoveryCase, ReportPeriod
+from .models import DiscoveryCase
+from .mops_period import mops_quarter_number
 
 _MOPS_XBRL_DOWNLOAD = "https://mopsov.twse.com.tw/server-java/FileDownLoad"
 _MOPS_XBRL_REFERER = "https://mopsov.twse.com.tw/mops/web/t203sb01"
 _CAPTURE_NAME = "xbrl-consolidated"
 _CAPTURE_EXTENSION = "bin"
 _STORED_BODY_SUFFIX = ".bin.gz"
-_SEASON = {
-    ReportPeriod.Q1: 1,
-    ReportPeriod.Q2: 2,
-    ReportPeriod.Q3: 3,
-    ReportPeriod.FY: 4,
-}
 _XBRL_MARKERS = (
     b"ix:nonfraction",
     b"ix:nonnumeric",
@@ -64,7 +59,7 @@ def build_mops_xbrl_capture(case: DiscoveryCase, *, report_id: str = "C") -> Cap
             "step": "9",
             "co_id": case.stock_id,
             "year": str(case.fiscal_year),
-            "season": str(_SEASON[case.report_period]),
+            "season": str(mops_quarter_number(case.report_period)),
             "report_id": report_id,
         }
     )
@@ -226,7 +221,7 @@ def _content_disposition_filename(headers: list[dict[str, str]]) -> str | None:
 
 
 def _expected_mops_filename_suffix(case: DiscoveryCase) -> str:
-    quarter = "Q4" if case.report_period is ReportPeriod.FY else case.report_period.value
+    quarter = f"Q{mops_quarter_number(case.report_period)}"
     return f"-{case.stock_id}-{case.fiscal_year}{quarter}.html"
 
 

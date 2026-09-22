@@ -7,8 +7,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .models import DiscoveryCase, ReportPeriod
+from xbrlswarm.domain import ReportPeriod
+
+from .models import DiscoveryCase
 from .mops import verify_mops_capture_set
+from .mops_period import (
+    MOPS_QUARTER_NUMBER_TO_REPORT_PERIOD,
+    normalize_mops_report_period,
+)
 
 _REQUIRED_FACTS = (
     "tifrs-notes:CompanyID",
@@ -18,12 +24,6 @@ _REQUIRED_FACTS = (
     "tifrs-notes:ReportType",
     "tifrs-notes:ReportCategory",
 )
-_PERIOD_BY_QUARTER = {
-    1: ReportPeriod.Q1,
-    2: ReportPeriod.Q2,
-    3: ReportPeriod.Q3,
-    4: ReportPeriod.FY,
-}
 _SCOPE_BY_CATEGORY = {
     "Consolidated report": "consolidated",
 }
@@ -118,8 +118,8 @@ def extract_mops_field_observation(
         raise ValueError(f"{case.key} 的 tifrs-notes:Year 與 capture case 不一致")
     try:
         source_quarter = int(quarter_text)
-        report_period = _PERIOD_BY_QUARTER[source_quarter]
-    except (ValueError, KeyError) as exc:
+        report_period = normalize_mops_report_period(quarter_text)
+    except ValueError as exc:
         raise ValueError(f"{case.key} 的 tifrs-notes:Quarter 無法映射為報告期別") from exc
     if report_period is not case.report_period:
         raise ValueError(f"{case.key} 的 tifrs-notes:Quarter 與 capture case 不一致")
@@ -175,7 +175,10 @@ def render_mops_field_observations(
         "scope": "Step-3 field availability evidence from the 12 fixed Step-2 captures",
         "capture_count": len(observations),
         "coverage": {name: f"{len(observations)}/{len(observations)}" for name in _REQUIRED_FACTS},
-        "period_rule": {str(key): value.value for key, value in _PERIOD_BY_QUARTER.items()},
+        "period_rule": {
+            str(key): value.value
+            for key, value in MOPS_QUARTER_NUMBER_TO_REPORT_PERIOD.items()
+        },
         "scope_rule": dict(_SCOPE_BY_CATEGORY),
         "not_observed": list(_NOT_OBSERVED),
         "semantic_review": {

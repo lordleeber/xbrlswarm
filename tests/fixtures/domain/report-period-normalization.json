@@ -1,0 +1,9 @@
+{
+  "source": "mops-xbrl-quarter",
+  "cases": [
+    {"source_value": "1", "source_label": "Q1", "report_period": "Q1"},
+    {"source_value": "2", "source_label": "Q2", "report_period": "Q2"},
+    {"source_value": "3", "source_label": "Q3", "report_period": "Q3"},
+    {"source_value": "4", "source_label": "Q4", "report_period": "FY"}
+  ]
+}
