@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已完成 **Step-4：記錄尚未解決的歷史 `confirmed_at`**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已完成 **Step-5：定義報告識別候選方案**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -42,6 +42,16 @@ FY
 ```
 
 `FY` 代表年度財務報告，`FY != Q4`。
+
+## 報告識別候選方案
+
+目前 provisional task identity 為：
+
+```text
+(stock_id, fiscal_year, report_period)
+```
+
+現有 fixtures 只有 `consolidated`，尚未驗證同一期 `consolidated` 與 `individual` 是否共存，因此暫不加入 `report_scope`。若未來原始證據證實兩者共存，且產品決定兩種 scope 都要追蹤，identity 才擴充為四欄位 tuple。詳細決策見 `docs/report-identity-candidate.md`。
 
 ## 階段 0 工具
 
