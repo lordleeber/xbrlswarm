@@ -1,0 +1,46 @@
+{
+  "contract": "report_identity_candidate",
+  "version": 1,
+  "status": "provisional",
+  "identity_kind": "task",
+  "fields": [
+    "stock_id",
+    "fiscal_year",
+    "report_period"
+  ],
+  "report_scope_decision": {
+    "included": false,
+    "reason": "scope_coexistence_not_verified",
+    "observed_scopes": [
+      "consolidated"
+    ],
+    "expansion_requires": {
+      "same_report_has_consolidated_and_individual": true,
+      "both_scopes_are_tracked": true
+    },
+    "expanded_fields": [
+      "stock_id",
+      "fiscal_year",
+      "report_period",
+      "report_scope"
+    ]
+  },
+  "limitations": [
+    "individual_scope_not_captured",
+    "same_report_scope_coexistence_not_verified"
+  ],
+  "evidence": [
+    {
+      "path": "discovery/mops_field_observations.json",
+      "conclusion": "All 12 captured payloads identify stock_id, fiscal_year, report_period, and consolidated report scope."
+    },
+    {
+      "path": "docs/source-field-matrix.md",
+      "conclusion": "The three candidate fields are direct or deterministically derived; report_scope is direct for the captured consolidated reports."
+    },
+    {
+      "path": "docs/step-3-acceptance.md",
+      "conclusion": "Individual reports and same-report scope coexistence were not captured or verified."
+    }
+  ]
+}
