@@ -3,5 +3,6 @@
 from .evidence_type import EvidenceType
 from .engine import Engine
 from .report_period import ReportPeriod
+from .revision_kind import RevisionKind
 
-__all__ = ["Engine", "EvidenceType", "ReportPeriod"]
+__all__ = ["Engine", "EvidenceType", "ReportPeriod", "RevisionKind"]

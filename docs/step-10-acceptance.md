@@ -2,7 +2,7 @@
 
 ## 範圍
 
-Step-10 新增 SQLite `STRICT` evidence table，只建立 ROADMAP 列出且已證實可取得或由系統產生的欄位。只有系統能保證產生的核心 metadata 為必填，其餘來源聲稱保持可缺。`filing_kind` 因 source matrix 仍是 `not_verified` 而不進入 Schema，留待 Step-14 以新 migration 加入。
+Step-10 新增 SQLite `STRICT` evidence table，只建立 ROADMAP 列出且已證實可取得或由系統產生的欄位。只有系統能保證產生的核心 metadata 為必填，其餘來源聲稱保持可缺。`filing_kind` 因 source matrix 仍是 `not_verified` 而不進入 Schema。Step-14 已定義分類值並保護歷史；儲存欄位仍須等待來源分類規則通過 Step-3 gate。
 
 ## RED
 
