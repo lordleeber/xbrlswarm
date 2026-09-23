@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已完成 **Step-16：不得捏造 XBRL 確認時間**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已完成 **Step-17：保留時間精度**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -38,6 +38,10 @@ XBRL 申報 / 確認事件與 MOPS 重大訊息公告是不同事件。第三方
 
 Step-16 將上述禁止替代規則寫入機器可讀契約，並以 regression tests 保護公告映射、
 source matrix 與 production schema 的邊界。詳見 `docs/no-fabricated-xbrl-time.md`。
+
+Step-17 明定只含日期的事件保存為 `event_precision=date`、`event_time=NULL`；
+只有來源明確提供 `HH:MM:SS` 才保存 `event_precision=second`，不補虛構的午夜。
+詳見 `docs/event-time-precision.md`。
 
 ## 報告期別
 
