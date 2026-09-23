@@ -19,3 +19,11 @@ Step-3 source-evidence gate 進 production schema。
 
 本 Step 不新增 `filing_kind` 欄位，因 source matrix 仍是 `not_verified`。待真實來源
 案例建立可重播的分類規則後，才以新 migration 儲存分類與修訂關係。
+
+## Code review regression
+
+- `INSERT OR REPLACE` 與 `REPLACE INTO` 命中 Step-13 unique index 時，舊 evidence 不得被
+  SQLite 的 REPLACE conflict policy 移除。
+- `connect_database` 必須在每個 runtime connection 啟用 `recursive_triggers` 與 foreign keys。
+- 新增 source-backed 欄位時須同步重建 UPDATE trigger；連線入口檢查所有 evidence 欄位
+  （`verification_state` 除外）都被 guard 涵蓋，否則拒絕開啟。

@@ -84,7 +84,9 @@ identity。Crawler 可用 `ON CONFLICT DO NOTHING` 讓重抓保持一筆；新 p
 
 Step-14 加入資料庫保護，禁止改寫或刪除已保存的來源證據，讓不同 payload 可保留為完整歷史。
 修訂分類定義 `original`、`amendment`、`supplemental` 與 `unknown`；現有 MOPS fixtures
-無法證明前三者，故保持 `unknown`。詳見 `docs/revision-history.md`。
+無法證明前三者，故保持 `unknown`。正式 SQLite 連線使用
+`xbrlswarm.storage.connect_database`，開啟 foreign keys／recursive triggers 並驗證來源欄位
+都受 immutability guard 保護。詳見 `docs/revision-history.md`。
 
 ## 階段 0 工具
 

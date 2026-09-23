@@ -1,10 +1,12 @@
 import json
+import re
 import sqlite3
 from pathlib import Path
 
 import pytest
 
 from xbrlswarm.domain import RevisionKind
+from xbrlswarm.storage import connect_database
 
 
 MIGRATIONS = Path("migrations")
@@ -17,8 +19,7 @@ ACCEPTANCE = Path("docs/step-14-acceptance.md")
 
 
 def database(*, through_step13: bool = False) -> sqlite3.Connection:
-    connection = sqlite3.connect(":memory:")
-    connection.execute("PRAGMA foreign_keys = ON")
+    connection = connect_database(":memory:")
     for path in sorted(MIGRATIONS.glob("*.sql")):
         if through_step13 and path >= STEP14_MIGRATION:
             continue
@@ -100,6 +101,30 @@ def test_source_evidence_cannot_be_deleted() -> None:
         connection.execute("DELETE FROM evidence WHERE id = ?", (evidence_id,))
 
     assert connection.execute("SELECT COUNT(*) FROM evidence").fetchone()[0] == 1
+
+
+@pytest.mark.parametrize("verb", ["INSERT OR REPLACE", "REPLACE"])
+def test_replace_cannot_discard_original_evidence(verb: str) -> None:
+    connection = database()
+    original_id = add_evidence(connection)
+    before = connection.execute(
+        "SELECT * FROM evidence WHERE id = ?", (original_id,)
+    ).fetchone()
+
+    with pytest.raises(sqlite3.IntegrityError, match="immutable source evidence"):
+        connection.execute(
+            f"""
+            {verb} INTO evidence (
+                task_id, evidence_type, source_type, source_locator,
+                retrieved_at, raw_payload_hash, verification_state
+            ) VALUES (
+                1, 'xbrl_document', 'mops', 'mops:2330:2024:Q1',
+                '2026-09-24T01:02:03.000Z', 'sha256:original', 'unverified'
+            )
+            """
+        )
+
+    assert connection.execute("SELECT * FROM evidence").fetchall() == [before]
 
 
 def test_verification_state_can_be_updated_without_rewriting_source() -> None:
@@ -184,3 +209,16 @@ def test_revision_history_documents_the_source_gate() -> None:
     assert "unknown" in decision
     assert "immutable source evidence" in decision
     assert "0006_preserve_evidence_history.sql" in acceptance
+
+
+def test_update_guard_lists_every_source_evidence_column() -> None:
+    connection = database()
+    columns = {
+        row[1] for row in connection.execute("PRAGMA table_info(evidence)")
+    } - {"verification_state"}
+    trigger_sql = connection.execute(
+        "SELECT sql FROM sqlite_schema WHERE name = 'evidence_source_immutable_update'"
+    ).fetchone()[0]
+    covered = set(re.findall(r"OLD\.(\w+) IS NOT NEW\.\1", trigger_sql))
+
+    assert covered == columns

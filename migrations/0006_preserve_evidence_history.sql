@@ -1,3 +1,5 @@
+PRAGMA recursive_triggers = ON;
+
 BEGIN IMMEDIATE;
 
 CREATE TRIGGER evidence_source_immutable_update

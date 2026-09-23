@@ -19,6 +19,17 @@ Step-13 的 identity index 讓同一 locator 的不同 payload 追加為不同 e
 已保存的 source、event、payload 與 retrieval metadata：更正申報只能新增 evidence，不能
 覆蓋或刪除原始證據。這也保存了未來可供修訂分類的完整歷史。
 
+SQLite 的 `REPLACE` 在 unique 衝突時會先刪除舊列；只有啟用 `recursive_triggers` 才會呼叫
+DELETE trigger。Migration 會啟用此設定，正式執行時須使用
+`xbrlswarm.storage.connect_database` 開啟每個 runtime connection。它同時開啟 foreign keys，
+並拒絕沒有完整 immutability guard 的既有 evidence schema。因此 `INSERT OR REPLACE`、
+`REPLACE INTO` 與直接 DELETE 都無法移除原始 evidence。
+
+UPDATE trigger 目前逐欄比較來源欄位，刻意排除可更新的 `verification_state`。日後任何
+migration 新增 source-backed evidence 欄位時，必須在同一 migration 重建 trigger，並加上
+regression test。Runtime connection 會比對 `PRAGMA table_info(evidence)` 與 trigger 涵蓋欄位；
+若發現未受保護的欄位（例如新加的 `filing_kind`），會拒絕開啟該資料庫。
+
 `verification_state` 屬於後續驗證流程，允許單獨更新；其正式值域與轉移規則由 Step-54
 定義。來源聲稱與擷取 metadata 一經保存則不得改寫，須以新 evidence 記錄新的來源回應。
 
