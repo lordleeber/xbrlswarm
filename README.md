@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已完成 **Step-22：會計年度曆建模閘門**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已完成 **Step-23：Worker API**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -79,6 +79,11 @@ Step-22 因來源尚未證實，選擇第一版 **calendar-year companies only**
 排程前先有該公司及歷史期間採曆年制的來源證據；unknown／非曆年制不得套用
 曆年制邊界。未加入 `fiscal_year_end` production 欄位或非曆年制算法。
 詳見 `docs/fiscal-calendar-eligibility.md`。
+
+Step-23 提供 `POST /lease`、`POST /result`、`GET /stats`、`GET /status` 與
+`GET /healthz`。可用 `xbrlswarm-worker-api --database <已 migration 的 SQLite 檔>`
+在 loopback 啟動；目前只支援成功回報，不含 evidence 上傳、失敗分類或逾期
+lease 回收，**不可直接公開部署**。詳見 `docs/worker-api.md`。
 
 ## 報告識別候選方案
 
