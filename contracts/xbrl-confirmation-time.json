@@ -1,0 +1,15 @@
+{
+  "contract": "xbrl_confirmation_time",
+  "version": 1,
+  "historical_status": "not_publicly_verified",
+  "confirmation_field": "xbrl_confirmed_at",
+  "prohibited_substitutes": [
+    "announcement_at",
+    "article_published_at",
+    "retrieved_at",
+    "http_date",
+    "http_last_modified"
+  ],
+  "prohibited_operation": "rename_or_derive",
+  "schema_field_allowed_without_source_evidence": false
+}

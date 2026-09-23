@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已完成 **Step-15：定義重大訊息公告時間**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已完成 **Step-16：不得捏造 XBRL 確認時間**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -35,6 +35,9 @@ MOPS 是官方來源。第三方來源只能作為證據或備援，不能取代
 XBRL 申報 / 確認事件與 MOPS 重大訊息公告是不同事件。第三方來源的 `announcement_at`、文章發布時間、爬蟲的 `retrieved_at` 或 HTTP header，都不能在沒有來源證據證明其語意相同的情況下改名為 `xbrl_confirmed_at`。
 
 目前將公開歷史 `xbrl_confirmed_at` 視為 **尚未由公開來源驗證（NOT PUBLICLY VERIFIED）**。只有來源同時具備公開存取、歷史資料、可重播及可批次查詢能力，且其事件語意可稽核，才會重新評估此狀態；完整契約見 `docs/historical-xbrl-confirmed-at.md`。
+
+Step-16 將上述禁止替代規則寫入機器可讀契約，並以 regression tests 保護公告映射、
+source matrix 與 production schema 的邊界。詳見 `docs/no-fabricated-xbrl-time.md`。
 
 ## 報告期別
 
