@@ -13,8 +13,9 @@ Step-12 將同一邏輯證據定義為下列五個 ROADMAP 維度都相同：
 | same payload | `raw_payload_hash` | 依來源 profile 決定是否為必要依據 |
 
 正式欄位順序與 resolution policy 保存於
-`contracts/logical-evidence-identity.json`。比較採 exact stored value；Step-12 不做 URL
-canonicalization、大小寫轉換、日期推導或來源間的值合併。
+`contracts/logical-evidence-identity.json`。除 Step-17 明定的 Goodinfo legacy precision
+相容規則外，比較採 exact stored value；不做 URL canonicalization、大小寫轉換、
+日期推導或來源間的值合併。
 
 ## 來源 profile
 
@@ -50,6 +51,10 @@ Identity 比較結果是 `same`、`different` 或 `unresolved`：
 （一側 `NULL`、另一側有值）時，如果沒有其他兩邊皆已知且不同的欄位，結果必須是
 `unresolved`，不能判成 `different`。兩側都缺必要欄位亦同；不得以 `source_url` 猜測
 locator。`unresolved` evidence 必須保留，不能自動折疊。
+
+Step-17 對已有日期與時間的 Goodinfo 公告新增一項狹窄相容規則：Step-15 寫入的
+`event_precision=NULL` 在比較與 Goodinfo unique index 中視同 `second`，避免同一公告
+在升級後重抓產生兩列；MOPS 和其他來源不套用此例外。既有 `NULL` 列保持原樣。
 
 Event tuple 中的 nullable 值描述 evidence 實際保存的事件主張。例如兩筆文件都沒有
 event timestamp，但 MOPS 的 task、source、locator、evidence type 與 payload 完全相同時，

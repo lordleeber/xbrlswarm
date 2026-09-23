@@ -197,14 +197,17 @@ def test_mops_new_payload_is_preserved_as_new_evidence() -> None:
     assert _count(connection) == 2
 
 
-def test_null_sentinel_does_not_collide_with_source_empty_text() -> None:
+def test_null_identity_values_do_not_collide_with_valid_values() -> None:
     connection = _database()
     task_id = _insert_task(connection)
     mops = _mops_evidence(task_id)
     goodinfo = _goodinfo_evidence(task_id)
 
     _insert_evidence(connection, mops)
-    _insert_evidence(connection, {**mops, "event_date": ""})
+    _insert_evidence(
+        connection,
+        {**mops, "event_date": "2025-02-20", "event_precision": "date"},
+    )
     _insert_evidence(connection, goodinfo)
     _insert_evidence(connection, {**goodinfo, "raw_payload_hash": ""})
 
@@ -269,7 +272,10 @@ def test_unresolved_identity_is_not_automatically_folded(
     missing_field: str,
 ) -> None:
     connection = _database()
-    evidence = evidence_factory(_insert_task(connection), **{missing_field: None})
+    changes = {missing_field: None}
+    if missing_field == "event_time":
+        changes["event_precision"] = "date"
+    evidence = evidence_factory(_insert_task(connection), **changes)
 
     _insert_evidence(connection, evidence, ignore_duplicate=True)
     _insert_evidence(connection, evidence, ignore_duplicate=True)

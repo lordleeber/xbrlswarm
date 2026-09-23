@@ -1,9 +1,10 @@
 # Step-15 — 重大訊息公告時間
 
 當可追溯的來源明確標示同一筆重大訊息的「發言日期」與「發言時間」時，
-以 `evidence_type=material_announcement`、`event_date`、`event_time` 保存。
+以 `evidence_type=material_announcement`、`event_date`、`event_time`、
+`event_precision=second` 保存。
 這三個欄位合起來是 ROADMAP 所稱 `announcement_at` 的等價表示；
-不另設單一 timestamp 欄位，避免在尚未確認時區或精度時捏造資訊。
+不另設單一 timestamp 欄位，避免在尚未確認時區時捏造資訊。
 來源值原樣保留，不從其他時間欄位補出缺少的發言日期或時間。
 
 `announcement_event_fields` 只接受已從來源辨識出的發言日期與時間。
@@ -16,5 +17,5 @@
 `xbrl_confirmed_at` 是另一種尚未公開驗證的 XBRL 確認時間，不能由公告時間改名取得。
 即使公告與文件恰有相同日期／時間，也必須依 `evidence_type` 分開查詢與保存。
 
-本 Step 僅定義完整「發言日期＋發言時間」的映射；日期／時間精度值域與
-部分時間資訊的表示方式留待 Step-17，來源解析留待對應的來源 Step。
+本 Step 僅定義完整「發言日期＋發言時間」的映射；日期／時間精度值域
+由 Step-17 的 `docs/event-time-precision.md` 定義，來源解析留待對應的來源 Step。

@@ -13,6 +13,11 @@ partial unique indexes：
 Nullable comparison fields 使用 `COALESCE(field, X'')` 建立無碰撞的 NULL sentinel。Evidence
 欄位是 `TEXT`，sentinel 是 BLOB，因此來源提供的空字串不會與 `NULL` 合併。
 
+Step-17 的 `0007_enforce_event_precision.sql` 對 Goodinfo `event_precision` 有一項
+明確的 legacy 相容例外：Step-15 已保存完整發言日期／時間但精度為 `NULL` 的公告，
+在 Goodinfo unique index 中等價於新寫入的 `second`。其他 nullable identity 欄位
+仍使用原本的 NULL sentinel；原始列不會被回填或覆寫。
+
 Crawler 寫入已解析 identity 時使用：
 
 ```sql

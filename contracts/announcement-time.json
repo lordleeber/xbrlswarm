@@ -1,18 +1,19 @@
 {
   "contract": "announcement_time",
-  "version": 1,
+  "version": 2,
   "source_fields": ["speech_date", "speech_time"],
   "requires_explicit_source_claim": true,
   "requires_both_fields": true,
   "evidence_mapping": {
     "evidence_type": "material_announcement",
     "event_date": "speech_date",
-    "event_time": "speech_time"
+    "event_time": "speech_time",
+    "event_precision": "second"
   },
   "excluded_substitutes": [
     "article_published_at",
     "retrieved_at",
     "xbrl_confirmed_at"
   ],
-  "event_precision_deferred_to_step": 17
+  "event_precision_contract": "event-time-precision"
 }

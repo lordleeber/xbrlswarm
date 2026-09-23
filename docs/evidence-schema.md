@@ -11,7 +11,7 @@ Step-10 以 SQLite migration `migrations/0003_create_evidence.sql` 建立 `STRIC
 | `evidence_type` | TEXT | 是 | Step-7 定義的五種 evidence type 之一 |
 | `event_date` | TEXT | 否 | 來源明確聲稱的事件日期 |
 | `event_time` | TEXT | 否 | 來源明確聲稱的事件時間 |
-| `event_precision` | TEXT | 否 | 事件時間精度；正式值域由 Step-17 定義 |
+| `event_precision` | TEXT | 否 | 事件時間精度；Step-17 共用映射使用 `date`／`second` |
 | `source_type` | TEXT | 是 | evidence 實際來源，不是 task engine |
 | `source_endpoint` | TEXT | 否 | 來源 endpoint 識別 |
 | `source_url` | TEXT | 否 | 實際來源 URL |
@@ -56,6 +56,12 @@ Step-15 將來源明確提供的重大訊息「發言日期＋發言時間」保
 `evidence_type=material_announcement` 的 `event_date`／`event_time`，作為
 `announcement_at` 的等價表示；不由文章時間或 `retrieved_at` 補值。詳見
 `docs/announcement-time.md`。
+
+Step-17 的共用映射在只有日期時保存 `event_time=NULL`、`event_precision=date`；
+明確有 `HH:MM:SS` 才保存 `event_precision=second`，不以午夜補齊日期精度。
+Migration `0007_enforce_event_precision.sql` 對新 INSERT 強制合法組合，保留既有 legacy
+列原樣；Goodinfo legacy `NULL` 精度與新 `second` 在 identity 上相容。
+詳見 `docs/event-time-precision.md`。
 
 ## 本 Step 的邊界
 

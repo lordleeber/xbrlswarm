@@ -29,6 +29,7 @@ def test_announcement_event_never_claims_xbrl_confirmation() -> None:
         "evidence_type": "material_announcement",
         "event_date": "2024-05-10",
         "event_time": "14:48:53",
+        "event_precision": "second",
     }
     assert "xbrl_confirmed_at" not in fields
 
