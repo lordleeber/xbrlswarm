@@ -79,7 +79,7 @@ event 或 payload 值若不同，則必須視為不同證據；這會保留不�
 
 - Step-13 以 source-specific partial unique indexes 實作已解析 identity 的重複防護；
   `unresolved` evidence 不會被自動折疊。
-- Payload 不同目前只表示不同 logical evidence。它是否為 original、amendment、
-  supplemental 或其他修訂關係，由 Step-14 定義。
+- Payload 不同目前只表示不同 logical evidence。Step-14 定義 original、amendment、
+  supplemental、unknown 值域；具體修訂關係仍須來源證據才能分類。
 - `event_precision` 的正式值域留給 Step-17；在此只比較 evidence table 已保存的值。
 - Identity 不使用 `filing_kind`、`xbrl_confirmed_at` 或未通過 source-evidence gate 的欄位。

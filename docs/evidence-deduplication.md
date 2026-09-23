@@ -30,7 +30,7 @@ ON CONFLICT DO NOTHING;
 - MOPS `raw_payload_hash` 不同時是不同 evidence，因此可能代表 amendment 的 payload 會保留。
 - Goodinfo locator、CLAIM_TIME、SUBJECT 或兩邊皆存在的 payload hash 不同時會新增 evidence。
 - 不同 task、不同 source 或不同 evidence type 分別保存。
-- Revision kind 尚未分類；original／amendment／supplemental／unknown 由 Step-14 定義。
+- Step-14 已定義 original／amendment／supplemental／unknown；目前缺少來源規則，不能將新 payload 自動分類為 amendment。
 
 ## Unresolved identity
 
@@ -47,4 +47,4 @@ SQLite unique index 無法跨既有重複資料建立。Migration 先用與 inde
 - Step-13 不更新或覆蓋既有 evidence。
 - Step-13 不建立通用 fuzzy matching、URL canonicalization 或 source fallback。
 - Step-13 不替尚無 profile 的 Yahoo、Google mirrors 或 Grounded AI 猜測 identity。
-- Step-13 不分類修訂關係；這是 Step-14 的範圍。
+- Step-13 不分類修訂關係；Step-14 定義分類值並保護修訂歷史，具體來源對應仍待驗證。

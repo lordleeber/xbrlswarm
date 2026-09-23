@@ -1,0 +1,19 @@
+{
+  "contract": "revision_kinds",
+  "version": 1,
+  "values": [
+    "original",
+    "amendment",
+    "supplemental",
+    "unknown"
+  ],
+  "default": "unknown",
+  "mops_report_type_rules": {
+    "Financial report (general)": "unknown"
+  },
+  "classification_gate": {
+    "requires_source_backed_rule": true,
+    "current_filing_kind_matrix_status": "not_verified",
+    "production_evidence_column": false
+  }
+}

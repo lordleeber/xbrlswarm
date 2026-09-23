@@ -105,20 +105,26 @@ def test_step11_metadata_defaults_to_null_when_the_source_does_not_provide_it() 
 
 def test_company_name_round_trips_a_raw_observation_value() -> None:
     connection = _database()
-    evidence_id = _insert_evidence(connection, _insert_task(connection))
+    task_id = _insert_task(connection)
     observations = json.loads(OBSERVATIONS_PATH.read_text(encoding="utf-8"))
     company_name = observations["cases"][0]["facts"][
         "tifrs-notes:CompanyChineseName"
     ]
 
-    connection.execute(
-        "UPDATE evidence SET company_name = ? WHERE id = ?",
-        (company_name, evidence_id),
+    cursor = connection.execute(
+        """
+        INSERT INTO evidence (
+            task_id, evidence_type, source_type, retrieved_at,
+            verification_state, company_name
+        ) VALUES (?, 'xbrl_document', 'mops',
+                  '2026-09-23T04:05:06.000Z', 'unverified', ?)
+        """,
+        (task_id, company_name),
     )
 
     row = connection.execute(
         "SELECT company_name FROM evidence WHERE id = ?",
-        (evidence_id,),
+        (cursor.lastrowid,),
     ).fetchone()
     assert row == (company_name,)
 

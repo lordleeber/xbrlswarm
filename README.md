@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已完成 **Step-13：加入重複資料防護**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已完成 **Step-14：保留修訂歷史**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -67,7 +67,7 @@ SQLite migration `migrations/0001_create_task.sql` 建立 Step-8 的最小 `STRI
 
 ## Evidence schema
 
-SQLite migration `migrations/0003_create_evidence.sql` 建立 Step-10 的 `STRICT` evidence table，並以外鍵連結 task；`0004_add_evidence_metadata.sql` 加入 Step-11 中已通過 Step-3 source-evidence gate 的 nullable `company_name`。其餘四個候選欄位在具備 raw-backed deterministic rule 與 matrix evidence 前維持 deferred，不能以 nullable placeholder 繞過 gate。`filing_kind` 因仍是 `not_verified` 而延後至 Step-14；Schema 也不含 `xbrl_confirmed_at` 或 generic `published_at`。詳細契約見 `docs/evidence-schema.md`。
+SQLite migration `migrations/0003_create_evidence.sql` 建立 Step-10 的 `STRICT` evidence table，並以外鍵連結 task；`0004_add_evidence_metadata.sql` 加入 Step-11 中已通過 Step-3 source-evidence gate 的 nullable `company_name`。其餘四個候選欄位在具備 raw-backed deterministic rule 與 matrix evidence 前維持 deferred，不能以 nullable placeholder 繞過 gate。`filing_kind` 仍是 `not_verified`，須待來源分類規則證實後才能進 schema；Schema 也不含 `xbrl_confirmed_at` 或 generic `published_at`。詳細契約見 `docs/evidence-schema.md`。
 
 ## 邏輯證據識別
 
@@ -81,6 +81,12 @@ Step-13 以 source-specific partial unique indexes 保護已解析的 MOPS／Goo
 identity。Crawler 可用 `ON CONFLICT DO NOTHING` 讓重抓保持一筆；新 payload、新公告及不同
 來源仍會新增 evidence。必要欄位缺失或尚無 source profile 的 `unresolved` evidence 不會被
 推測性折疊；完整設計見 `docs/evidence-deduplication.md`。
+
+Step-14 加入資料庫保護，禁止改寫或刪除已保存的來源證據，讓不同 payload 可保留為完整歷史。
+修訂分類定義 `original`、`amendment`、`supplemental` 與 `unknown`；現有 MOPS fixtures
+無法證明前三者，故保持 `unknown`。正式 SQLite 連線使用
+`xbrlswarm.storage.connect_database`，開啟 foreign keys／recursive triggers 並驗證來源欄位
+都受 immutability guard 保護。詳見 `docs/revision-history.md`。
 
 ## 階段 0 工具
 
