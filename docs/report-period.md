@@ -43,3 +43,6 @@ derived.report_period = FY
 `Q4 → FY` 是 MOPS 已驗證語意，不是所有來源的通用猜測。未來 Goodinfo、Yahoo 或其他來源若使用 Q4，必須由各自的原始證據確認它代表年度報告後，才能建立該來源專用的 normalization rule。
 
 本契約只定義 report period 值域與已驗證的來源映射，不定義 fiscal year-end、發布截止日或非曆年制公司的 fiscal calendar。
+
+Step-18 另對**已確認採曆年制**的公司定義期末邊界；見
+`docs/calendar-year-period-boundaries.md`。這不改變本 Step 的來源正規化規則。
