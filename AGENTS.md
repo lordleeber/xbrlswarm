@@ -17,3 +17,8 @@
 2. 將變更 commit 並 push 到該 Step 的功能分支。
 3. 推送完成後立即以 `main` 為 base 建立 PR，不需要等待使用者再次要求。
 4. 若該分支已有 open PR，直接更新既有 PR，不得重複建立。
+
+## Git remote credentials
+
+- 不得移除、遮換或改寫 Git remote URL 中既有的 PAT。
+- 除非使用者明確要求變更，必須原樣保留 remote URL 的認證資訊。

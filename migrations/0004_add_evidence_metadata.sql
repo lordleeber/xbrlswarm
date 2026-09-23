@@ -1,0 +1,5 @@
+BEGIN IMMEDIATE;
+
+ALTER TABLE evidence ADD COLUMN company_name TEXT;
+
+COMMIT;

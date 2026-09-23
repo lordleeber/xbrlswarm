@@ -67,11 +67,11 @@ def _insert_evidence(
     )
 
 
-def test_evidence_table_has_exactly_the_step10_columns() -> None:
+def test_evidence_table_preserves_the_step10_core_columns() -> None:
     connection = _database()
     columns = connection.execute("PRAGMA table_info(evidence)").fetchall()
 
-    assert [column[1] for column in columns] == [
+    core_columns = [
         "id",
         "task_id",
         "evidence_type",
@@ -88,7 +88,8 @@ def test_evidence_table_has_exactly_the_step10_columns() -> None:
         "raw_payload_hash",
         "verification_state",
     ]
-    assert {column[1]: column[2] for column in columns} == {
+    assert [column[1] for column in columns[: len(core_columns)]] == core_columns
+    assert {column[1]: column[2] for column in columns if column[1] in core_columns} == {
         "id": "INTEGER",
         "task_id": "INTEGER",
         "evidence_type": "TEXT",
