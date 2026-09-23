@@ -25,6 +25,9 @@ historical xbrl_confirmed_at = NOT PUBLICLY VERIFIED
 
 ## 禁止替代值
 
+Step-16 的機器可讀禁止替代契約見 `contracts/xbrl-confirmation-time.json`，
+事件語意決策見 `docs/no-fabricated-xbrl-time.md`。
+
 以下資訊明確**不能**作為替代值：
 
 - 重大訊息公告時間（`announcement_at`）
