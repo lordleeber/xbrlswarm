@@ -10,5 +10,6 @@
 
 新增 `discovery/fiscal_calendar_research.json` 與決策文件，附官方來源、
 本次 MOPS 存取限制、未解問題及 Step-22 的證據門檻。
+2013 年官方工具文件只作歷史觀測，現行工具／欄位狀態須明列為未驗證。
 本 Step 是來源研究，沒有足夠證據新增公司別會計年度資料或欄位；
 既有 runtime 已拒絕未建模的非曆年制，因此不需要 migration 或新 production 解析器。

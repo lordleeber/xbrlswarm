@@ -1,27 +1,34 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "reviewed_on": "2026-09-24",
   "scope": "Step-21 research gate for listed/OTC company fiscal calendars; no company-level classification without raw evidence",
-  "verified_capabilities": [
+  "verified_historical_observations": [
     {
-      "claim": "non_calendar_years_supported_in_xbrl_tool",
+      "claim": "non_calendar_years_supported_in_2013_xbrl_tool",
       "source_url": "https://www.twse.com.tw/staticFiles/listed/manual/XBRL_47.pdf",
+      "source_date": "2013-04-11",
       "source_location": "PDF page 28 (zero-based 27), accounting-year Q&A",
-      "observation": "TWSE manual distinguishes calendar and non-calendar years and requires start year/month for non-calendar reports."
+      "observation": "The 2013 TWSE manual distinguishes calendar and non-calendar years and requires start year/month for non-calendar reports; it does not verify the current tool."
     },
     {
-      "claim": "mops_company_basic_data_has_accounting_year_setting",
+      "claim": "historical_mops_basic_data_had_accounting_year_setting",
       "source_url": "https://www.twse.com.tw/staticFiles/listed/manual/XBRL_47.pdf",
+      "source_date": "2013-04-11",
       "source_location": "PDF page 28 (zero-based 27), accounting-year Q&A",
-      "observation": "Manual says uploaded report accounting year is cross-checked against the company's MOPS basic-data setting; it does not document a historical bulk endpoint."
+      "observation": "The 2013 manual says uploaded report accounting year was cross-checked against the company's MOPS basic-data setting; it does not verify the current field or a historical bulk endpoint."
     },
     {
-      "claim": "accounting_year_changes_are_disclosable_events",
+      "claim": "accounting_year_changes_listed_in_2023_disclosure_rule",
       "source_url": "https://twse-regulation.twse.com.tw/TW/law/DAT0601_print.aspx?FLCODE=FL007111&FLDATE=20230814&LSER=001",
+      "source_date": "2023-08-14",
       "source_location": "Listed-company material-information rule, item 9, 2023-08-14 version",
       "observation": "Changing accounting year appears as a disclosure category; this does not identify which companies changed or establish a complete historical change feed."
     }
   ],
+  "current_capability_status": {
+    "non_calendar_years_supported_in_current_xbrl_tool": "not_verified",
+    "current_mops_basic_data_has_accounting_year_setting": "not_verified"
+  },
   "questions": {
     "which_companies_are_not_december_31_year_end": "not_verified",
     "which_companies_changed_year_end_historically": "not_verified",

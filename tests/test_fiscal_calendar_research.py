@@ -16,18 +16,23 @@ OBSERVATIONS = Path("discovery/mops_field_observations.json")
 def test_official_source_capabilities_are_not_confused_with_company_coverage() -> None:
     assessment = json.loads(ASSESSMENT.read_text(encoding="utf-8"))
 
-    assert assessment["schema_version"] == 1
+    assert assessment["schema_version"] == 2
     assert assessment["reviewed_on"] == "2026-09-24"
-    capabilities = assessment["verified_capabilities"]
-    assert {item["claim"] for item in capabilities} == {
-        "non_calendar_years_supported_in_xbrl_tool",
-        "mops_company_basic_data_has_accounting_year_setting",
-        "accounting_year_changes_are_disclosable_events",
+    observations = assessment["verified_historical_observations"]
+    assert {item["claim"]: item["source_date"] for item in observations} == {
+        "non_calendar_years_supported_in_2013_xbrl_tool": "2013-04-11",
+        "historical_mops_basic_data_had_accounting_year_setting": "2013-04-11",
+        "accounting_year_changes_listed_in_2023_disclosure_rule": "2023-08-14",
     }
-    assert all(item["source_url"].startswith("https://") for item in capabilities)
+    assert all(item["source_url"].startswith("https://") for item in observations)
     assert all(
-        "twse.com.tw" in item["source_url"] for item in capabilities
+        "twse.com.tw" in item["source_url"] for item in observations
     )
+    assert "verified_capabilities" not in assessment
+    assert assessment["current_capability_status"] == {
+        "non_calendar_years_supported_in_current_xbrl_tool": "not_verified",
+        "current_mops_basic_data_has_accounting_year_setting": "not_verified",
+    }
     assert assessment["verified_non_calendar_companies"] == []
     assert assessment["verified_company_calendar_changes"] == []
 
@@ -88,3 +93,14 @@ def test_decision_and_acceptance_keep_unknown_distinct_from_absent() -> None:
     assert "12 份" in decision
     assert "Step-22" in decision
     assert "不需要 migration" in acceptance
+
+
+def test_readme_and_decision_do_not_project_2013_evidence_into_present() -> None:
+    readme = Path("README.md").read_text(encoding="utf-8")
+    decision = DECISION.read_text(encoding="utf-8")
+
+    assert "2013 年官方文件" in readme
+    assert "現行工具與欄位仍未驗證" in readme
+    assert "2013-04-11" in decision
+    assert "現行 XBRL 工具是否仍支援相同欄位" in decision
+    assert "not_verified" in decision
