@@ -1,0 +1,67 @@
+{
+  "contract": "logical_evidence_identity",
+  "version": 1,
+  "identity_kind": "logical_evidence",
+  "comparison": "exact_stored_value",
+  "groups": {
+    "task": [
+      "task_id"
+    ],
+    "source": [
+      "source_type"
+    ],
+    "source_locator": [
+      "source_locator"
+    ],
+    "event": [
+      "evidence_type",
+      "event_date",
+      "event_time",
+      "event_precision"
+    ],
+    "payload": [
+      "raw_payload_hash"
+    ]
+  },
+  "fields": [
+    "task_id",
+    "source_type",
+    "source_locator",
+    "evidence_type",
+    "event_date",
+    "event_time",
+    "event_precision",
+    "raw_payload_hash"
+  ],
+  "resolution": {
+    "evaluation_order": [
+      "different_if_any_field_differs",
+      "unresolved_if_required_missing",
+      "same"
+    ],
+    "required_non_null": [
+      "source_locator",
+      "raw_payload_hash"
+    ],
+    "missing_required_outcome": "unresolved",
+    "all_fields_equal_outcome": "same",
+    "any_field_different_outcome": "different"
+  },
+  "non_identity_fields": [
+    "id",
+    "source_endpoint",
+    "source_url",
+    "source_title",
+    "source_subject",
+    "retrieved_at",
+    "verification_state",
+    "company_name"
+  ],
+  "boundaries": {
+    "deduplication_constraint_step": 13,
+    "revision_classification_step": 14,
+    "canonicalization": "none",
+    "source_url_fallback_for_missing_locator": false,
+    "missing_values_are_wildcards": false
+  }
+}
