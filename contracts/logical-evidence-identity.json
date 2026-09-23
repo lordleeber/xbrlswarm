@@ -1,0 +1,110 @@
+{
+  "contract": "logical_evidence_identity",
+  "version": 1,
+  "identity_kind": "logical_evidence",
+  "comparison": "exact_stored_value",
+  "groups": {
+    "task": [
+      "task_id"
+    ],
+    "source": [
+      "source_type"
+    ],
+    "source_locator": [
+      "source_locator"
+    ],
+    "event": [
+      "evidence_type",
+      "event_date",
+      "event_time",
+      "event_precision",
+      "source_subject"
+    ],
+    "payload": [
+      "raw_payload_hash"
+    ]
+  },
+  "fields": [
+    "task_id",
+    "source_type",
+    "source_locator",
+    "evidence_type",
+    "event_date",
+    "event_time",
+    "event_precision",
+    "source_subject",
+    "raw_payload_hash"
+  ],
+  "universal_fields": [
+    "task_id",
+    "source_type",
+    "evidence_type"
+  ],
+  "profile_by_source_type": {
+    "mops": "mops_payload_backed",
+    "goodinfo": "goodinfo_announcement"
+  },
+  "profiles": {
+    "mops_payload_backed": {
+      "comparison_fields": [
+        "source_locator",
+        "event_date",
+        "event_time",
+        "event_precision",
+        "raw_payload_hash"
+      ],
+      "required_non_null": [
+        "source_locator",
+        "raw_payload_hash"
+      ],
+      "roadmap_basis": "Step-31"
+    },
+    "goodinfo_announcement": {
+      "comparison_fields": [
+        "source_locator",
+        "event_date",
+        "event_time",
+        "event_precision",
+        "source_subject",
+        "raw_payload_hash"
+      ],
+      "required_non_null": [
+        "source_locator",
+        "event_date",
+        "event_time",
+        "source_subject"
+      ],
+      "roadmap_basis": "Step-39"
+    }
+  },
+  "resolution": {
+    "evaluation_order": [
+      "different_if_known_universal_value_differs",
+      "select_source_profile",
+      "different_if_both_known_profile_values_differ",
+      "unresolved_if_profile_required_value_missing",
+      "same"
+    ],
+    "missing_required_outcome": "unresolved",
+    "unmapped_source_outcome": "unresolved",
+    "all_fields_equal_outcome": "same",
+    "any_field_different_outcome": "different"
+  },
+  "non_identity_fields": [
+    "id",
+    "source_endpoint",
+    "source_url",
+    "source_title",
+    "retrieved_at",
+    "verification_state",
+    "company_name"
+  ],
+  "boundaries": {
+    "deduplication_constraint_step": 13,
+    "revision_classification_step": 14,
+    "canonicalization": "none",
+    "source_url_fallback_for_missing_locator": false,
+    "missing_values_are_wildcards": false,
+    "asymmetric_missing_required_value_proves_difference": false
+  }
+}

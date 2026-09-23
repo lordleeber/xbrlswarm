@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已完成 **Step-11：可選的解析後 metadata**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已完成 **Step-12：定義邏輯證據識別**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -68,6 +68,14 @@ SQLite migration `migrations/0001_create_task.sql` 建立 Step-8 的最小 `STRI
 ## Evidence schema
 
 SQLite migration `migrations/0003_create_evidence.sql` 建立 Step-10 的 `STRICT` evidence table，並以外鍵連結 task；`0004_add_evidence_metadata.sql` 加入 Step-11 中已通過 Step-3 source-evidence gate 的 nullable `company_name`。其餘四個候選欄位在具備 raw-backed deterministic rule 與 matrix evidence 前維持 deferred，不能以 nullable placeholder 繞過 gate。`filing_kind` 因仍是 `not_verified` 而延後至 Step-14；Schema 也不含 `xbrl_confirmed_at` 或 generic `published_at`。詳細契約見 `docs/evidence-schema.md`。
+
+## 邏輯證據識別
+
+Step-12 以 task、source、source locator、event 與 payload 五個維度定義 logical evidence
+identity，並依來源能力使用 profile：MOPS 要求 locator + payload hash；Goodinfo 使用
+locator + CLAIM_TIME + SUBJECT，不全域強制 payload hash。Profile 必要依據單邊或雙邊缺失
+時為 `unresolved`，不能把 `NULL` 當成差異。`retrieved_at` 與描述／驗證 metadata 不參與
+identity。Step-13 前不建立 unique constraint；完整契約見 `docs/logical-evidence-identity.md`。
 
 ## 階段 0 工具
 
