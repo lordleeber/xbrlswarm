@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已完成 **Step-20：歷史發布規則版本化**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已完成 **Step-21：非曆年制公司研究閘門**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -69,6 +69,10 @@ Step-19 提供 `expected_publication_window(...)` 規則介面，輸入年度、
 Step-20 為規則加入 `valid_from`／`valid_to`／`rule_id` 版本資訊，缺少適用的歷史
 版本時不套用現行規則。選版日期的語意必須由未來的來源證據明確指定；目前仍
 沒有內建實際法規日期。詳見 `docs/versioned-publication-rules.md`。
+
+Step-21 確認官方申報工具支援非曆年制與會計年度設定，但目前尚未取得可重播的
+公司別歷史值、全市場清單或穩定批次來源。全市場與非曆年制任務產生維持暫緩；
+不能因資料未知就套用 12/31 邊界。詳見 `docs/fiscal-calendar-research.md`。
 
 ## 報告識別候選方案
 

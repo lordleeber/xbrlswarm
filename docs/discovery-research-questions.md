@@ -13,6 +13,9 @@
 9. 是否存在穩定、可重播的公開 locator / endpoint？
 10. 如何可靠取得非曆年制公司的 fiscal calendar？
 
+Step-21 已將第 10 題的官方來源能力、未解的公司別歷史資料與研究閘門記錄於
+`docs/fiscal-calendar-research.md`；目前仍不能推導全市場的 fiscal calendar。
+
 ## 固定案例
 
 永久來源探索案例固定為：

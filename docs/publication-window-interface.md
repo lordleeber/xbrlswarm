@@ -11,7 +11,7 @@ fiscal_calendar, *, rule_provider=...)` 接受四個業務輸入，回傳
 期末日期加固定天數、拿現行規則回推歷史，或默認為某個發布窗口。
 
 第一版只接受已確認的 `fiscal_calendar="calendar_year"`，其他年度曆會拒絕，
-待 Step-21 來源研究完成再擴充。`company_class` 目前只要求非空，不預設分類
+Step-21 的來源研究尚未取得公司別歷史證據，因此仍不能擴充。`company_class` 目前只要求非空，不預設分類
 或法規適用範圍。`report_period` 沿用 Q1／Q2／Q3／FY，Q4 不接受。
 
 測試中的 `TEST-ONLY-NOT-LAW` 與日期只是模擬 provider 回傳資料，**不代表法規**。

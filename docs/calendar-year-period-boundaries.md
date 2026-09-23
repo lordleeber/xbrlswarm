@@ -20,5 +20,6 @@
 此日期也不是公告時間、XBRL 確認時間或法定發布截止日。
 
 Step-19 定義 `expected_publication_window(...)` 介面，但不內建法規日期；
-Step-20 定義歷史規則版本，Step-21 研究非曆年制與會計年度變更。
+Step-20 定義歷史規則版本；Step-21 已研究非曆年制與會計年度變更，
+公司別歷史資料仍未驗證，詳見 `docs/fiscal-calendar-research.md`。
 在確認公司財務年度曆以前，不得套用本映射。
