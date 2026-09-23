@@ -18,7 +18,7 @@ CREATE TABLE task_step9 (
     CONSTRAINT task_identity_unique UNIQUE (stock_id, fiscal_year, report_period)
 ) STRICT;
 
-INSERT INTO task_step9 (
+INSERT OR ROLLBACK INTO task_step9 (
     id,
     stock_id,
     fiscal_year,

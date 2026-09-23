@@ -14,7 +14,7 @@ Step-9 建立共用 `Engine` domain enum、machine-readable contract，並以新
 - `engine` 必須與 evidence `source_type` 維持不同維度。
 - migration 後的 `task.engine` 只接受正式值。
 - `0002_define_engine_enum.sql` 必須保留既有 task 與 Step-8 的 `STRICT` typing。
-- 遇到既有的未知 engine 時，migration 必須失敗且不得造成資料遺失。
+- 遇到既有的未知 engine 時，migration 必須自行回滾：不得造成資料遺失、留下暫存 table 或繼續持有 write transaction。
 
 測試先因 `xbrlswarm.domain.Engine` 尚未存在而在 collection 階段失敗。
 
@@ -29,7 +29,7 @@ migrations/0002_define_engine_enum.sql
 docs/engines.md
 ```
 
-Migration 在單一 transaction 內重建 task table，複製既有資料後才取代舊 table。因此合法 task 會完整保留，非法 engine 則會使 migration 失敗。
+Migration 在單一 transaction 內重建 task table，複製既有資料後才取代舊 table。因此合法 task 會完整保留；非法 engine 會觸發 `INSERT OR ROLLBACK`，由 migration 自行恢復失敗前狀態。
 
 ## 不包含
 

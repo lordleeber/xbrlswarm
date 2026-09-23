@@ -20,7 +20,7 @@ grounded_ai
 
 `migrations/0002_define_engine_enum.sql` 重建 Step-8 的 SQLite `task` table，在保留所有欄位、primary key、identity constraint、預設值與 `STRICT` typing 的同時，為 `task.engine` 加上固定值域。
 
-Migration 只會複製 enum 內的既有 task；若 Step-8 時期已寫入其他 engine，migration 會失敗並由 migration runner 回滾，不會靜默刪除或改寫資料。
+Migration 只接受 enum 內的既有 task。若 Step-8 時期已寫入其他 engine，`INSERT OR ROLLBACK` 會在 constraint failure 時自動回滾整個 transaction：原始 `task` 與資料保持不變、`task_step9` 會被清除，連線也不會繼續持有 write transaction。這個失敗語意不依賴外部 migration runner 另行呼叫 `rollback()`。
 
 ## 本 Step 的邊界
 

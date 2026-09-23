@@ -134,8 +134,15 @@ def test_engine_migration_rejects_preexisting_unknown_engine_without_data_loss()
 
     with pytest.raises(sqlite3.IntegrityError, match="CHECK constraint failed"):
         _apply(connection, ENGINE_MIGRATION_PATH)
-    connection.rollback()
 
+    assert connection.in_transaction is False
+    tables = {
+        row[0]
+        for row in connection.execute(
+            "SELECT name FROM sqlite_schema WHERE type = 'table'"
+        )
+    }
+    assert tables == {"task"}
     assert connection.execute("SELECT engine FROM task").fetchone()[0] == "bing"
 
 
