@@ -19,5 +19,6 @@
 就新增或填補 production evidence 的 `period_start`／`period_end` 欄位。
 此日期也不是公告時間、XBRL 確認時間或法定發布截止日。
 
-Step-19 才定義 `expected_publication_window(...)` 與歷史法規規則；
-Step-21 研究非曆年制與會計年度變更。在確認公司財務年度曆以前，不得套用本映射。
+Step-19 定義 `expected_publication_window(...)` 介面，但不內建法規日期；
+Step-20 定義歷史規則版本，Step-21 研究非曆年制與會計年度變更。
+在確認公司財務年度曆以前，不得套用本映射。
