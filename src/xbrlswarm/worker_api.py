@@ -33,21 +33,20 @@ class TaskStore:
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
-            row = connection.execute(
-                """SELECT id, stock_id, fiscal_year, report_period, engine, attempts
-                   FROM task WHERE state = 'undone' ORDER BY id LIMIT 1"""
-            ).fetchone()
-            if row is None:
-                connection.commit()
-                return None
             now = _utc_now()
-            connection.execute(
+            row = connection.execute(
                 """UPDATE task SET state = 'dispatched', worker_id = ?,
                           dispatched_at = ?, updated_at = ?, attempts = attempts + 1
-                   WHERE id = ? AND state = 'undone'""",
-                (worker_id, now, now, row[0]),
-            )
+                   WHERE id = (
+                       SELECT id FROM task WHERE state = 'undone' ORDER BY id LIMIT 1
+                   ) AND state = 'undone'
+                   RETURNING id, stock_id, fiscal_year, report_period, engine,
+                             dispatched_at, attempts""",
+                (worker_id, now, now),
+            ).fetchone()
             connection.commit()
+            if row is None:
+                return None
             return {
                 "task_id": row[0],
                 "stock_id": row[1],
@@ -55,8 +54,8 @@ class TaskStore:
                 "report_period": row[3],
                 "engine": row[4],
                 "worker_id": worker_id,
-                "dispatched_at": now,
-                "lease_attempt": row[5] + 1,
+                "dispatched_at": row[5],
+                "lease_attempt": row[6],
             }
         except BaseException:
             connection.rollback()
