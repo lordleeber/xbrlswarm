@@ -34,7 +34,7 @@ class TaskStore:
         try:
             connection.execute("BEGIN IMMEDIATE")
             row = connection.execute(
-                """SELECT id, stock_id, fiscal_year, report_period, engine
+                """SELECT id, stock_id, fiscal_year, report_period, engine, attempts
                    FROM task WHERE state = 'undone' ORDER BY id LIMIT 1"""
             ).fetchone()
             if row is None:
@@ -56,6 +56,7 @@ class TaskStore:
                 "engine": row[4],
                 "worker_id": worker_id,
                 "dispatched_at": now,
+                "lease_attempt": row[5] + 1,
             }
         except BaseException:
             connection.rollback()
@@ -63,15 +64,16 @@ class TaskStore:
         finally:
             connection.close()
 
-    def complete(self, task_id: int, worker_id: str) -> bool:
+    def complete(self, task_id: int, worker_id: str, lease_attempt: int) -> bool:
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
             cursor = connection.execute(
                 """UPDATE task SET state = 'completed', worker_id = NULL,
                           dispatched_at = NULL, updated_at = ?
-                   WHERE id = ? AND state = 'dispatched' AND worker_id = ?""",
-                (_utc_now(), task_id, worker_id),
+                   WHERE id = ? AND state = 'dispatched' AND worker_id = ?
+                         AND attempts = ?""",
+                (_utc_now(), task_id, worker_id, lease_attempt),
             )
             connection.commit()
             return cursor.rowcount == 1
@@ -99,10 +101,17 @@ class TaskStore:
             connection.close()
 
 
-def _response(start_response: Callable, status: str, body: bytes, content_type: str):
+def _response(
+    start_response: Callable,
+    status: str,
+    body: bytes,
+    content_type: str,
+    extra_headers: list[tuple[str, str]] | None = None,
+):
     start_response(
         status,
-        [("Content-Type", content_type), ("Content-Length", str(len(body)))],
+        [("Content-Type", content_type), ("Content-Length", str(len(body)))]
+        + (extra_headers or []),
     )
     return [body]
 
@@ -158,7 +167,13 @@ def create_app(store: TaskStore):
         if path not in methods:
             return _json(start_response, "404 Not Found", {"error": "not_found"})
         if method != methods[path]:
-            return _json(start_response, "405 Method Not Allowed", {"error": "method_not_allowed"})
+            return _response(
+                start_response,
+                "405 Method Not Allowed",
+                b'{"error":"method_not_allowed"}',
+                "application/json; charset=utf-8",
+                [("Allow", methods[path])],
+            )
 
         if path == "/healthz":
             return _json(start_response, "200 OK", {"status": "ok"})
@@ -187,14 +202,17 @@ def create_app(store: TaskStore):
                 return _json(start_response, "200 OK", {"task": task})
 
             task_id = body.get("task_id")
-            if set(body) != {"task_id", "worker_id", "outcome"}:
-                raise ValueError("/result requires task_id, worker_id, outcome")
+            lease_attempt = body.get("lease_attempt")
+            if set(body) != {"task_id", "worker_id", "lease_attempt", "outcome"}:
+                raise ValueError("/result requires task_id, worker_id, lease_attempt, outcome")
             if type(task_id) is not int or task_id <= 0:
                 raise ValueError("task_id must be a positive integer")
+            if type(lease_attempt) is not int or lease_attempt <= 0:
+                raise ValueError("lease_attempt must be a positive integer")
             if body["outcome"] != "success":
                 raise ValueError("only success outcome is supported in Step-23")
-            if not store.complete(task_id, worker_id):
-                return _json(start_response, "409 Conflict", {"error": "lease_not_owned"})
+            if not store.complete(task_id, worker_id, lease_attempt):
+                return _json(start_response, "409 Conflict", {"error": "lease_not_current"})
             return _json(start_response, "200 OK", {"task_id": task_id, "state": "completed"})
         except ValueError as error:
             return _json(start_response, "400 Bad Request", {"error": str(error)})

@@ -68,6 +68,7 @@ def test_worker_api_lease_result_and_read_endpoints(tmp_path: Path) -> None:
     }
     assert task["worker_id"] == "worker-1"
     assert task["dispatched_at"].endswith("Z")
+    assert task["lease_attempt"] == 1
 
     status, _, body = _call(app, "POST", "/lease", {"worker_id": "worker-2"})
     assert status == "204 No Content"
@@ -85,10 +86,15 @@ def test_worker_api_lease_result_and_read_endpoints(tmp_path: Path) -> None:
     assert headers["Content-Type"].startswith("text/plain")
     assert b"Dispatched: 1" in body
 
-    result = {"task_id": task["task_id"], "worker_id": "worker-1", "outcome": "success"}
+    result = {
+        "task_id": task["task_id"],
+        "worker_id": "worker-1",
+        "lease_attempt": task["lease_attempt"],
+        "outcome": "success",
+    }
     status, _, body = _call(app, "POST", "/result", {**result, "worker_id": "worker-2"})
     assert status == "409 Conflict"
-    assert json.loads(body) == {"error": "lease_not_owned"}
+    assert json.loads(body) == {"error": "lease_not_current"}
 
     status, _, body = _call(app, "POST", "/result", result)
     assert status == "200 OK"
@@ -111,8 +117,8 @@ def test_worker_api_lease_result_and_read_endpoints(tmp_path: Path) -> None:
         ("POST", "/lease", {}, "400 Bad Request"),
         ("POST", "/lease", {"worker_id": " "}, "400 Bad Request"),
         ("POST", "/lease", {"worker_id": "x", "extra": 1}, "400 Bad Request"),
-        ("POST", "/result", {"task_id": True, "worker_id": "x", "outcome": "success"}, "400 Bad Request"),
-        ("POST", "/result", {"task_id": 1, "worker_id": "x", "outcome": "not_found"}, "400 Bad Request"),
+        ("POST", "/result", {"task_id": True, "worker_id": "x", "lease_attempt": 1, "outcome": "success"}, "400 Bad Request"),
+        ("POST", "/result", {"task_id": 1, "worker_id": "x", "lease_attempt": 1, "outcome": "not_found"}, "400 Bad Request"),
     ],
 )
 def test_invalid_methods_and_bodies_are_rejected(
@@ -121,6 +127,65 @@ def test_invalid_methods_and_bodies_are_rejected(
     app = create_app(TaskStore(_database(tmp_path)))
     status, _, _ = _call(app, method, path, payload)
     assert status == expected
+
+
+def test_result_requires_current_generation_after_reclaim_and_same_worker_releases(
+    tmp_path: Path,
+) -> None:
+    database = _database(tmp_path)
+    app = create_app(TaskStore(database))
+    _, _, body = _call(app, "POST", "/lease", {"worker_id": "worker-1"})
+    first = json.loads(body)["task"]
+
+    # Simulate Step-25's future timeout recovery; it must not reset attempts.
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            """UPDATE task SET state = 'undone', worker_id = NULL,
+                      dispatched_at = NULL WHERE id = ?""",
+            (first["task_id"],),
+        )
+
+    _, _, body = _call(app, "POST", "/lease", {"worker_id": "worker-1"})
+    second = json.loads(body)["task"]
+    assert second["task_id"] == first["task_id"]
+    assert second["worker_id"] == first["worker_id"]
+    assert second["lease_attempt"] == first["lease_attempt"] + 1
+
+    old_result = {
+        "task_id": first["task_id"],
+        "worker_id": first["worker_id"],
+        "lease_attempt": first["lease_attempt"],
+        "outcome": "success",
+    }
+    status, _, body = _call(app, "POST", "/result", old_result)
+    assert status == "409 Conflict"
+    assert json.loads(body) == {"error": "lease_not_current"}
+    with sqlite3.connect(database) as connection:
+        assert connection.execute(
+            "SELECT state, worker_id, attempts FROM task WHERE id = ?",
+            (first["task_id"],),
+        ).fetchone() == ("dispatched", "worker-1", second["lease_attempt"])
+
+    status, _, body = _call(
+        app, "POST", "/result", {**old_result, "lease_attempt": second["lease_attempt"]}
+    )
+    assert status == "200 OK"
+    assert json.loads(body)["state"] == "completed"
+
+
+def test_result_rejects_missing_or_invalid_lease_generation(tmp_path: Path) -> None:
+    app = create_app(TaskStore(_database(tmp_path)))
+    basic = {"task_id": 1, "worker_id": "worker-1", "outcome": "success"}
+    for payload in (basic, {**basic, "lease_attempt": True}, {**basic, "lease_attempt": 0}):
+        status, _, _ = _call(app, "POST", "/result", payload)
+        assert status == "400 Bad Request"
+
+
+def test_method_not_allowed_includes_allow_header(tmp_path: Path) -> None:
+    app = create_app(TaskStore(_database(tmp_path)))
+    status, headers, _ = _call(app, "GET", "/lease")
+    assert status == "405 Method Not Allowed"
+    assert headers["Allow"] == "POST"
 
 
 def test_healthz_means_server_alive_not_database_ready(tmp_path: Path) -> None:
