@@ -4,10 +4,12 @@ import argparse
 import sys
 from pathlib import Path
 
+from xbrlswarm.domain import ReportPeriod
+
 from .capture import CaptureRequest, capture_raw_response
 from .cases import DISCOVERY_CASES, find_case
 from .matrix import load_matrix, render_markdown
-from .models import DiscoveryCase, ReportPeriod
+from .models import DiscoveryCase
 from .mops import capture_mops_discovery_cases, verify_mops_capture_set
 from .mops_analysis import analyze_mops_capture_set, render_mops_field_observations
 

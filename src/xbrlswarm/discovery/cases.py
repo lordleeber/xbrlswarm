@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from .models import DiscoveryCase, ReportPeriod
+from xbrlswarm.domain import ReportPeriod
+
+from .models import DiscoveryCase
 
 _COMPANIES = (
     ("2330", "台積電"),
