@@ -1,6 +1,6 @@
 {
   "contract": "logical_evidence_identity",
-  "version": 1,
+  "version": 2,
   "identity_kind": "logical_evidence",
   "comparison": "exact_stored_value",
   "groups": {
@@ -82,10 +82,12 @@
       "different_if_known_universal_value_differs",
       "select_source_profile",
       "different_if_both_known_profile_values_differ",
+      "unresolved_if_profile_value_asymmetric_missing",
       "unresolved_if_profile_required_value_missing",
       "same"
     ],
     "missing_required_outcome": "unresolved",
+    "asymmetric_missing_outcome": "unresolved",
     "unmapped_source_outcome": "unresolved",
     "all_fields_equal_outcome": "same",
     "any_field_different_outcome": "different"

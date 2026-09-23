@@ -30,6 +30,9 @@ append-only 邊界。契約只引用現有 evidence 欄位，因此本 Step 不�
 Code review regression 進一步加入 asymmetric missing 與無 payload hash 的 Goodinfo 案例，
 並將 contract 改為依 Step-31／Step-39 選擇 source-specific profile。
 
+Step-13 實作前再確認：所有 profile comparison field 的 asymmetric missing 都必須維持
+`unresolved`；否則 `same` 不具等價關係，無法安全建立 unique protection。
+
 ## 不包含
 
 - 不建立 unique constraint 或 identity digest 欄位。

@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已完成 **Step-12：定義邏輯證據識別**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已完成 **Step-13：加入重複資料防護**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -75,7 +75,12 @@ Step-12 以 task、source、source locator、event 與 payload 五個維度定�
 identity，並依來源能力使用 profile：MOPS 要求 locator + payload hash；Goodinfo 使用
 locator + CLAIM_TIME + SUBJECT，不全域強制 payload hash。Profile 必要依據單邊或雙邊缺失
 時為 `unresolved`，不能把 `NULL` 當成差異。`retrieved_at` 與描述／驗證 metadata 不參與
-identity。Step-13 前不建立 unique constraint；完整契約見 `docs/logical-evidence-identity.md`。
+identity。完整契約見 `docs/logical-evidence-identity.md`。
+
+Step-13 以 source-specific partial unique indexes 保護已解析的 MOPS／Goodinfo logical
+identity。Crawler 可用 `ON CONFLICT DO NOTHING` 讓重抓保持一筆；新 payload、新公告及不同
+來源仍會新增 evidence。必要欄位缺失或尚無 source profile 的 `unresolved` evidence 不會被
+推測性折疊；完整設計見 `docs/evidence-deduplication.md`。
 
 ## 階段 0 工具
 
