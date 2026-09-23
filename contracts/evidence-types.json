@@ -1,0 +1,59 @@
+{
+  "contract": "evidence_types",
+  "version": 1,
+  "types": [
+    {
+      "value": "xbrl_document",
+      "role": "document",
+      "meaning": "An XBRL or iXBRL document artifact."
+    },
+    {
+      "value": "financial_report_document",
+      "role": "document",
+      "meaning": "A financial-report document artifact that is not classified as the XBRL artifact."
+    },
+    {
+      "value": "material_announcement",
+      "role": "announcement",
+      "meaning": "A material announcement event, including a mirror that is traceable to and identifies that specific upstream announcement."
+    },
+    {
+      "value": "search_mirror",
+      "role": "discovery",
+      "meaning": "Discovery evidence, such as a search result, article, or mirror, that is not yet sufficient to identify an upstream artifact or event."
+    },
+    {
+      "value": "manual_review",
+      "role": "adjudication",
+      "meaning": "A human review or resolution record that does not mutate source evidence."
+    }
+  ],
+  "classification_rules": [
+    {
+      "id": "traceable_material_announcement_mirror",
+      "conditions": {
+        "source_is_mirror": true,
+        "upstream_event_type": "material_announcement",
+        "upstream_event_identified": true
+      },
+      "evidence_type": "material_announcement",
+      "excluded_evidence_types": [
+        "search_mirror"
+      ]
+    },
+    {
+      "id": "unresolved_discovery_evidence",
+      "conditions": {
+        "upstream_artifact_or_event_identified": false
+      },
+      "evidence_type": "search_mirror"
+    }
+  ],
+  "separation": {
+    "source_type": "separate_dimension",
+    "verification_state": "separate_dimension",
+    "event_time": "optional_source_claim",
+    "retrieved_at": "capture_metadata",
+    "generic_published_at": false
+  }
+}
