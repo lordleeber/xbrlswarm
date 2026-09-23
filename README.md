@@ -67,7 +67,7 @@ SQLite migration `migrations/0001_create_task.sql` 建立 Step-8 的最小 `STRI
 
 ## Evidence schema
 
-SQLite migration `migrations/0003_create_evidence.sql` 建立 Step-10 的 `STRICT` evidence table，並以外鍵連結 task。Evidence type、source、verification 與 retrieval metadata 保持不同維度；事件時間與尚未證實的 filing metadata 允許缺值。Schema 不含 `xbrl_confirmed_at` 或 generic `published_at`。詳細契約見 `docs/evidence-schema.md`。
+SQLite migration `migrations/0003_create_evidence.sql` 建立 Step-10 的 `STRICT` evidence table，並以外鍵連結 task。Evidence type、source、verification 與 retrieval metadata 保持不同維度，事件時間與來源 metadata 可依實際證據缺值。`filing_kind` 因仍是 `not_verified` 而延後至 Step-14；Schema 也不含 `xbrl_confirmed_at` 或 generic `published_at`。詳細契約見 `docs/evidence-schema.md`。
 
 ## 階段 0 工具
 

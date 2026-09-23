@@ -2,17 +2,18 @@
 
 ## 範圍
 
-Step-10 新增 SQLite `STRICT` evidence table，只建立 ROADMAP 列出且已證實可取得或由系統產生的欄位。只有系統能保證產生的核心 metadata 為必填，其餘來源聲稱與尚未定義值域的欄位保持可缺。
+Step-10 新增 SQLite `STRICT` evidence table，只建立 ROADMAP 列出且已證實可取得或由系統產生的欄位。只有系統能保證產生的核心 metadata 為必填，其餘來源聲稱保持可缺。`filing_kind` 因 source matrix 仍是 `not_verified` 而不進入 Schema，留待 Step-14 以新 migration 加入。
 
 ## RED
 
 先新增 SQLite contract tests，要求：
 
-- evidence table 精確包含 ROADMAP Step-10 的 16 個欄位。
+- evidence table 包含 ROADMAP Step-10 中通過 Step-3 schema gate 的 15 個欄位。
 - table 必須使用 `STRICT` typing。
 - `evidence_type` 值域必須與 Step-7 domain enum 一致。
 - `task_id` 必須宣告 `ON DELETE RESTRICT` 外鍵，且在 SQLite foreign keys 啟用時禁止 orphan evidence 與刪除仍有 evidence 的 task。
-- event、部分 source metadata、raw payload hash 與 filing kind 必須允許缺值。
+- event、部分 source metadata 與 raw payload hash 必須允許缺值。
+- source matrix 中的 `not_verified` 欄位，包含 `filing_kind`，不得進入 production schema。
 - task engine、evidence type、source type 與 verification state 必須保持不同維度。
 - Step-12 之前不得猜測 logical evidence unique key。
 - schema 不得加入 `xbrl_confirmed_at` 或 generic `published_at`。

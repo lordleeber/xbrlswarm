@@ -1,3 +1,4 @@
+import json
 import sqlite3
 from pathlib import Path
 
@@ -8,6 +9,7 @@ from xbrlswarm.domain import EvidenceType
 
 MIGRATIONS_DIR = Path("migrations")
 EVIDENCE_MIGRATION_PATH = Path("migrations/0003_create_evidence.sql")
+SOURCE_MATRIX_PATH = Path("discovery/source_field_matrix.json")
 DECISION_PATH = Path("docs/evidence-schema.md")
 ACCEPTANCE_PATH = Path("docs/step-10-acceptance.md")
 
@@ -84,7 +86,6 @@ def test_evidence_table_has_exactly_the_step10_columns() -> None:
         "source_subject",
         "retrieved_at",
         "raw_payload_hash",
-        "filing_kind",
         "verification_state",
     ]
     assert {column[1]: column[2] for column in columns} == {
@@ -102,7 +103,6 @@ def test_evidence_table_has_exactly_the_step10_columns() -> None:
         "source_subject": "TEXT",
         "retrieved_at": "TEXT",
         "raw_payload_hash": "TEXT",
-        "filing_kind": "TEXT",
         "verification_state": "TEXT",
     }
     assert next(column for column in columns if column[1] == "id")[5] == 1
@@ -159,7 +159,7 @@ def test_evidence_task_foreign_key_is_restrictive() -> None:
         connection.execute("DELETE FROM task WHERE id = ?", (task_id,))
 
 
-def test_optional_source_event_payload_and_filing_fields_default_to_null() -> None:
+def test_optional_source_event_and_payload_fields_default_to_null() -> None:
     connection = _database()
     task_id = _insert_task(connection)
     _insert_evidence(connection, task_id=task_id)
@@ -175,13 +175,26 @@ def test_optional_source_event_payload_and_filing_fields_default_to_null() -> No
             source_locator,
             source_title,
             source_subject,
-            raw_payload_hash,
-            filing_kind
+            raw_payload_hash
         FROM evidence
         """
     ).fetchone()
 
-    assert row == (None,) * 10
+    assert row == (None,) * 9
+
+
+def test_not_verified_source_fields_do_not_enter_the_production_schema() -> None:
+    connection = _database()
+    columns = {row[1] for row in connection.execute("PRAGMA table_info(evidence)")}
+    matrix = json.loads(SOURCE_MATRIX_PATH.read_text(encoding="utf-8"))
+    not_verified = {
+        field["field"]
+        for field in matrix["fields"]
+        if field["status"] == "not_verified"
+    }
+
+    assert "filing_kind" in not_verified
+    assert columns.isdisjoint(not_verified)
 
 
 def test_engine_evidence_type_source_and_verification_are_separate_dimensions() -> None:

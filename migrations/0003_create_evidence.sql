@@ -21,6 +21,5 @@ CREATE TABLE evidence (
     source_subject TEXT,
     retrieved_at TEXT NOT NULL CHECK (length(retrieved_at) > 0),
     raw_payload_hash TEXT,
-    filing_kind TEXT,
     verification_state TEXT NOT NULL CHECK (length(verification_state) > 0)
 ) STRICT;
