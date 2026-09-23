@@ -1,0 +1,15 @@
+{
+  "contract": "calendar_year_period_boundaries",
+  "version": 1,
+  "fiscal_calendar": "calendar_year",
+  "result": "period_end_date",
+  "period_ends": {
+    "Q1": "03-31",
+    "Q2": "06-30",
+    "Q3": "09-30",
+    "FY": "12-31"
+  },
+  "not_a_source_backed_evidence_field": true,
+  "publication_deadline_deferred_to_step": 19,
+  "non_calendar_year_deferred_to_step": 21
+}
