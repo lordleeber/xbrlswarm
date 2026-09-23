@@ -22,6 +22,18 @@ def _compare(
     left: dict[str, Any],
     right: dict[str, Any],
 ) -> str:
+    def profile_value(evidence: dict[str, Any], field: str) -> Any:
+        value = evidence.get(field)
+        if (
+            evidence.get("source_type") == "goodinfo"
+            and field == "event_precision"
+            and value is None
+            and evidence.get("event_date") is not None
+            and evidence.get("event_time") is not None
+        ):
+            return contract["legacy_goodinfo_null_precision_equivalent_to"]
+        return value
+
     if any(
         left.get(field) is not None
         and right.get(field) is not None
@@ -35,19 +47,22 @@ def _compare(
         return contract["resolution"]["unmapped_source_outcome"]
     profile = contract["profiles"][profile_name]
     if any(
-        left.get(field) is not None
-        and right.get(field) is not None
-        and left.get(field) != right.get(field)
+        profile_value(left, field) is not None
+        and profile_value(right, field) is not None
+        and profile_value(left, field) != profile_value(right, field)
         for field in profile["comparison_fields"]
     ):
         return contract["resolution"]["any_field_different_outcome"]
     if any(
-        (left.get(field) is None) != (right.get(field) is None)
+        (profile_value(left, field) is None) != (profile_value(right, field) is None)
         for field in profile["comparison_fields"]
     ):
         return contract["resolution"]["asymmetric_missing_outcome"]
     required = profile["required_non_null"]
-    if any(left.get(field) is None or right.get(field) is None for field in required):
+    if any(
+        profile_value(left, field) is None or profile_value(right, field) is None
+        for field in required
+    ):
         return contract["resolution"]["missing_required_outcome"]
     return contract["resolution"]["all_fields_equal_outcome"]
 
@@ -74,9 +89,10 @@ def test_contract_defines_the_five_roadmap_identity_dimensions() -> None:
     contract = _load_contract()
 
     assert contract["contract"] == "logical_evidence_identity"
-    assert contract["version"] == 2
+    assert contract["version"] == 3
     assert contract["identity_kind"] == "logical_evidence"
-    assert contract["comparison"] == "exact_stored_value"
+    assert contract["comparison"] == "exact_stored_value_with_legacy_goodinfo_precision"
+    assert contract["legacy_goodinfo_null_precision_equivalent_to"] == "second"
     assert contract["groups"] == {
         "task": ["task_id"],
         "source": ["source_type"],
@@ -138,6 +154,33 @@ def test_retrieval_and_descriptive_metadata_do_not_create_new_evidence() -> None
         "company_name",
     }
     assert _compare(contract, left, right) == "same"
+
+
+def test_legacy_goodinfo_null_precision_matches_explicit_second_only() -> None:
+    contract = _load_contract()
+    goodinfo = {
+        **_base_evidence(),
+        "source_type": "goodinfo",
+        "source_locator": "goodinfo:announcement:123",
+        "evidence_type": "material_announcement",
+        "event_date": "2024-05-10",
+        "event_time": "14:48:53",
+        "event_precision": "second",
+        "source_subject": "董事會通過財報",
+    }
+    assert _compare(contract, {**goodinfo, "event_precision": None}, goodinfo) == "same"
+    assert _compare(
+        contract, {**goodinfo, "event_precision": None},
+        {**goodinfo, "event_precision": "date"},
+    ) == "different"
+
+    mops = {
+        **_base_evidence(),
+        "event_date": "2024-05-10",
+        "event_time": "14:48:53",
+        "event_precision": "second",
+    }
+    assert _compare(contract, {**mops, "event_precision": None}, mops) == "unresolved"
 
 
 def test_new_payload_event_source_or_task_is_different_evidence() -> None:

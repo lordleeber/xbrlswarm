@@ -87,6 +87,8 @@ def test_precision_contract_and_docs() -> None:
         "explicit_hh_mm_ss": {"event_precision": "second"},
         "synthetic_midnight_forbidden": True,
         "unsupported_precision": "reject_without_guessing",
+        "new_evidence_storage_enforcement": "migration_0007_insert_trigger",
+        "legacy_goodinfo_null_precision_identity": "second_when_event_date_and_time_present",
     }
     assert "2024-05-10 00:00:00" in DECISION.read_text(encoding="utf-8")
-    assert "不需要 migration" in ACCEPTANCE.read_text(encoding="utf-8")
+    assert "0007_enforce_event_precision.sql" in ACCEPTANCE.read_text(encoding="utf-8")

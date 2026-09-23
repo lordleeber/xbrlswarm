@@ -10,5 +10,7 @@
     "event_precision": "second"
   },
   "synthetic_midnight_forbidden": true,
-  "unsupported_precision": "reject_without_guessing"
+  "unsupported_precision": "reject_without_guessing",
+  "new_evidence_storage_enforcement": "migration_0007_insert_trigger",
+  "legacy_goodinfo_null_precision_identity": "second_when_event_date_and_time_present"
 }

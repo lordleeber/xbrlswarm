@@ -113,10 +113,10 @@ def test_announcement_query_excludes_document_events() -> None:
     connection.execute(
         """
         INSERT INTO evidence (
-            task_id, evidence_type, event_date, event_time,
+            task_id, evidence_type, event_date, event_time, event_precision,
             source_type, source_locator, retrieved_at, raw_payload_hash,
             verification_state
-        ) VALUES (1, 'xbrl_document', '2024-05-10', '14:48:53',
+        ) VALUES (1, 'xbrl_document', '2024-05-10', '14:48:53', 'second',
                   'mops', 'mops:document', '2026-09-23T01:02:03.000Z',
                   'sha256:other', 'unverified')
         """

@@ -15,5 +15,10 @@
 `event_precision=second`。只有日期的其他 evidence 可使用同一映射而不產生
 虛構的 `event_time`。`retrieved_at` 與 `xbrl_confirmed_at` 的語意仍保持分離。
 
-既有 evidence schema 已有 nullable `event_date`、`event_time`、`event_precision`，
-本 Step 不重寫歷史資料或對未知精度補值。新的來源映射必須依本契約明確保存精度。
+既有 evidence schema 已有 nullable `event_date`、`event_time`、`event_precision`。
+Step-17 migration `0007_enforce_event_precision.sql` 對新的 evidence INSERT 強制三種合法組合：
+三欄皆 `NULL`、只有日期且精度為 `date`、或日期與時間皆有且精度為 `second`。
+舊資料不重寫：先前 Step-15 已存的 Goodinfo 發言時間可保留 `event_precision=NULL`，
+但 Goodinfo unique index 將這種 legacy `NULL` 視為 `second`，讓相同公告重抓仍只有一筆。
+若升級前已同時存有 legacy `NULL` 與 `second` 的同一 identity，migration 會中止並保留
+原資料，必須先人工稽核；不會偷偷刪除來源證據。
