@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已完成 **Step-8：建立 task 資料表**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已完成 **Step-9：定義 engine 列舉**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -23,6 +23,8 @@ Grounded AI
 ```
 
 MOPS 是官方來源。第三方來源只能作為證據或備援，不能取代官方來源的事實基礎。
+
+正式 engine enum 為 `mops`、`goodinfo`、`yahoo`、`google` 與 `grounded_ai`，已同時套用於 Python domain 與 `task.engine` SQLite constraint。詳細契約見 `docs/engines.md`。
 
 ## 證據類型
 
@@ -61,7 +63,7 @@ FY
 
 ## Task schema
 
-SQLite migration `migrations/0001_create_task.sql` 建立 Step-8 的最小 `STRICT` task 資料表，並以 `(stock_id, fiscal_year, report_period)` unique constraint 保護 provisional task identity。`report_scope` 仍不納入；engine enum、完整 state machine 與 lease transition 留待後續步驟。詳細 schema 契約見 `docs/task-schema.md`。
+SQLite migration `migrations/0001_create_task.sql` 建立 Step-8 的最小 `STRICT` task 資料表，`0002_define_engine_enum.sql` 再加上 engine constraint。`(stock_id, fiscal_year, report_period)` unique constraint 保護 provisional task identity，`report_scope` 仍不納入；完整 state machine 與 lease transition 留待後續步驟。詳細 schema 契約見 `docs/task-schema.md`。
 
 ## 階段 0 工具
 

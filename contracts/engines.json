@@ -1,0 +1,11 @@
+{
+  "contract": "engines",
+  "version": 1,
+  "values": [
+    "mops",
+    "goodinfo",
+    "yahoo",
+    "google",
+    "grounded_ai"
+  ]
+}

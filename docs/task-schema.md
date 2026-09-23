@@ -11,7 +11,7 @@ Step-8 以 SQLite migration `migrations/0001_create_task.sql` 建立 `task` 資�
 | `fiscal_year` | INTEGER | 是 | 財務年度 |
 | `report_period` | TEXT | 是 | `Q1`、`Q2`、`Q3`、`FY` 之一 |
 | `state` | TEXT | 是 | 任務狀態；正式狀態機由後續步驟定義 |
-| `engine` | TEXT | 是 | 執行來源；正式 enum 由 Step-9 定義 |
+| `engine` | TEXT | 是 | 執行來源；正式 enum 見 `docs/engines.md` |
 | `attempts` | INTEGER | 是 | 嘗試次數，預設 0，且不得為負數 |
 | `fail_count` | INTEGER | 是 | 失敗次數，預設 0，且不得為負數 |
 | `dispatched_at` | TEXT | 否 | 最近一次派發時間；尚未 lease 時為空 |
@@ -38,6 +38,6 @@ Step-5 的 provisional task identity：
 ## 本 Step 的邊界
 
 - `report_period` 沿用 Step-6 的正式值域，拒絕 `Q4`。
-- `state` 與 `engine` 在此只要求為非空文字。Step-9 才定義 engine enum；任務狀態與 transition 由後續步驟定義。
+- Step-8 的 `0001` migration 對 `state` 與 `engine` 只要求非空文字；Step-9 的 `0002` migration 已對 `engine` 加上正式 enum constraint。任務狀態與 transition 仍由後續步驟定義。
 - `dispatched_at` 與 `worker_id` 允許空值。本 Step 尚未實作 lease。
 - 本 Step 不建立 evidence table、worker API、重試流程或狀態轉移。
