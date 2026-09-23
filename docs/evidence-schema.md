@@ -52,6 +52,11 @@ ROADMAP Step-10 的列表雖然列出 `filing_kind`，但 Step-3 的 schema gate
 
 Schema 不含 `xbrl_confirmed_at`，因為公開歷史來源仍為 **NOT PUBLICLY VERIFIED**。它也不含 generic `published_at`；evidence 的事件時間與 crawler `retrieved_at` 保持分離。
 
+Step-15 將來源明確提供的重大訊息「發言日期＋發言時間」保存為
+`evidence_type=material_announcement` 的 `event_date`／`event_time`，作為
+`announcement_at` 的等價表示；不由文章時間或 `retrieved_at` 補值。詳見
+`docs/announcement-time.md`。
+
 ## 本 Step 的邊界
 
 - Evidence type 值域沿用 Step-7，不將 `source_type` 或 `verification_state` 混入。
