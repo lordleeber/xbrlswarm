@@ -71,10 +71,11 @@ SQLite migration `migrations/0003_create_evidence.sql` 建立 Step-10 的 `STRIC
 
 ## 邏輯證據識別
 
-Step-12 以 task、source、source locator、event tuple 與 raw payload hash 定義 logical evidence
-identity。完全相同且 locator／payload hash 齊備才是 `same`；必要依據缺失時為
-`unresolved`，不得自動去重。`retrieved_at` 與描述／驗證 metadata 不參與 identity。
-Step-13 前不建立 unique constraint；完整契約見 `docs/logical-evidence-identity.md`。
+Step-12 以 task、source、source locator、event 與 payload 五個維度定義 logical evidence
+identity，並依來源能力使用 profile：MOPS 要求 locator + payload hash；Goodinfo 使用
+locator + CLAIM_TIME + SUBJECT，不全域強制 payload hash。Profile 必要依據單邊或雙邊缺失
+時為 `unresolved`，不能把 `NULL` 當成差異。`retrieved_at` 與描述／驗證 metadata 不參與
+identity。Step-13 前不建立 unique constraint；完整契約見 `docs/logical-evidence-identity.md`。
 
 ## 階段 0 工具
 
