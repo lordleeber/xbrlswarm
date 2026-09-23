@@ -15,6 +15,7 @@ fiscal_calendar, *, rule_provider=...)` 接受四個業務輸入，回傳
 或法規適用範圍。`report_period` 沿用 Q1／Q2／Q3／FY，Q4 不接受。
 
 測試中的 `TEST-ONLY-NOT-LAW` 與日期只是模擬 provider 回傳資料，**不代表法規**。
-真實 provider 必須先有可稽核來源與適用範圍；Step-20 再定義
-`valid_from`、`valid_to`、`rule_id` 的歷史版本契約。
+真實 provider 必須先有可稽核來源與適用範圍；Step-20 已於
+`docs/versioned-publication-rules.md` 定義 `valid_from`、`valid_to`、`rule_id`
+的歷史版本契約，但尚未內建實際法規日期。
 此介面不變更 evidence schema，也不會把預期時間窗當作來源已發生的發布事件。

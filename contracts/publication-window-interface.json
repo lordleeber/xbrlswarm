@@ -1,6 +1,6 @@
 {
   "contract": "publication_window_interface",
-  "version": 1,
+  "version": 2,
   "function": "expected_publication_window",
   "inputs": [
     "fiscal_year",
@@ -12,6 +12,6 @@
   "rule_provider": "explicit_injection_required",
   "missing_rule": "raise_publication_rule_unavailable",
   "supported_fiscal_calendar": ["calendar_year"],
-  "historical_rule_versioning_deferred_to_step": 20,
+  "versioned_rule_provider_contract": "versioned-publication-rules",
   "non_calendar_year_research_deferred_to_step": 21
 }

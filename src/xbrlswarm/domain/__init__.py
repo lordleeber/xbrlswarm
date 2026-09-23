@@ -14,6 +14,10 @@ from .publication_window import (
 )
 from .report_period import ReportPeriod
 from .revision_kind import RevisionKind
+from .versioned_publication_rules import (
+    VersionedPublicationRule,
+    VersionedPublicationRuleProvider,
+)
 
 __all__ = [
     "Engine",
@@ -25,6 +29,8 @@ __all__ = [
     "PublicationWindowRuleProvider",
     "ReportPeriod",
     "RevisionKind",
+    "VersionedPublicationRule",
+    "VersionedPublicationRuleProvider",
     "announcement_event_fields",
     "calendar_year_period_end",
     "event_time_fields",
