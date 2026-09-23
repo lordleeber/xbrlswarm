@@ -67,7 +67,7 @@ SQLite migration `migrations/0001_create_task.sql` 建立 Step-8 的最小 `STRI
 
 ## Evidence schema
 
-SQLite migration `migrations/0003_create_evidence.sql` 建立 Step-10 的 `STRICT` evidence table，並以外鍵連結 task；`0004_add_evidence_metadata.sql` 加入 Step-11 的五個 nullable parsed metadata 欄位。`period_start`、`period_end`、`board_approved_date`、`audit_committee_date` 與 `company_name` 只有來源明確提供時才填寫，不從其他資料推測。`filing_kind` 因仍是 `not_verified` 而延後至 Step-14；Schema 也不含 `xbrl_confirmed_at` 或 generic `published_at`。詳細契約見 `docs/evidence-schema.md`。
+SQLite migration `migrations/0003_create_evidence.sql` 建立 Step-10 的 `STRICT` evidence table，並以外鍵連結 task；`0004_add_evidence_metadata.sql` 加入 Step-11 中已通過 Step-3 source-evidence gate 的 nullable `company_name`。其餘四個候選欄位在具備 raw-backed deterministic rule 與 matrix evidence 前維持 deferred，不能以 nullable placeholder 繞過 gate。`filing_kind` 因仍是 `not_verified` 而延後至 Step-14；Schema 也不含 `xbrl_confirmed_at` 或 generic `published_at`。詳細契約見 `docs/evidence-schema.md`。
 
 ## 階段 0 工具
 

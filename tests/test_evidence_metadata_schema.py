@@ -1,3 +1,4 @@
+import json
 import sqlite3
 from pathlib import Path
 
@@ -7,13 +8,16 @@ EVIDENCE_MIGRATION_PATH = Path("migrations/0003_create_evidence.sql")
 METADATA_MIGRATION_PATH = Path("migrations/0004_add_evidence_metadata.sql")
 DECISION_PATH = Path("docs/evidence-schema.md")
 ACCEPTANCE_PATH = Path("docs/step-11-acceptance.md")
-METADATA_FIELDS = (
+SOURCE_MATRIX_PATH = Path("discovery/source_field_matrix.json")
+OBSERVATIONS_PATH = Path("discovery/mops_field_observations.json")
+STEP11_CANDIDATE_FIELDS = (
     "period_start",
     "period_end",
     "board_approved_date",
     "audit_committee_date",
     "company_name",
 )
+METADATA_FIELDS = ("company_name",)
 
 
 def _apply(connection: sqlite3.Connection, path: Path) -> None:
@@ -57,7 +61,7 @@ def _insert_evidence(connection: sqlite3.Connection, task_id: int) -> int:
     return cursor.lastrowid
 
 
-def test_evidence_has_the_five_step11_metadata_fields_as_nullable_text() -> None:
+def test_evidence_has_the_verified_step11_metadata_field_as_nullable_text() -> None:
     connection = _database()
     columns = {
         row[1]: {"type": row[2], "not_null": bool(row[3])}
@@ -68,6 +72,23 @@ def test_evidence_has_the_five_step11_metadata_fields_as_nullable_text() -> None
         field: {"type": "TEXT", "not_null": False}
         for field in METADATA_FIELDS
     }
+
+
+def test_step11_schema_only_includes_candidates_that_pass_the_source_gate() -> None:
+    connection = _database()
+    schema_fields = {
+        row[1] for row in connection.execute("PRAGMA table_info(evidence)")
+    }
+    matrix = json.loads(SOURCE_MATRIX_PATH.read_text(encoding="utf-8"))
+    statuses = {item["field"]: item["status"] for item in matrix["fields"]}
+    eligible_fields = {
+        field
+        for field in STEP11_CANDIDATE_FIELDS
+        if statuses.get(field) in {"direct", "derived"}
+    }
+
+    assert eligible_fields == {"company_name"}
+    assert schema_fields.intersection(STEP11_CANDIDATE_FIELDS) == eligible_fields
 
 
 def test_step11_metadata_defaults_to_null_when_the_source_does_not_provide_it() -> None:
@@ -82,31 +103,24 @@ def test_step11_metadata_defaults_to_null_when_the_source_does_not_provide_it() 
     assert row == (None,) * len(METADATA_FIELDS)
 
 
-def test_step11_metadata_round_trips_source_provided_values() -> None:
+def test_company_name_round_trips_a_raw_observation_value() -> None:
     connection = _database()
     evidence_id = _insert_evidence(connection, _insert_task(connection))
-    expected = (
-        "2024-01-01",
-        "2024-12-31",
-        "2025-02-20",
-        "2025-02-19",
-        "台灣積體電路製造股份有限公司",
-    )
+    observations = json.loads(OBSERVATIONS_PATH.read_text(encoding="utf-8"))
+    company_name = observations["cases"][0]["facts"][
+        "tifrs-notes:CompanyChineseName"
+    ]
 
     connection.execute(
-        f"""
-        UPDATE evidence
-        SET {', '.join(f'{field} = ?' for field in METADATA_FIELDS)}
-        WHERE id = ?
-        """,
-        (*expected, evidence_id),
+        "UPDATE evidence SET company_name = ? WHERE id = ?",
+        (company_name, evidence_id),
     )
 
     row = connection.execute(
-        f"SELECT {', '.join(METADATA_FIELDS)} FROM evidence WHERE id = ?",
+        "SELECT company_name FROM evidence WHERE id = ?",
         (evidence_id,),
     ).fetchone()
-    assert row == expected
+    assert row == (company_name,)
 
 
 def test_step11_migration_preserves_existing_evidence() -> None:
@@ -137,9 +151,11 @@ def test_step11_documents_source_provenance_and_nullability_contract() -> None:
     decision = DECISION_PATH.read_text(encoding="utf-8")
     acceptance = ACCEPTANCE_PATH.read_text(encoding="utf-8")
 
-    for field in METADATA_FIELDS:
+    for field in STEP11_CANDIDATE_FIELDS:
         assert field in decision
         assert field in acceptance
     assert "來源明確提供" in decision
+    assert "direct" in decision
+    assert "derived" in decision
     assert "NULL" in decision
     assert "0004_add_evidence_metadata.sql" in acceptance

@@ -21,10 +21,6 @@ Step-10 以 SQLite migration `migrations/0003_create_evidence.sql` 建立 `STRIC
 | `retrieved_at` | TEXT | 是 | 系統擷取 evidence 的時間；capture metadata |
 | `raw_payload_hash` | TEXT | 否 | 存在 raw payload 時的 content hash |
 | `verification_state` | TEXT | 是 | 驗證狀態；正式值域由 Step-54 定義 |
-| `period_start` | TEXT | 否 | 來源明確提供的報告期間起日 |
-| `period_end` | TEXT | 否 | 來源明確提供的報告期間迄日 |
-| `board_approved_date` | TEXT | 否 | 來源明確提供的董事會通過日期 |
-| `audit_committee_date` | TEXT | 否 | 來源明確提供的審計委員會日期 |
 | `company_name` | TEXT | 否 | 來源明確提供的公司名稱原文 |
 
 `task_id`、`evidence_type`、`source_type`、`retrieved_at` 與 `verification_state` 是每筆 evidence 可由系統保證產生的核心 metadata，因此為必填。尚未定義正式 enum 的 `verification_state` 在本 Step 只要求非空，不提前實作 Step-54。
@@ -37,11 +33,18 @@ SQLite 必須在每個 runtime connection 啟用 `PRAGMA foreign_keys = ON`，�
 
 Source locator、title、subject 與 raw payload hash 也只在實際可得時保存，不用假值填補。
 
-Step-11 的 `period_start`、`period_end`、`board_approved_date`、
-`audit_committee_date` 與 `company_name` 是解析後 metadata，只有來源明確提供時才填寫。
-這五欄皆允許 `NULL`；缺值表示來源未提供或尚未解析，不能以 task 的 fiscal year、
-report period、其他 evidence 或外部推測補值。公司名稱保存該筆 evidence 所載原文，
-不宣稱是跨來源正規化後的公司主檔名稱。
+Step-11 的 parsed metadata 候選欄位是 `period_start`、`period_end`、
+`board_approved_date`、`audit_committee_date` 與 `company_name`。依 Step-3 schema gate，
+只有 source matrix 標示為 `direct` 或具有決定性規則的 `derived` 欄位才能進 production
+schema；nullable placeholder 不能取代證據門檻。
+
+目前只有 `company_name` 是 `direct`，因此 migration 只加入這一欄。它只有來源明確提供時
+才填寫並允許 `NULL`；缺值表示來源未提供或尚未解析，不能以 task、其他 evidence 或外部
+推測補值。公司名稱保存該筆 evidence 所載原文，不宣稱是跨來源正規化後的公司主檔名稱。
+
+`period_start`、`period_end` 與 `board_approved_date` 尚未建立 raw-backed deterministic
+extraction rule；`audit_committee_date` 尚未由現有 fixture 證實。這四欄維持 deferred，
+必須先更新 observation 與 source matrix 才能由後續 migration 加入。
 
 ROADMAP Step-10 的列表雖然列出 `filing_kind`，但 Step-3 的 schema gate 規定只有 `direct` 或具決定性規則的 `derived` 欄位才能進入正式 Schema。現有 MOPS source matrix 將 `filing_kind` 標示為 `not_verified`，因此 Step-10 不建立該欄位。Step-14 必須先確認分類契約與來源規則，再以新 migration 加入；nullable placeholder 不能取代這個證據門檻。
 
@@ -55,4 +58,4 @@ Schema 不含 `xbrl_confirmed_at`，因為公開歷史來源仍為 **NOT PUBLICL
 - `task.engine` 描述執行搜尋的 engine；`evidence.source_type` 描述 artifact 的實際來源。例如 Google engine 發現 Cnyes mirror 時，兩者分別保存為 `google` 與 `cnyes`。
 - Step-10 不定義 logical evidence identity 或 unique constraint；這是 Step-12 的範圍。
 - Step-10 不建立 `filing_kind` 欄位，也不定義 event precision 或 verification state 的正式 enum。
-- Step-11 只加入五個 nullable parsed metadata 欄位，不加入衍生規則或跨來源補值。
+- Step-11 只加入已通過 source-evidence gate 的 nullable `company_name`，不加入衍生規則或跨來源補值。
