@@ -23,6 +23,8 @@ manual_review
 - `mops` 等來源名稱、`corroborated` 等驗證狀態及時間欄位名稱不得被解析成 evidence type。
 - contract 必須將 source、verification、event time 與 capture time 分成不同維度。
 - contract 必須明確拒絕通用 `published_at` 模型。
+- contract 必須將可追溯並識別為特定重大訊息的鏡像分類為 `material_announcement`，並排除 `search_mirror`。
+- `search_mirror` 僅適用於尚未識別上游 artifact／事件的 discovery evidence。
 
 測試先因 `xbrlswarm.domain.EvidenceType` 尚未存在而在 collection 階段失敗。
 
@@ -36,7 +38,7 @@ contracts/evidence-types.json
 docs/evidence-types.md
 ```
 
-enum 提供正式值域與嚴格 parser；JSON contract 供後續 schema 步驟機器化檢查；文件定義分類例子與語意邊界。
+enum 提供正式值域與嚴格 parser；JSON contract 供後續 schema 步驟機器化檢查，並明確規定可追溯的重大訊息鏡像與未解析 discovery evidence 的互斥分類；文件定義分類例子與語意邊界。
 
 ## 語意分離
 

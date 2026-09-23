@@ -66,6 +66,27 @@ def test_contract_keeps_type_source_verification_and_time_separate() -> None:
     }
 
 
+def test_traceable_material_announcement_mirror_is_not_search_mirror() -> None:
+    contract = _load_contract()
+    rules = {rule["id"]: rule for rule in contract["classification_rules"]}
+
+    assert rules["traceable_material_announcement_mirror"] == {
+        "id": "traceable_material_announcement_mirror",
+        "conditions": {
+            "source_is_mirror": True,
+            "upstream_event_type": "material_announcement",
+            "upstream_event_identified": True,
+        },
+        "evidence_type": "material_announcement",
+        "excluded_evidence_types": ["search_mirror"],
+    }
+    assert rules["unresolved_discovery_evidence"] == {
+        "id": "unresolved_discovery_evidence",
+        "conditions": {"upstream_artifact_or_event_identified": False},
+        "evidence_type": "search_mirror",
+    }
+
+
 def test_step7_documents_semantic_boundaries() -> None:
     decision = DECISION_PATH.read_text(encoding="utf-8")
     acceptance = ACCEPTANCE_PATH.read_text(encoding="utf-8")

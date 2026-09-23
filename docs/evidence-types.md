@@ -8,8 +8,8 @@
 | --- | --- | --- |
 | `xbrl_document` | document | XBRL／iXBRL 文件 artifact |
 | `financial_report_document` | document | 未分類為 XBRL artifact 的財務報告文件 |
-| `material_announcement` | announcement | 重大訊息公告事件，包含可追溯至該上游事件的鏡像 |
-| `search_mirror` | discovery | 用來發現或佐證其他 artifact／事件的搜尋結果、文章或鏡像 |
+| `material_announcement` | announcement | 重大訊息公告事件，包含可追溯並識別為該特定上游事件的鏡像 |
+| `search_mirror` | discovery | 尚不足以識別上游 artifact／事件的搜尋結果、文章或鏡像 |
 | `manual_review` | adjudication | 不修改來源證據的人工審查或 resolution record |
 
 正式 enum 位於 `xbrlswarm.domain.EvidenceType`，機器可讀契約位於 `contracts/evidence-types.json`。
@@ -19,8 +19,9 @@
 Evidence type 描述「這筆 evidence 是什麼」，不是「從哪裡取得」。例如：
 
 - MOPS XBRL download 是 `xbrl_document`，來源可以是 `mops`。
-- Goodinfo 詳細頁若可追溯地鏡像一筆 MOPS 重大訊息，描述的仍是 `material_announcement`，來源可以是 `goodinfo`。
-- 搜尋結果 snippet 或只提供文章線索的頁面是 `search_mirror`；在驗證上游事件前，不得升格成 XBRL 文件或重大訊息。
+- Goodinfo 詳細頁若可追溯並識別為一筆特定 MOPS 重大訊息，描述的就是 `material_announcement`，來源可以是 `goodinfo`；不得同時分類為 `search_mirror`。
+- 搜尋結果 snippet 或只提供文章線索的頁面是 `search_mirror`；它僅適用於尚不足以建立已識別上游 artifact／事件的 discovery evidence。
+- 當後續驗證已能識別特定上游 artifact／事件時，必須依該上游對象的種類分類；例如可追溯的重大訊息鏡像必須升格為 `material_announcement`。
 - 人工裁決另存 `manual_review`／resolution record，不得改寫原始 evidence。
 
 因此 `evidence_type` 與 `source_type` 是不同維度。同一來源可產生不同 evidence types，同一 evidence type 也可由官方來源或第三方鏡像提供。
