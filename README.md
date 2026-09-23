@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已完成 **Step-14：保留修訂歷史**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已完成 **Step-15：定義重大訊息公告時間**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -87,6 +87,11 @@ Step-14 加入資料庫保護，禁止改寫或刪除已保存的來源證據，
 無法證明前三者，故保持 `unknown`。正式 SQLite 連線使用
 `xbrlswarm.storage.connect_database`，開啟 foreign keys／recursive triggers 並驗證來源欄位
 都受 immutability guard 保護。詳見 `docs/revision-history.md`。
+
+Step-15 將來源明確提供的重大訊息「發言日期＋發言時間」映射為
+`material_announcement` evidence 的 `event_date`／`event_time`，即
+`announcement_at` 的等價表示；它與文章時間、`retrieved_at`、`xbrl_confirmed_at`
+各有不同語意。詳見 `docs/announcement-time.md`。
 
 ## 階段 0 工具
 
