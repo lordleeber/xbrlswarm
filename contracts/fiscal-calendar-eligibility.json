@@ -1,0 +1,12 @@
+{
+  "contract": "fiscal_calendar_eligibility",
+  "version": 1,
+  "research_assessment": "discovery/fiscal_calendar_research.json",
+  "first_version_scope": "verified_calendar_year_companies_only",
+  "company_period_source_evidence": "required_before_scheduling",
+  "supported_fiscal_calendar": ["calendar_year"],
+  "unknown_or_unverified": "unsupported_do_not_default",
+  "non_calendar_year": "unsupported_until_source_backed_model",
+  "all_market_task_generation": "defer",
+  "fiscal_year_end_production_column": "not_added"
+}

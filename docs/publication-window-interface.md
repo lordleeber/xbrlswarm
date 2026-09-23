@@ -19,3 +19,5 @@ Step-21 的來源研究尚未取得公司別歷史證據，因此仍不能擴充
 `docs/versioned-publication-rules.md` 定義 `valid_from`、`valid_to`、`rule_id`
 的歷史版本契約，但尚未內建實際法規日期。
 此介面不變更 evidence schema，也不會把預期時間窗當作來源已發生的發布事件。
+Step-22 的 `docs/fiscal-calendar-eligibility.md` 另要求 production 排程在呼叫
+此介面前，先證實該公司及歷史期間採曆年制；傳入字串本身不是來源證據。
