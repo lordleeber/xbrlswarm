@@ -14,13 +14,14 @@ Step-8 新增第一個 production SQLite migration，建立最小 `task` 資料�
 - `stock_id` 必須保存為文字，不得遺失前導零。
 - `report_period` 接受 `Q1 / Q2 / Q3 / FY` 並拒絕 `Q4`。
 - `attempts` 與 `fail_count` 預設為 0 且不得為負數。
+- `fiscal_year`、`attempts` 與 `fail_count` 必須實際儲存為 INTEGER，拒絕任意文字與非整數數值。
 - 新任務的 lease 欄位為空，建立／更新時間有預設值。
 
 測試先因 `migrations/0001_create_task.sql` 尚不存在而失敗。
 
 ## GREEN
 
-新增 `migrations/0001_create_task.sql`。Migration 可由 SQLite 直接執行，建立 primary key、task identity unique constraint、report-period check、非負計數器，以及 task／lease metadata 欄位。
+新增 `migrations/0001_create_task.sql`。Migration 可由 SQLite 3.37.0+ 直接執行，建立 `STRICT` table、primary key、task identity unique constraint、report-period check、非負計數器，以及 task／lease metadata 欄位。
 
 ## 不包含
 

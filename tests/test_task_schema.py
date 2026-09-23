@@ -97,6 +97,15 @@ def test_task_table_has_only_the_step8_columns() -> None:
     }
 
 
+def test_task_table_uses_sqlite_strict_typing() -> None:
+    connection = _database()
+    task = next(
+        row for row in connection.execute("PRAGMA table_list('task')") if row[1] == "task"
+    )
+
+    assert task[5] == 1
+
+
 def test_task_identity_is_unique_and_preserves_stock_id_as_text() -> None:
     connection = _database()
     _insert_task(connection, stock_id="0050")
@@ -148,6 +157,17 @@ def test_task_rejects_q4_and_negative_counters() -> None:
         _insert_task(connection, fail_count=-1)
 
 
+@pytest.mark.parametrize("field", ["fiscal_year", "attempts", "fail_count"])
+@pytest.mark.parametrize("invalid_value", ["abc", 0.5])
+def test_integer_fields_reject_text_and_non_integer_numbers(
+    field: str, invalid_value: str | float
+) -> None:
+    connection = _database()
+
+    with pytest.raises(sqlite3.IntegrityError, match="INTEGER column"):
+        _insert_task(connection, **{field: invalid_value})
+
+
 def test_new_task_defaults_counters_timestamps_and_empty_lease() -> None:
     connection = _database()
     connection.execute(
@@ -175,6 +195,7 @@ def test_step8_documents_schema_decisions_and_boundaries() -> None:
 
     assert "(stock_id, fiscal_year, report_period)" in decision
     assert "report_scope" in decision
+    assert "STRICT" in decision
     assert "Step-9" in decision
     assert "lease" in decision
     assert "不建立 evidence table" in decision

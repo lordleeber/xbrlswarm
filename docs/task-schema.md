@@ -2,7 +2,7 @@
 
 ## Schema
 
-Step-8 以 SQLite migration `migrations/0001_create_task.sql` 建立 `task` 資料表。欄位如下：
+Step-8 以 SQLite migration `migrations/0001_create_task.sql` 建立 `task` 資料表。資料表使用 SQLite `STRICT` typing，因此需要 SQLite 3.37.0 或以上版本。欄位如下：
 
 | 欄位 | SQLite 型別 | 必填 | 語意 |
 | --- | --- | --- | --- |
@@ -18,6 +18,8 @@ Step-8 以 SQLite migration `migrations/0001_create_task.sql` 建立 `task` 資�
 | `worker_id` | TEXT | 否 | 持有 lease 的 worker；尚未 lease 時為空 |
 | `created_at` | TEXT | 是 | 建立時間，預設為 UTC RFC 3339 字串 |
 | `updated_at` | TEXT | 是 | 最後更新時間，預設為 UTC RFC 3339 字串 |
+
+`STRICT` 表保證 `fiscal_year`、`attempts` 與 `fail_count` 實際儲存為 `INTEGER`；無法無損轉換的文字或非整數數值會在寫入時被拒絕。欄位原有的 `CHECK` 仍負責 fiscal year 與計數器的值域限制。
 
 `updated_at` 的初始值由資料庫產生；後續修改 task 的程式必須在同一交易內更新它。本 Step 不提前建立 Step-24 的 lease transition 或 trigger。
 

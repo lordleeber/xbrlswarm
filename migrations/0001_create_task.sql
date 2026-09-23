@@ -12,4 +12,4 @@ CREATE TABLE task (
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
     updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
     CONSTRAINT task_identity_unique UNIQUE (stock_id, fiscal_year, report_period)
-);
+) STRICT;

@@ -61,7 +61,7 @@ FY
 
 ## Task schema
 
-SQLite migration `migrations/0001_create_task.sql` 建立 Step-8 的最小 `task` 資料表，並以 `(stock_id, fiscal_year, report_period)` unique constraint 保護 provisional task identity。`report_scope` 仍不納入；engine enum、完整 state machine 與 lease transition 留待後續步驟。詳細 schema 契約見 `docs/task-schema.md`。
+SQLite migration `migrations/0001_create_task.sql` 建立 Step-8 的最小 `STRICT` task 資料表，並以 `(stock_id, fiscal_year, report_period)` unique constraint 保護 provisional task identity。`report_scope` 仍不納入；engine enum、完整 state machine 與 lease transition 留待後續步驟。詳細 schema 契約見 `docs/task-schema.md`。
 
 ## 階段 0 工具
 
