@@ -129,6 +129,13 @@ def test_overlapping_versions_or_reused_rule_ids_are_rejected() -> None:
     with pytest.raises(ValueError, match="rule_id"):
         _provider(old, reused_id)
 
+    reused_across_scope = _rule(
+        valid_from=date(2025, 1, 1), valid_to=None,
+        rule_id="TEST-OLD", report_period=ReportPeriod.Q2,
+    )
+    with pytest.raises(ValueError, match="rule_id"):
+        _provider(old, reused_across_scope)
+
 
 @pytest.mark.parametrize(
     "change",
@@ -157,6 +164,7 @@ def test_contract_and_docs_define_temporal_selection_without_law_values() -> Non
         "effective_date": "explicit_provider_dependency",
         "rule_scope": ["report_period", "company_class", "fiscal_calendar"],
         "overlap": "reject_same_scope",
+        "rule_id_uniqueness": "global_within_provider",
         "missing_or_gap": "unresolved",
         "built_in_legal_rules": False,
     }

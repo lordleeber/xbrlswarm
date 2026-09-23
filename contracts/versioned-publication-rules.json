@@ -6,6 +6,7 @@
   "effective_date": "explicit_provider_dependency",
   "rule_scope": ["report_period", "company_class", "fiscal_calendar"],
   "overlap": "reject_same_scope",
+  "rule_id_uniqueness": "global_within_provider",
   "missing_or_gap": "unresolved",
   "built_in_legal_rules": false
 }
