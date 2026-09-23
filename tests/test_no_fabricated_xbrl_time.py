@@ -47,7 +47,7 @@ def test_discovery_keeps_confirmation_time_unverified() -> None:
     assert confirmed["status"] == "not_verified"
 
 
-def test_contract_rejects_all_three_time_substitutes() -> None:
+def test_contract_rejects_all_semantic_time_substitutes() -> None:
     contract = json.loads(CONTRACT.read_text(encoding="utf-8"))
 
     assert contract == {
@@ -59,6 +59,8 @@ def test_contract_rejects_all_three_time_substitutes() -> None:
             "announcement_at",
             "article_published_at",
             "retrieved_at",
+            "http_date",
+            "http_last_modified",
         ],
         "prohibited_operation": "rename_or_derive",
         "schema_field_allowed_without_source_evidence": False,
@@ -73,6 +75,8 @@ def test_step16_documents_event_boundaries() -> None:
         "announcement_at",
         "article_published_at",
         "retrieved_at",
+        "http_date",
+        "http_last_modified",
         "xbrl_confirmed_at",
     ):
         assert field in decision

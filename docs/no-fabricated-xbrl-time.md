@@ -4,13 +4,15 @@
 目前公開歷史來源仍為 **NOT PUBLICLY VERIFIED**；MOPS download fixtures
 未提供此事件時間，不表示事件不存在或所有公開來源皆不可得。
 
-以下三種時間不能改名或推導成 `xbrl_confirmed_at`：
+以下時間不能改名或推導成 `xbrl_confirmed_at`：
 
 | 已知時間 | 實際語意 | 保存位置 |
 | --- | --- | --- |
 | `announcement_at` | 重大訊息發言事件 | `material_announcement` evidence 的 `event_date`／`event_time` |
 | `article_published_at` | 文章或鏡像內容發布 | 其來源自己的事件語意；不能當作申報確認 |
 | `retrieved_at` | 本系統擷取來源的時間 | evidence 擷取 metadata |
+| `http_date` | HTTP `Date` 回應標頭時間 | HTTP response metadata |
+| `http_last_modified` | HTTP `Last-Modified` 回應標頭時間 | HTTP response metadata |
 
 即使這些時間與某筆文件事件的時間值相同，也不能從相等性推論為 XBRL 確認時間。
 `xbrl_document` 的存在或其 `event_date`／`event_time` 亦不自動證明確認事件。

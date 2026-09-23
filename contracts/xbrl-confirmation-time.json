@@ -6,7 +6,9 @@
   "prohibited_substitutes": [
     "announcement_at",
     "article_published_at",
-    "retrieved_at"
+    "retrieved_at",
+    "http_date",
+    "http_last_modified"
   ],
   "prohibited_operation": "rename_or_derive",
   "schema_field_allowed_without_source_evidence": false
