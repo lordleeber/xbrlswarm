@@ -127,7 +127,7 @@ def test_window_rejects_invalid_or_unnamed_rules(earliest, latest, rule_id) -> N
 def test_contract_defines_interface_without_inventing_law() -> None:
     assert json.loads(CONTRACT.read_text(encoding="utf-8")) == {
         "contract": "publication_window_interface",
-        "version": 1,
+        "version": 2,
         "function": "expected_publication_window",
         "inputs": [
             "fiscal_year",
@@ -139,7 +139,7 @@ def test_contract_defines_interface_without_inventing_law() -> None:
         "rule_provider": "explicit_injection_required",
         "missing_rule": "raise_publication_rule_unavailable",
         "supported_fiscal_calendar": ["calendar_year"],
-        "historical_rule_versioning_deferred_to_step": 20,
+        "versioned_rule_provider_contract": "versioned-publication-rules",
         "non_calendar_year_research_deferred_to_step": 21,
     }
 
