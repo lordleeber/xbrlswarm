@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 
-MIGRATION_PATH = Path("migrations/0001_create_task.sql")
+MIGRATIONS_DIR = Path("migrations")
 IDENTITY_CONTRACT_PATH = Path("contracts/report-identity-candidate.json")
 DECISION_PATH = Path("docs/task-schema.md")
 ACCEPTANCE_PATH = Path("docs/step-8-acceptance.md")
@@ -13,7 +13,8 @@ ACCEPTANCE_PATH = Path("docs/step-8-acceptance.md")
 
 def _database() -> sqlite3.Connection:
     connection = sqlite3.connect(":memory:")
-    connection.executescript(MIGRATION_PATH.read_text(encoding="utf-8"))
+    for path in sorted(MIGRATIONS_DIR.glob("*.sql")):
+        connection.executescript(path.read_text(encoding="utf-8"))
     return connection
 
 
