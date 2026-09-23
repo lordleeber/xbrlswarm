@@ -57,6 +57,6 @@ Schema 不含 `xbrl_confirmed_at`，因為公開歷史來源仍為 **NOT PUBLICL
 - Evidence type 值域沿用 Step-7，不將 `source_type` 或 `verification_state` 混入。
 - `task.engine` 描述執行搜尋的 engine；`evidence.source_type` 描述 artifact 的實際來源。例如 Google engine 發現 Cnyes mirror 時，兩者分別保存為 `google` 與 `cnyes`。
 - Step-12 已在 `contracts/logical-evidence-identity.json` 定義 logical evidence identity；
-  Step-13 前仍不建立 unique constraint 或寫入時去重。
+  Step-13 以 source-specific partial unique indexes 保護已解析的 MOPS／Goodinfo identity。
 - Step-10 不建立 `filing_kind` 欄位，也不定義 event precision 或 verification state 的正式 enum。
 - Step-11 只加入已通過 source-evidence gate 的 nullable `company_name`，不加入衍生規則或跨來源補值。

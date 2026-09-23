@@ -41,8 +41,10 @@ Identity 比較結果是 `same`、`different` 或 `unresolved`：
 1. `task_id`、`source_type` 或 `evidence_type` 兩邊皆有值且不同時，結果是 `different`。
 2. 依共同的 `source_type` 選擇 profile；沒有已定義 profile 時結果是 `unresolved`。
 3. Profile comparison field 只有在兩邊皆有值且不相等時，才證明為 `different`。
-4. 沒有已知差異，但 profile 的必要欄位任一側缺值時，結果是 `unresolved`。
-5. 沒有已知差異且兩邊都具備 profile 必要欄位時，結果才是 `same`。
+4. Profile comparison field 只有一側有值時，結果是 `unresolved`。
+5. 沒有已知差異，但 profile 的必要欄位兩側都缺值時，結果也是 `unresolved`。
+6. 沒有已知差異、沒有 asymmetric missing，且兩邊都具備 profile 必要欄位時，結果才是
+   `same`。
 
 `NULL` 代表未知，不證明相同或不同。特別是 profile 必要欄位出現 asymmetric missing
 （一側 `NULL`、另一側有值）時，如果沒有其他兩邊皆已知且不同的欄位，結果必須是
@@ -51,8 +53,8 @@ locator。`unresolved` evidence 必須保留，不能自動折疊。
 
 Event tuple 中的 nullable 值描述 evidence 實際保存的事件主張。例如兩筆文件都沒有
 event timestamp，但 MOPS 的 task、source、locator、evidence type 與 payload 完全相同時，
-仍可辨識為同一個 artifact。兩側皆有 event 值且互相衝突時才證明是不同 identity；單側
-新增 optional event metadata 不會推翻 profile 已由 locator + payload 建立的同一性。
+仍可辨識為同一個 artifact。兩側皆有 event 值且互相衝突時是 `different`；單側新增
+optional event metadata 時是 `unresolved`，不能自動折疊。
 
 ## 不參與 identity 的欄位
 
@@ -75,8 +77,8 @@ event 或 payload 值若不同，則必須視為不同證據；這會保留不�
 
 ## Step 邊界
 
-- Step-12 只定義 identity contract，不建立 unique constraint，也不實作寫入時去重；這是
-  Step-13 的範圍。
+- Step-13 以 source-specific partial unique indexes 實作已解析 identity 的重複防護；
+  `unresolved` evidence 不會被自動折疊。
 - Payload 不同目前只表示不同 logical evidence。它是否為 original、amendment、
   supplemental 或其他修訂關係，由 Step-14 定義。
 - `event_precision` 的正式值域留給 Step-17；在此只比較 evidence table 已保存的值。

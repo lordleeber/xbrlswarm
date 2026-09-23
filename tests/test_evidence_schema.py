@@ -222,7 +222,12 @@ def test_engine_evidence_type_source_and_verification_are_separate_dimensions() 
 
 
 def test_step10_does_not_guess_a_logical_evidence_unique_key() -> None:
-    connection = _database()
+    connection = sqlite3.connect(":memory:")
+    connection.execute("PRAGMA foreign_keys = ON")
+    for path in sorted(MIGRATIONS_DIR.glob("*.sql")):
+        if path > EVIDENCE_MIGRATION_PATH:
+            continue
+        _apply(connection, path)
     task_id = _insert_task(connection)
 
     _insert_evidence(connection, task_id=task_id)

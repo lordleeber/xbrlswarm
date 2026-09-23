@@ -8,6 +8,7 @@ CONTRACT_PATH = Path("contracts/logical-evidence-identity.json")
 DECISION_PATH = Path("docs/logical-evidence-identity.md")
 ACCEPTANCE_PATH = Path("docs/step-12-acceptance.md")
 MIGRATIONS_DIR = Path("migrations")
+STEP12_LAST_MIGRATION_PATH = Path("migrations/0004_add_evidence_metadata.sql")
 
 
 def _load_contract() -> dict[str, Any]:
@@ -40,6 +41,11 @@ def _compare(
         for field in profile["comparison_fields"]
     ):
         return contract["resolution"]["any_field_different_outcome"]
+    if any(
+        (left.get(field) is None) != (right.get(field) is None)
+        for field in profile["comparison_fields"]
+    ):
+        return contract["resolution"]["asymmetric_missing_outcome"]
     required = profile["required_non_null"]
     if any(left.get(field) is None or right.get(field) is None for field in required):
         return contract["resolution"]["missing_required_outcome"]
@@ -68,7 +74,7 @@ def test_contract_defines_the_five_roadmap_identity_dimensions() -> None:
     contract = _load_contract()
 
     assert contract["contract"] == "logical_evidence_identity"
-    assert contract["version"] == 1
+    assert contract["version"] == 2
     assert contract["identity_kind"] == "logical_evidence"
     assert contract["comparison"] == "exact_stored_value"
     assert contract["groups"] == {
@@ -177,10 +183,12 @@ def test_missing_locator_or_payload_keeps_identity_unresolved() -> None:
             "different_if_known_universal_value_differs",
             "select_source_profile",
             "different_if_both_known_profile_values_differ",
+            "unresolved_if_profile_value_asymmetric_missing",
             "unresolved_if_profile_required_value_missing",
             "same",
         ],
         "missing_required_outcome": "unresolved",
+        "asymmetric_missing_outcome": "unresolved",
         "unmapped_source_outcome": "unresolved",
         "all_fields_equal_outcome": "same",
         "any_field_different_outcome": "different",
@@ -201,6 +209,15 @@ def test_asymmetric_missing_required_value_is_unresolved_not_different() -> None
         incomplete = {**complete, field: None}
         assert _compare(contract, incomplete, complete) == "unresolved"
         assert _compare(contract, complete, incomplete) == "unresolved"
+
+
+def test_asymmetric_missing_optional_profile_value_is_unresolved() -> None:
+    contract = _load_contract()
+    complete = {**_base_evidence(), "event_date": "2025-02-20"}
+    incomplete = {**complete, "event_date": None}
+
+    assert _compare(contract, incomplete, complete) == "unresolved"
+    assert _compare(contract, complete, incomplete) == "unresolved"
 
 
 def test_goodinfo_can_resolve_identity_without_a_payload_hash() -> None:
@@ -272,6 +289,8 @@ def test_unmapped_source_profile_stays_unresolved() -> None:
 def test_step12_does_not_add_deduplication_or_revision_schema() -> None:
     connection = sqlite3.connect(":memory:")
     for path in sorted(MIGRATIONS_DIR.glob("*.sql")):
+        if path > STEP12_LAST_MIGRATION_PATH:
+            continue
         connection.executescript(path.read_text(encoding="utf-8"))
 
     assert [row for row in connection.execute("PRAGMA index_list(evidence)") if row[2]] == []
