@@ -1,0 +1,38 @@
+{
+  "contract": "evidence_types",
+  "version": 1,
+  "types": [
+    {
+      "value": "xbrl_document",
+      "role": "document",
+      "meaning": "An XBRL or iXBRL document artifact."
+    },
+    {
+      "value": "financial_report_document",
+      "role": "document",
+      "meaning": "A financial-report document artifact that is not classified as the XBRL artifact."
+    },
+    {
+      "value": "material_announcement",
+      "role": "announcement",
+      "meaning": "A material announcement event, including a traceable mirror of that upstream announcement."
+    },
+    {
+      "value": "search_mirror",
+      "role": "discovery",
+      "meaning": "A search result, article, or mirror used to discover or corroborate another artifact or event."
+    },
+    {
+      "value": "manual_review",
+      "role": "adjudication",
+      "meaning": "A human review or resolution record that does not mutate source evidence."
+    }
+  ],
+  "separation": {
+    "source_type": "separate_dimension",
+    "verification_state": "separate_dimension",
+    "event_time": "optional_source_claim",
+    "retrieved_at": "capture_metadata",
+    "generic_published_at": false
+  }
+}
