@@ -28,6 +28,9 @@ Step-26 也接受 `not_found`、`rejected`，將 task 改成同名語意耗盡�
 Step-27 另接受 `rate_limited`、`transport_error`、`temporary_error`，
 保留目前 engine、增加 `fail_count` 並記錄 `retry_at`，預設 60 秒後可再派發。
 `--retry-delay-seconds` 可設定正整數秒數；等待中的 task 不會立即重新派發。
+Step-28 定義了固定 engine 順序，但跨來源派發須等待後續來源 gate；
+Step-33 尚未通過時，MOPS 語意耗盡 task 不會派給 Goodinfo。
+已有的 `grounded_ai` task 耗盡時轉為 `terminal_unresolved`，不再派發。
 重複回報、錯誤 worker、逾期租約或舊 generation 回 `409`，不會改寫 task。
 Step-25 在每次 `/lease` 請求內回收逾期 task，預設 300 秒，可用
 `--lease-timeout-seconds` 調整；回收保留 `attempts`，再次派發會遞增它。
@@ -41,6 +44,7 @@ Step-25 在每次 `/lease` 請求內回收逾期 task，預設 300 秒，可用
 Step-24 已以條件式更新及並行測試正式驗證多 worker 原子 lease 契約，詳見
 `docs/atomic-task-lease.md`；Step-25 回收語意詳見 `docs/lazy-lease-recovery.md`。
 Step-26 語意耗盡詳見 `docs/semantic-exhaustion.md`；Step-27 重試語意詳見
-`docs/retryable-failures.md`。換 engine、完整 stats／status
+`docs/retryable-failures.md`；Step-28 來源順序詳見 `docs/engine-fallback.md`。
+完整 stats／status
 指標與 evidence ingestion 留待後續 Steps，不能將目前的 `success` 擴充解讀為
 完成來源稽核。
