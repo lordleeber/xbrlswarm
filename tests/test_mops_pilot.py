@@ -3,7 +3,7 @@
 import gzip
 import json
 import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
@@ -108,7 +108,7 @@ def test_invalid_source_response_is_retryable_and_not_evidence(tmp_path: Path) -
     with sqlite3.connect(database) as connection:
         assert connection.execute(
             "SELECT state, retry_at FROM task WHERE id = 1"
-        ).fetchone() == ("temporary_error", "2026-09-24T15:01:00.000Z")
+        ).fetchone() == ("temporary_error", "2026-09-25T15:00:00.000Z")
 
 
 def test_pilot_will_not_overwrite_existing_database(tmp_path: Path) -> None:
@@ -131,6 +131,39 @@ def test_valid_but_changed_payload_requires_new_audit(tmp_path: Path) -> None:
     assert first["evidence_id"] is None
     assert first["task_state"] == "temporary_error"
     assert "recapture" in first["error"]
+
+
+def test_expired_retry_does_not_interrupt_remaining_fixed_cases(tmp_path: Path) -> None:
+    # First lease, retrieval, and result happen at T0. Before the next lease,
+    # advance beyond even the pilot's one-day cooldown to force recovery.
+    calls = 0
+
+    def advancing_clock():
+        nonlocal calls
+        calls += 1
+        return NOW if calls <= 3 else NOW + timedelta(hours=25)
+
+    database = tmp_path / "pilot.sqlite"
+    report = run_mops_pilot(
+        database,
+        opener=_opener(invalid_case="2330-2024-Q1"),
+        clock=advancing_clock,
+    )
+
+    assert report["summary"] == {
+        "attempted": 12,
+        "completed": 11,
+        "retryable": 1,
+        "fixture_hash_matches": 11,
+        "persisted_evidence": 11,
+    }
+    assert [row["case"] for row in report["results"]] == [case.key for case in DISCOVERY_CASES]
+    assert report["results"][0]["task_state"] == "temporary_error"
+    assert all(row["task_state"] == "completed" for row in report["results"][1:])
+    with sqlite3.connect(database) as connection:
+        assert connection.execute(
+            "SELECT state FROM task WHERE id = 1"
+        ).fetchone() == ("undone",)
 
 
 def test_committed_live_pilot_report_matches_verified_captures() -> None:

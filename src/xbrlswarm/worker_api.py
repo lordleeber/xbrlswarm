@@ -57,7 +57,9 @@ class TaskStore:
             raise FileNotFoundError(f"database file does not exist: {self.database}")
         return connect_database(self.database)
 
-    def lease(self, worker_id: str) -> dict | None:
+    def lease(self, worker_id: str, *, task_id: int | None = None) -> dict | None:
+        if task_id is not None and (type(task_id) is not int or task_id <= 0):
+            raise ValueError("task_id must be a positive integer")
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
@@ -86,11 +88,13 @@ class TaskStore:
                 """UPDATE task SET state = 'dispatched', worker_id = ?,
                           dispatched_at = ?, updated_at = ?, attempts = attempts + 1
                    WHERE id = (
-                       SELECT id FROM task WHERE state = 'undone' ORDER BY id LIMIT 1
+                       SELECT id FROM task
+                       WHERE state = 'undone' AND (? IS NULL OR id = ?)
+                       ORDER BY id LIMIT 1
                    ) AND state = 'undone'
                    RETURNING id, stock_id, fiscal_year, report_period, engine,
                              dispatched_at, attempts""",
-                (worker_id, now, now),
+                (worker_id, now, now, task_id, task_id),
             ).fetchone()
             connection.commit()
             if row is None:

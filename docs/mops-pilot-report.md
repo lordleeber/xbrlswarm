@@ -6,6 +6,11 @@
 2330、6147、4542 的 2024 Q1／Q2／Q3／FY 合併 XBRL，共 12 個固定案例。
 每筆使用 Step-2 已驗證的 URL 與 request headers；沒有查詢個體報告。
 
+試點每個固定案例只執行一次：runner 對該案例的 task id 定向 lease，並把試點
+retry cooldown 設為一天，避免一般 60 秒重試排程在本輪稽核中搶先重新派發
+較早失敗的 task。若異常漫長的稽核使 cooldown 仍到期，定向 lease 也會繼續
+執行尚未檢查的案例；逐筆 `task_state` 記錄該筆 result 當下的狀態。
+
 使用 `python -m xbrlswarm.mops_pilot` 在獨立 SQLite 資料庫套用全部 migration，
 建立 12 個 MOPS task。每筆依序經 `/lease` 同一套 `TaskStore` 交易邏輯、
 即時 HTTP 擷取、Step-30 parser、Step-31 evidence 接受與 result 完成邏輯。

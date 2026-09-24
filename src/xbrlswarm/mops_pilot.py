@@ -27,7 +27,7 @@ def _timestamp(value: datetime) -> str:
     )
 
 
-def _prepare_database(database: Path, migrations: Path, captures: tuple) -> None:
+def _prepare_database(database: Path, migrations: Path, captures: tuple) -> dict[str, int]:
     database.parent.mkdir(parents=True, exist_ok=True)
     try:
         descriptor = os.open(database, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
@@ -35,17 +35,20 @@ def _prepare_database(database: Path, migrations: Path, captures: tuple) -> None
         raise FileExistsError(f"pilot database already exists: {database}") from exc
     os.close(descriptor)
     connection = sqlite3.connect(database)
+    task_ids: dict[str, int] = {}
     try:
         connection.execute("PRAGMA foreign_keys = ON")
         for path in sorted(migrations.glob("*.sql")):
             connection.executescript(path.read_text(encoding="utf-8"))
         for capture in captures:
             case = capture.case
-            connection.execute(
+            cursor = connection.execute(
                 """INSERT INTO task (stock_id, fiscal_year, report_period, state, engine)
                    VALUES (?, ?, ?, 'undone', 'mops')""",
                 (case.stock_id, case.fiscal_year, case.report_period.value),
             )
+            assert cursor.lastrowid is not None
+            task_ids[case.key] = cursor.lastrowid
         connection.commit()
     except BaseException:
         connection.rollback()
@@ -53,6 +56,7 @@ def _prepare_database(database: Path, migrations: Path, captures: tuple) -> None
         database.unlink(missing_ok=True)
         raise
     connection.close()
+    return task_ids
 
 
 def run_mops_pilot(
@@ -67,13 +71,16 @@ def run_mops_pilot(
     """Run the 12 fixed cases once and return a machine-readable audit record."""
 
     captures = verify_mops_capture_set(fixture_root)
-    _prepare_database(Path(database), migrations, captures)
-    store = TaskStore(database, clock=clock)
+    task_ids = _prepare_database(Path(database), migrations, captures)
+    # A pilot examines each fixed case once. Keep failed cases cooling down
+    # throughout an ordinary run, while targeted leases preserve ordering even
+    # if the audit clock advances beyond this delay.
+    store = TaskStore(database, clock=clock, retry_delay_seconds=24 * 60 * 60)
     results: list[dict] = []
 
     for capture in captures:
         case = capture.case
-        lease = store.lease("mops-pilot")
+        lease = store.lease("mops-pilot", task_id=task_ids[case.key])
         if lease is None or (
             lease["stock_id"], lease["fiscal_year"], lease["report_period"], lease["engine"]
         ) != (case.stock_id, case.fiscal_year, case.report_period.value, "mops"):
