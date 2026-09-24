@@ -22,6 +22,7 @@ Step-10 以 SQLite migration `migrations/0003_create_evidence.sql` 建立 `STRIC
 | `raw_payload_hash` | TEXT | 否 | 存在 raw payload 時的 content hash |
 | `verification_state` | TEXT | 是 | 驗證狀態；正式值域由 Step-54 定義 |
 | `company_name` | TEXT | 否 | 來源明確提供的公司名稱原文 |
+| `raw_snapshot_path` | TEXT | 否 | Step-31 快照政策開啟時的原始回應內容定址路徑 |
 
 `task_id`、`evidence_type`、`source_type`、`retrieved_at` 與 `verification_state` 是每筆 evidence 可由系統保證產生的核心 metadata，因此為必填。尚未定義正式 enum 的 `verification_state` 在本 Step 只要求非空，不提前實作 Step-54。
 
@@ -32,6 +33,10 @@ SQLite 必須在每個 runtime connection 啟用 `PRAGMA foreign_keys = ON`，�
 `event_date`、`event_time` 與 `event_precision` 只有在來源明確提供並能辨識事件語意時才填寫。不得由 `retrieved_at`、公告時間、文章時間或 HTTP metadata 推導其他事件時間。
 
 Source locator、title、subject 與 raw payload hash 也只在實際可得時保存，不用假值填補。
+
+Step-31 的 MOPS 接受流程對每個已接受的原始回應保存 SHA-256 `raw_payload_hash`。
+可選的 `raw_snapshot_path` 由 migration `0009_add_raw_snapshot_path.sql` 加入，
+只有快照政策開啟才填寫；詳見 `docs/step-31-acceptance.md`。
 
 Step-11 的 parsed metadata 候選欄位是 `period_start`、`period_end`、
 `board_approved_date`、`audit_committee_date` 與 `company_name`。依 Step-3 schema gate，

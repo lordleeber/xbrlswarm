@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已完成 **Step-30：只解析已證實的 MOPS 欄位**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已完成 **Step-31：保存 MOPS 原始回應**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -112,6 +112,9 @@ Step-29 在 `tests/fixtures/mops/` 固定 Q1／Q2／Q3／FY 合併報告、官�
 
 Step-30 的 MOPS parser 只輸出來源矩陣已驗證的身份、期別、範圍和來源位置；
 未知申報欄位與非 XBRL 回應會被拒絕。詳見 `docs/step-30-acceptance.md`。
+
+Step-31 接受 MOPS evidence 時保存原始 response 的 SHA-256；開啟快照政策時
+另存原始 bytes 和內容定址路徑。詳見 `docs/step-31-acceptance.md`。
 
 ## 報告識別候選方案
 
