@@ -60,8 +60,8 @@ class AnnouncementListCapture:
 
 def _same_query(requested: str, actual: str) -> bool:
     expected, returned = urlsplit(requested), urlsplit(actual)
-    requested_fields = parse_qs(expected.query)
-    returned_fields = parse_qs(returned.query)
+    requested_fields = parse_qs(expected.query, keep_blank_values=True)
+    returned_fields = parse_qs(returned.query, keep_blank_values=True)
     return (
         (returned.scheme, returned.netloc) == (expected.scheme, expected.netloc)
         and returned.path in {"/tw/StockAnnounceList.asp", "/tw2/StockAnnounceList.asp"}

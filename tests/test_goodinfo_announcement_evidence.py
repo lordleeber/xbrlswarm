@@ -12,6 +12,7 @@ from xbrlswarm.domain import ReportPeriod
 from xbrlswarm.goodinfo_candidates import GoodinfoListCandidate
 from xbrlswarm.goodinfo_detail import capture_goodinfo_detail
 from xbrlswarm.goodinfo_evidence import accept_goodinfo_announcement
+from xbrlswarm.goodinfo_locator import goodinfo_announcement_locator
 from xbrlswarm.storage import connect_database
 
 
@@ -36,14 +37,18 @@ def _capture(tmp_path: Path, *, period: str | None = "2024/01/01~2024/03/31",
              scheduled: bool = False, speech_time: str = "14:48:53",
              fiscal_year: int = 2024, report_period: str = "Q1",
              speech_date: str = "2024/05/10", extra: str = "",
-             final_path: str | None = None):
+             final_path: str | None = None, request_path: str = "/tw/StockAnnounceDetail.asp",
+             reverse_query: bool = False, subject_suffix: str = ""):
     period_label = "年度" if report_period == "FY" else f"年第{report_period[1]}季"
-    url_subject = f"公告本公司董事會通過{fiscal_year - 1911}{period_label}合併財務報告"
-    visible_subject = f"公告本公司董事會通過{fiscal_year}{period_label}合併財務報告"
-    detail_url = "https://goodinfo.tw/tw/StockAnnounceDetail.asp?" + urlencode({
-        "STOCK_ID": "2330", "CLAIM_TIME": f"{speech_date} {speech_time}",
-        "SUBJECT": url_subject,
-    })
+    url_subject = f"公告本公司董事會通過{fiscal_year - 1911}{period_label}合併財務報告{subject_suffix}"
+    visible_subject = f"公告本公司董事會通過{fiscal_year}{period_label}合併財務報告{subject_suffix}"
+    params = [
+        ("STOCK_ID", "2330"), ("CLAIM_TIME", f"{speech_date} {speech_time}"),
+        ("SUBJECT", url_subject),
+    ]
+    detail_url = "https://goodinfo.tw" + request_path + "?" + urlencode(
+        list(reversed(params)) if reverse_query else params
+    )
     url_parts = urlsplit(detail_url)
     final_url = urlunsplit(url_parts._replace(path=final_path)) if final_path else detail_url
     candidate = GoodinfoListCandidate(
@@ -103,7 +108,7 @@ def test_accepts_speech_time_as_second_precision_announcement(tmp_path: Path) ->
     assert row == (
         "material_announcement", "2024-05-10", "14:48:53", "second",
         "goodinfo", "StockAnnounceDetail.asp", capture.candidate.detail_url,
-        capture.candidate.detail_url, None,
+        goodinfo_announcement_locator(capture.candidate.detail_url), None,
         "公告本公司董事會通過2024年第1季合併財務報告",
         "2026-09-24T12:34:56.000Z", capture.raw_payload_hash,
         None, "unverified",
@@ -168,7 +173,124 @@ def test_source_url_uses_verified_redirect_target(tmp_path: Path) -> None:
         ).fetchone()
     assert urlsplit(source_url).path == "/tw2/StockAnnounceDetail.asp"
     assert source_url == json.loads(capture.metadata_path.read_text())["response"]["final_url"]
-    assert locator == capture.candidate.detail_url
+    assert locator == goodinfo_announcement_locator(capture.candidate.detail_url)
+
+
+def test_url_path_and_query_order_variants_are_one_announcement(tmp_path: Path) -> None:
+    database = _database(tmp_path)
+    original = _capture(tmp_path / "first")
+    variant = _capture(
+        tmp_path / "second", request_path="/tw2/StockAnnounceDetail.asp",
+        reverse_query=True,
+    )
+    assert original.candidate.detail_url != variant.candidate.detail_url
+    assert goodinfo_announcement_locator(original.candidate.detail_url) == (
+        goodinfo_announcement_locator(variant.candidate.detail_url)
+    )
+    first_row = accept_goodinfo_announcement(
+        database, 1, original, fiscal_calendar="calendar_year",
+    )
+    second_row = accept_goodinfo_announcement(
+        database, 1, variant, fiscal_calendar="calendar_year",
+    )
+    assert second_row == first_row
+    with connect_database(database) as connection:
+        assert connection.execute("SELECT COUNT(*) FROM evidence").fetchone()[0] == 1
+
+
+def test_same_stock_and_time_but_different_subject_stays_distinct(tmp_path: Path) -> None:
+    database = _database(tmp_path)
+    original = _capture(tmp_path / "first")
+    correction = _capture(tmp_path / "second", subject_suffix="(更正)")
+    first_row = accept_goodinfo_announcement(
+        database, 1, original, fiscal_calendar="calendar_year",
+    )
+    second_row = accept_goodinfo_announcement(
+        database, 1, correction, fiscal_calendar="calendar_year",
+    )
+    assert second_row.id != first_row.id
+    assert goodinfo_announcement_locator(original.candidate.detail_url) != (
+        goodinfo_announcement_locator(correction.candidate.detail_url)
+    )
+
+
+def _insert_legacy_url_locator(database: Path, capture, *, source_locator: str | None) -> int:
+    with connect_database(database) as connection:
+        cursor = connection.execute(
+            """INSERT INTO evidence (
+                 task_id, evidence_type, event_date, event_time, event_precision,
+                 source_type, source_url, source_locator, source_subject,
+                 retrieved_at, raw_payload_hash, verification_state
+               ) VALUES (1, 'material_announcement', '2024-05-10', '14:48:53',
+                         'second', 'goodinfo', ?, ?,
+                         '公告本公司董事會通過2024年第1季合併財務報告',
+                         '2026-09-24T12:34:56.000Z', ?, 'unverified')""",
+            (capture.candidate.detail_url, source_locator, capture.raw_payload_hash),
+        )
+        assert cursor.lastrowid is not None
+        return cursor.lastrowid
+
+
+def test_legacy_step38_url_locator_is_reused_without_rewriting(tmp_path: Path) -> None:
+    database = _database(tmp_path)
+    original = _capture(tmp_path / "old")
+    variant = _capture(
+        tmp_path / "new", request_path="/tw2/StockAnnounceDetail.asp",
+        reverse_query=True,
+    )
+    legacy_id = _insert_legacy_url_locator(
+        database, original, source_locator=original.candidate.detail_url,
+    )
+    stored = accept_goodinfo_announcement(
+        database, 1, variant, fiscal_calendar="calendar_year",
+    )
+    assert stored.id == legacy_id
+    with connect_database(database) as connection:
+        rows = connection.execute("SELECT source_locator FROM evidence").fetchall()
+    assert rows == [(original.candidate.detail_url,)]
+
+
+def test_missing_legacy_locator_is_not_inferred_from_source_url(tmp_path: Path) -> None:
+    database = _database(tmp_path)
+    capture = _capture(tmp_path)
+    _insert_legacy_url_locator(database, capture, source_locator=None)
+    accept_goodinfo_announcement(database, 1, capture, fiscal_calendar="calendar_year")
+    with connect_database(database) as connection:
+        assert connection.execute("SELECT COUNT(*) FROM evidence").fetchone()[0] == 2
+
+
+def test_ambiguous_legacy_url_locators_require_review(tmp_path: Path) -> None:
+    database = _database(tmp_path)
+    first = _capture(tmp_path / "first")
+    second = _capture(
+        tmp_path / "second", request_path="/tw2/StockAnnounceDetail.asp",
+        reverse_query=True,
+    )
+    _insert_legacy_url_locator(database, first, source_locator=first.candidate.detail_url)
+    _insert_legacy_url_locator(database, second, source_locator=second.candidate.detail_url)
+    with pytest.raises(ValueError, match="ambiguous"):
+        accept_goodinfo_announcement(database, 1, first, fiscal_calendar="calendar_year")
+    with connect_database(database) as connection:
+        assert connection.execute("SELECT COUNT(*) FROM evidence").fetchone()[0] == 2
+
+
+def test_mixed_canonical_and_legacy_duplicates_require_review(tmp_path: Path) -> None:
+    database = _database(tmp_path)
+    canonical_capture = _capture(tmp_path / "new")
+    legacy_capture = _capture(
+        tmp_path / "old", request_path="/tw2/StockAnnounceDetail.asp",
+        reverse_query=True,
+    )
+    accept_goodinfo_announcement(
+        database, 1, canonical_capture, fiscal_calendar="calendar_year",
+    )
+    _insert_legacy_url_locator(
+        database, legacy_capture, source_locator=legacy_capture.candidate.detail_url,
+    )
+    with pytest.raises(ValueError, match="ambiguous"):
+        accept_goodinfo_announcement(
+            database, 1, canonical_capture, fiscal_calendar="calendar_year",
+        )
 
 
 @pytest.mark.parametrize("changes", [
@@ -233,5 +355,6 @@ def test_contract_distinguishes_announcement_from_xbrl_confirmation() -> None:
     }
     assert contract["xbrl_confirmed_at"] is None
     assert contract["source_url"] == "verified_final_url"
+    assert contract["source_locator"] == "step_39_verified_announcement_identity"
     assert contract["completes_task"] is False
     assert contract["requires_migration"] is False

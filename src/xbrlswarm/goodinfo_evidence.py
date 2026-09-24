@@ -10,6 +10,7 @@ from pathlib import Path
 from .domain import ReportPeriod, announcement_event_fields, calendar_year_period_end
 from .goodinfo_candidates import _period_hints
 from .goodinfo_detail import GoodinfoDetailCapture, parse_captured_goodinfo_detail
+from .goodinfo_locator import goodinfo_announcement_locator, _same_stored_locator
 from .storage import connect_database
 
 
@@ -60,6 +61,7 @@ def accept_goodinfo_announcement(
         speech_date=claim_time.date().isoformat(),
         speech_time=claim_time.time().isoformat(timespec="seconds"),
     )
+    locator = goodinfo_announcement_locator(detail.detail_url)
 
     connection = connect_database(database)
     try:
@@ -84,12 +86,28 @@ def accept_goodinfo_announcement(
                  AND event_date = ? AND event_time = ?
                  AND COALESCE(event_precision, 'second') = 'second'
                  AND raw_payload_hash = ?""",
-            (task_id, detail.detail_url, detail.subject,
+            (task_id, locator, detail.subject,
              event["event_date"], event["event_time"], detail.raw_payload_hash),
         ).fetchone()
-        if existing is not None:
+        legacy_rows = connection.execute(
+            """SELECT id, source_locator FROM evidence
+               WHERE task_id = ? AND source_type = 'goodinfo'
+                 AND evidence_type = 'material_announcement'
+                 AND source_locator LIKE 'https://goodinfo.tw/%'
+                 AND source_subject = ? AND event_date = ? AND event_time = ?
+                 AND COALESCE(event_precision, 'second') = 'second'
+                 AND raw_payload_hash = ?""",
+            (task_id, detail.subject, event["event_date"],
+             event["event_time"], detail.raw_payload_hash),
+        ).fetchall()
+        legacy_matches = [row_id for row_id, stored_locator in legacy_rows
+                          if _same_stored_locator(stored_locator, locator)]
+        matches = ([existing[0]] if existing is not None else []) + legacy_matches
+        if len(matches) > 1:
+            raise ValueError("ambiguous Goodinfo evidence identity")
+        if matches:
             connection.commit()
-            return StoredGoodinfoAnnouncement(existing[0], detail.raw_payload_hash)
+            return StoredGoodinfoAnnouncement(matches[0], detail.raw_payload_hash)
 
         cursor = connection.execute(
             """INSERT INTO evidence (
@@ -104,7 +122,7 @@ def accept_goodinfo_announcement(
                  'unverified'
                )""",
             {**event, "task_id": task_id, "source_url": detail.final_url,
-             "source_locator": detail.detail_url,
+             "source_locator": locator,
              "source_subject": detail.subject, "retrieved_at": retrieved_at,
              "raw_payload_hash": detail.raw_payload_hash},
         )

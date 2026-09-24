@@ -1,6 +1,6 @@
 {
   "contract": "goodinfo_announcement_evidence",
-  "version": 2,
+  "version": 3,
   "input": "step_37_verified_detail_capture",
   "requires": [
     "matching_goodinfo_task_stock_and_engine",
@@ -16,7 +16,7 @@
     "event_time": "visible_speech_time",
     "event_precision": "second"
   },
-  "source_locator": "detail_url",
+  "source_locator": "step_39_verified_announcement_identity",
   "source_url": "verified_final_url",
   "raw_payload_hash": "sha256_of_captured_detail_bytes",
   "retrieved_at": "capture_metadata_only",

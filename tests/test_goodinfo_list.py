@@ -142,6 +142,17 @@ def test_same_query_may_redirect_to_tw2_and_add_page_parameter(tmp_path: Path) -
     assert metadata["response"]["final_url"] == final_url
 
 
+@pytest.mark.parametrize("parameter", ["STOCK_ID", "START_DT", "END_DT"])
+def test_redirect_rejects_blank_duplicate_query_identity(tmp_path: Path, parameter: str) -> None:
+    final_url = query().url + f"&{parameter}="
+    with pytest.raises(ValueError, match="redirected"):
+        capture_announcement_list(
+            query(), tmp_path, opener=lambda request, **_: Response(final_url),
+            clock=lambda: NOW,
+        )
+    assert not list(tmp_path.rglob("*.html"))
+
+
 def test_capture_accepts_big5_announcement_title(tmp_path: Path) -> None:
     body = "<html><title>公告資訊一覽</title></html>".encode("big5")
     capture = capture_announcement_list(

@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已實作 **Step-38：Goodinfo 公告時間保存**；本環境的 Goodinfo 即時請求遇到 403 challenge，歷史清單與詳細頁仍待實際擷取驗證。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已實作 **Step-39：Goodinfo 公告冪等性**；本環境的 Goodinfo 即時請求遇到 403 challenge，歷史清單與詳細頁仍待實際擷取驗證。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -147,6 +147,11 @@ Step-37 擷取並解析 Goodinfo 公告詳細頁，核對公司及發言時間�
 Step-38 將已驗證詳細頁的發言日期／時間保存為秒級 `material_announcement`
 evidence，要求頁面報導期間與 Goodinfo task 相符；不完成 task，也不推導
 XBRL 確認時間。詳見 `docs/step-38-acceptance.md`。
+
+Step-39 以已驗證的 `STOCK_ID`、`CLAIM_TIME`、`SUBJECT` 建立固定 Goodinfo
+locator，讓相同公告的 URL 路徑或 query 寫法差異不重複建立 evidence；
+舊版 URL locator 會在重播時比對，不改寫既有證據。詳見
+`docs/step-39-acceptance.md`。
 
 ## 報告識別候選方案
 

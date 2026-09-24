@@ -129,6 +129,16 @@ def test_other_company_outside_range_and_external_links_are_not_candidates() -> 
     ) == ()
 
 
+@pytest.mark.parametrize("parameter", ["STOCK_ID", "CLAIM_TIME", "SUBJECT"])
+def test_candidate_rejects_blank_duplicate_detail_identity(parameter: str) -> None:
+    title = "本公司2024年第1季合併財務報告"
+    url = _detail("6152", "2024/05/07 14:19:00", title) + f"&{parameter}="
+    assert parse_goodinfo_candidates(
+        _page((url, title)), query=QUERY, final_url=QUERY.url,
+        content_type="text/html; charset=utf-8",
+    ) == ()
+
+
 def test_capture_hash_must_match_before_parsing(tmp_path: Path) -> None:
     detail = _detail("6152", "2024/05/07 14:19:00", "本公司第1季合併財務報告")
     body = _page((detail, "本公司第1季合併財務報告"))
