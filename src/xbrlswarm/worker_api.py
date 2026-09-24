@@ -9,7 +9,10 @@ from pathlib import Path
 from typing import Callable
 from wsgiref.simple_server import make_server
 
+from .domain import SemanticExhaustion
 from .storage import connect_database
+
+_SEMANTIC_OUTCOMES = frozenset(SemanticExhaustion)
 
 
 def _utc_timestamp(value: datetime) -> str:
@@ -84,17 +87,22 @@ class TaskStore:
         finally:
             connection.close()
 
-    def complete(self, task_id: int, worker_id: str, lease_attempt: int) -> bool:
+    def complete(
+        self, task_id: int, worker_id: str, lease_attempt: int, outcome: str = "success"
+    ) -> bool:
+        if outcome != "success" and outcome not in _SEMANTIC_OUTCOMES:
+            raise ValueError("unsupported result outcome")
+        state = "completed" if outcome == "success" else outcome
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
             now, cutoff = self._lease_times()
             cursor = connection.execute(
-                """UPDATE task SET state = 'completed', worker_id = NULL,
+                """UPDATE task SET state = ?, worker_id = NULL,
                           dispatched_at = NULL, updated_at = ?
                    WHERE id = ? AND state = 'dispatched' AND worker_id = ?
                          AND attempts = ? AND dispatched_at > ?""",
-                (now, task_id, worker_id, lease_attempt, cutoff),
+                (state, now, task_id, worker_id, lease_attempt, cutoff),
             )
             connection.commit()
             return cursor.rowcount == 1
@@ -208,6 +216,8 @@ def create_app(store: TaskStore):
                 f"Undone: {states.get('undone', 0)}\n"
                 f"Dispatched: {states.get('dispatched', 0)}\n"
                 f"Completed: {states.get('completed', 0)}\n"
+                f"Not Found: {states.get('not_found', 0)}\n"
+                f"Rejected: {states.get('rejected', 0)}\n"
             ).encode("utf-8")
             return _response(start_response, "200 OK", body, "text/plain; charset=utf-8")
 
@@ -230,11 +240,15 @@ def create_app(store: TaskStore):
                 raise ValueError("task_id must be a positive integer")
             if type(lease_attempt) is not int or lease_attempt <= 0:
                 raise ValueError("lease_attempt must be a positive integer")
-            if body["outcome"] != "success":
-                raise ValueError("only success outcome is supported in Step-23")
-            if not store.complete(task_id, worker_id, lease_attempt):
+            outcome = body["outcome"]
+            if not isinstance(outcome, str) or (
+                outcome != "success" and outcome not in _SEMANTIC_OUTCOMES
+            ):
+                raise ValueError("outcome must be success, not_found, or rejected")
+            if not store.complete(task_id, worker_id, lease_attempt, outcome):
                 return _json(start_response, "409 Conflict", {"error": "lease_not_current"})
-            return _json(start_response, "200 OK", {"task_id": task_id, "state": "completed"})
+            state = "completed" if outcome == "success" else outcome
+            return _json(start_response, "200 OK", {"task_id": task_id, "state": state})
         except ValueError as error:
             return _json(start_response, "400 Bad Request", {"error": str(error)})
 

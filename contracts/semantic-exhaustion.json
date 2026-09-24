@@ -1,0 +1,13 @@
+{
+  "contract": "semantic_exhaustion",
+  "version": 1,
+  "outcomes": ["not_found", "rejected"],
+  "meaning": "current_engine_attempted_without_trustworthy_answer",
+  "result_state": "same_as_outcome",
+  "requires_current_unexpired_lease": true,
+  "clears_lease_fields": ["worker_id", "dispatched_at"],
+  "next_engine_eligible": true,
+  "current_engine_preserved_until_step": 28,
+  "retry_on_same_engine": false,
+  "report_absence_claim": false
+}
