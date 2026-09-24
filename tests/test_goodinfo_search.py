@@ -69,6 +69,27 @@ def test_explicit_verified_provider_can_extend_to_another_year() -> None:
     assert plan.query.end_date == date(2025, 5, 15)
 
 
+def test_explicit_falsey_provider_does_not_fall_back_to_builtin_rule() -> None:
+    class EmptyProvider:
+        def __init__(self):
+            self.queries = []
+
+        def __bool__(self):
+            return False
+
+        def resolve(self, query):
+            self.queries.append(query)
+            return None
+
+    provider = EmptyProvider()
+    with pytest.raises(PublicationRuleUnavailable):
+        goodinfo_search_plan(
+            "2330", 2024, "Q1", GENERAL_ARTICLE_36, "calendar_year",
+            rule_provider=provider,
+        )
+    assert len(provider.queries) == 1
+
+
 def test_machine_readable_scope_and_law_sources() -> None:
     contract = json.loads(Path("contracts/goodinfo-search-window.json").read_text())
     assert contract["built_in_fiscal_years"] == [2024]

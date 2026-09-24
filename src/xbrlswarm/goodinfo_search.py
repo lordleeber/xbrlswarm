@@ -87,7 +87,7 @@ def goodinfo_search_plan(
 
     window = expected_publication_window(
         fiscal_year, report_period, company_class, fiscal_calendar,
-        rule_provider=rule_provider or VERIFIED_2024_RULES,
+        rule_provider=VERIFIED_2024_RULES if rule_provider is None else rule_provider,
     )
     query = AnnouncementListQuery(stock_id, window.earliest_date, window.latest_date)
     return GoodinfoSearchPlan(query, window)
