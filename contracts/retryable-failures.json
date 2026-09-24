@@ -1,0 +1,13 @@
+{
+  "contract": "retryable_infrastructure_failures",
+  "version": 1,
+  "outcomes": ["rate_limited", "transport_error", "temporary_error"],
+  "same_engine": true,
+  "retry_after_required": true,
+  "retry_delay_default_seconds": 60,
+  "retry_trigger": "next_lease_request_at_or_after_retry_at",
+  "result_state": "same_as_outcome",
+  "fail_count_increment": 1,
+  "attempts_increment_on_next_lease": 1,
+  "semantic_exhaustion": false
+}

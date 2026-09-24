@@ -14,6 +14,6 @@ Worker 透過 `POST /result` 回報其中一種 outcome，並帶回目前的 `ta
 
 這兩種狀態允許後續流程轉到下一個 engine，但 Step-26 不決定來源順序，
 因此不直接更改 `task.engine`，也不自動重新派發同一 engine。Step-28 將定義
-來源順序與轉移；Step-27 將定義留在同一 engine 的基礎設施錯誤。
+來源順序與轉移；Step-27 已定義留在同一 engine 的基礎設施錯誤。
 不新增 migration：既有 `task.state` 欄位可保存這兩個狀態。
 機器可讀契約見 `contracts/semantic-exhaustion.json`。

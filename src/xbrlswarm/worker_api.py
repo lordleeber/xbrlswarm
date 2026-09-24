@@ -9,10 +9,12 @@ from pathlib import Path
 from typing import Callable
 from wsgiref.simple_server import make_server
 
-from .domain import SemanticExhaustion
+from .domain import RetryableFailure, SemanticExhaustion
 from .storage import connect_database
 
 _SEMANTIC_OUTCOMES = frozenset(SemanticExhaustion)
+_RETRYABLE_OUTCOMES = frozenset(RetryableFailure)
+_RESULT_OUTCOMES = _SEMANTIC_OUTCOMES | _RETRYABLE_OUTCOMES | {"success"}
 
 
 def _utc_timestamp(value: datetime) -> str:
@@ -29,18 +31,26 @@ class TaskStore:
         database: str | Path,
         lease_timeout_seconds: int = 300,
         clock: Callable[[], datetime] | None = None,
+        retry_delay_seconds: int = 60,
     ) -> None:
         if type(lease_timeout_seconds) is not int or lease_timeout_seconds <= 0:
             raise ValueError("lease_timeout_seconds must be a positive integer")
+        if type(retry_delay_seconds) is not int or retry_delay_seconds <= 0:
+            raise ValueError("retry_delay_seconds must be a positive integer")
         self.database = Path(database)
         self.lease_timeout = timedelta(seconds=lease_timeout_seconds)
+        self.retry_delay = timedelta(seconds=retry_delay_seconds)
         self.clock = clock or (lambda: datetime.now(timezone.utc))
 
-    def _lease_times(self) -> tuple[str, str]:
+    def _operation_times(self) -> tuple[str, str, str]:
         now = self.clock()
         if now.tzinfo is None or now.utcoffset() is None:
             raise ValueError("clock must return a timezone-aware datetime")
-        return _utc_timestamp(now), _utc_timestamp(now - self.lease_timeout)
+        return (
+            _utc_timestamp(now),
+            _utc_timestamp(now - self.lease_timeout),
+            _utc_timestamp(now + self.retry_delay),
+        )
 
     def _connect(self):
         if not self.database.is_file():
@@ -51,12 +61,18 @@ class TaskStore:
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
-            now, cutoff = self._lease_times()
+            now, cutoff, _ = self._operation_times()
             connection.execute(
                 """UPDATE task SET state = 'undone', worker_id = NULL,
                           dispatched_at = NULL, updated_at = ?
                    WHERE state = 'dispatched' AND dispatched_at <= ?""",
                 (now, cutoff),
+            )
+            connection.execute(
+                """UPDATE task SET state = 'undone', retry_at = NULL, updated_at = ?
+                   WHERE state IN ('rate_limited', 'transport_error', 'temporary_error')
+                     AND retry_at <= ?""",
+                (now, now),
             )
             row = connection.execute(
                 """UPDATE task SET state = 'dispatched', worker_id = ?,
@@ -90,19 +106,22 @@ class TaskStore:
     def complete(
         self, task_id: int, worker_id: str, lease_attempt: int, outcome: str = "success"
     ) -> bool:
-        if outcome != "success" and outcome not in _SEMANTIC_OUTCOMES:
+        if outcome not in _RESULT_OUTCOMES:
             raise ValueError("unsupported result outcome")
         state = "completed" if outcome == "success" else outcome
+        retryable = outcome in _RETRYABLE_OUTCOMES
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
-            now, cutoff = self._lease_times()
+            now, cutoff, retry_at = self._operation_times()
             cursor = connection.execute(
                 """UPDATE task SET state = ?, worker_id = NULL,
-                          dispatched_at = NULL, updated_at = ?
+                          dispatched_at = NULL, retry_at = ?,
+                          fail_count = fail_count + ?, updated_at = ?
                    WHERE id = ? AND state = 'dispatched' AND worker_id = ?
                          AND attempts = ? AND dispatched_at > ?""",
-                (state, now, task_id, worker_id, lease_attempt, cutoff),
+                (state, retry_at if retryable else None, int(retryable),
+                 now, task_id, worker_id, lease_attempt, cutoff),
             )
             connection.commit()
             return cursor.rowcount == 1
@@ -218,6 +237,9 @@ def create_app(store: TaskStore):
                 f"Completed: {states.get('completed', 0)}\n"
                 f"Not Found: {states.get('not_found', 0)}\n"
                 f"Rejected: {states.get('rejected', 0)}\n"
+                f"Rate Limited: {states.get('rate_limited', 0)}\n"
+                f"Transport Error: {states.get('transport_error', 0)}\n"
+                f"Temporary Error: {states.get('temporary_error', 0)}\n"
             ).encode("utf-8")
             return _response(start_response, "200 OK", body, "text/plain; charset=utf-8")
 
@@ -241,10 +263,8 @@ def create_app(store: TaskStore):
             if type(lease_attempt) is not int or lease_attempt <= 0:
                 raise ValueError("lease_attempt must be a positive integer")
             outcome = body["outcome"]
-            if not isinstance(outcome, str) or (
-                outcome != "success" and outcome not in _SEMANTIC_OUTCOMES
-            ):
-                raise ValueError("outcome must be success, not_found, or rejected")
+            if not isinstance(outcome, str) or outcome not in _RESULT_OUTCOMES:
+                raise ValueError("unsupported result outcome")
             if not store.complete(task_id, worker_id, lease_attempt, outcome):
                 return _json(start_response, "409 Conflict", {"error": "lease_not_current"})
             state = "completed" if outcome == "success" else outcome
@@ -261,10 +281,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--lease-timeout-seconds", type=int, default=300)
+    parser.add_argument("--retry-delay-seconds", type=int, default=60)
     args = parser.parse_args(argv)
     if args.lease_timeout_seconds <= 0:
         parser.error("--lease-timeout-seconds must be positive")
-    store = TaskStore(args.database, lease_timeout_seconds=args.lease_timeout_seconds)
+    if args.retry_delay_seconds <= 0:
+        parser.error("--retry-delay-seconds must be positive")
+    store = TaskStore(
+        args.database,
+        lease_timeout_seconds=args.lease_timeout_seconds,
+        retry_delay_seconds=args.retry_delay_seconds,
+    )
     connection = store._connect()
     try:
         connection.execute("SELECT 1 FROM task LIMIT 1")
