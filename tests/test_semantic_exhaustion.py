@@ -77,9 +77,10 @@ def test_semantic_exhaustion_ends_current_lease_without_changing_engine(
     assert _post(app, "/result", result) == (
         "409 Conflict", {"error": "lease_not_current"}
     )
-    assert _post(app, "/lease", {"worker_id": "worker-2"}) == (
-        "204 No Content", None
-    )
+    status, response = _post(app, "/lease", {"worker_id": "worker-2"})
+    assert status == "200 OK"
+    assert response["task"]["engine"] == "goodinfo"
+    assert response["task"]["lease_attempt"] == 2
 
 
 @pytest.mark.parametrize("outcome", ["not_found", "rejected"])
@@ -99,7 +100,8 @@ def test_status_includes_semantic_exhaustion_state(
         f"Tasks: 1\nUndone: 0\nDispatched: 0\nCompleted: 0\n"
         f"Not Found: {int(outcome == 'not_found')}\n"
         f"Rejected: {int(outcome == 'rejected')}\n"
-        "Rate Limited: 0\nTransport Error: 0\nTemporary Error: 0\n",
+        "Rate Limited: 0\nTransport Error: 0\nTemporary Error: 0\n"
+        "Terminal Unresolved: 0\n",
     )
 
 
@@ -152,5 +154,5 @@ def test_contract_and_docs_define_eligible_results() -> None:
     contract = json.loads(Path("contracts/semantic-exhaustion.json").read_text())
     assert contract["outcomes"] == [item.value for item in SemanticExhaustion]
     assert contract["next_engine_eligible"] is True
-    assert contract["current_engine_preserved_until_step"] == 28
+    assert contract["current_engine_preserved_until_next_lease"] is True
     assert "not_found" in Path("docs/semantic-exhaustion.md").read_text()

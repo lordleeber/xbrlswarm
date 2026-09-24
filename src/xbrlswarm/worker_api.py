@@ -74,6 +74,21 @@ class TaskStore:
                      AND retry_at <= ?""",
                 (now, now),
             )
+            connection.execute(
+                """UPDATE task SET
+                       engine = CASE engine
+                           WHEN 'mops' THEN 'goodinfo'
+                           WHEN 'goodinfo' THEN 'yahoo'
+                           WHEN 'yahoo' THEN 'google'
+                           WHEN 'google' THEN 'grounded_ai'
+                           ELSE engine END,
+                       state = CASE WHEN engine = 'grounded_ai'
+                           THEN 'terminal_unresolved' ELSE 'undone' END,
+                       worker_id = NULL, dispatched_at = NULL,
+                       retry_at = NULL, updated_at = ?
+                   WHERE state IN ('not_found', 'rejected')""",
+                (now,),
+            )
             row = connection.execute(
                 """UPDATE task SET state = 'dispatched', worker_id = ?,
                           dispatched_at = ?, updated_at = ?, attempts = attempts + 1
@@ -240,6 +255,7 @@ def create_app(store: TaskStore):
                 f"Rate Limited: {states.get('rate_limited', 0)}\n"
                 f"Transport Error: {states.get('transport_error', 0)}\n"
                 f"Temporary Error: {states.get('temporary_error', 0)}\n"
+                f"Terminal Unresolved: {states.get('terminal_unresolved', 0)}\n"
             ).encode("utf-8")
             return _response(start_response, "200 OK", body, "text/plain; charset=utf-8")
 

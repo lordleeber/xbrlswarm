@@ -24,6 +24,6 @@ Migration 只接受 enum 內的既有 task。若 Step-8 時期已寫入其他 en
 
 ## 本 Step 的邊界
 
-Enum 中的宣告順序與 ROADMAP 一致，但 Step-9 只定義值域。何時從目前 engine fallback 到下一個 engine、哪些失敗必須留在原 engine，以及相應的 state transition，由 Step-26 至 Step-28 定義。
+Enum 中的宣告順序與 ROADMAP 一致；Step-28 已將此順序用於語意耗盡後的 state transition 與來源轉移，詳見 `docs/engine-fallback.md`。Step-27 的基礎設施失敗仍留在同一 engine。
 
 Step-9 不建立 worker、不實作來源請求，也不根據 enum 宣告順序自動改變 task engine。

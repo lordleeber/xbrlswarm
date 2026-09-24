@@ -1,0 +1,14 @@
+{
+  "contract": "fixed_engine_fallback",
+  "version": 1,
+  "engine_order": ["mops", "goodinfo", "yahoo", "google", "grounded_ai"],
+  "advance_states": ["not_found", "rejected"],
+  "advance_trigger": "next_lease_request",
+  "transition_transaction": "same_begin_immediate_transaction_as_dispatch",
+  "next_engine_state": "undone_then_dispatched",
+  "terminal_state": "terminal_unresolved",
+  "terminal_engine": "grounded_ai",
+  "retryable_failures_advance": false,
+  "successful_tasks_advance": false,
+  "preserve_counters": ["attempts", "fail_count"]
+}
