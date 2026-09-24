@@ -1,6 +1,6 @@
 {
   "contract": "versioned_publication_rules",
-  "version": 1,
+  "version": 2,
   "required_rule_fields": ["valid_from", "valid_to", "rule_id", "source_ref"],
   "validity_bounds": "inclusive",
   "effective_date": "explicit_provider_dependency",
@@ -8,5 +8,6 @@
   "overlap": "reject_same_scope",
   "rule_id_uniqueness": "global_within_provider",
   "missing_or_gap": "unresolved",
-  "built_in_legal_rules": false
+  "built_in_legal_rules": false,
+  "source_specific_rule_sets": ["goodinfo_search_window_2024"]
 }

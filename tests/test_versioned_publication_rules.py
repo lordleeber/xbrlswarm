@@ -158,7 +158,7 @@ def test_version_metadata_cannot_be_missing_or_inverted(change) -> None:
 def test_contract_and_docs_define_temporal_selection_without_law_values() -> None:
     assert json.loads(CONTRACT.read_text(encoding="utf-8")) == {
         "contract": "versioned_publication_rules",
-        "version": 1,
+        "version": 2,
         "required_rule_fields": ["valid_from", "valid_to", "rule_id", "source_ref"],
         "validity_bounds": "inclusive",
         "effective_date": "explicit_provider_dependency",
@@ -167,6 +167,7 @@ def test_contract_and_docs_define_temporal_selection_without_law_values() -> Non
         "rule_id_uniqueness": "global_within_provider",
         "missing_or_gap": "unresolved",
         "built_in_legal_rules": False,
+        "source_specific_rule_sets": ["goodinfo_search_window_2024"],
     }
     decision = DECISION.read_text(encoding="utf-8")
     acceptance = ACCEPTANCE.read_text(encoding="utf-8")

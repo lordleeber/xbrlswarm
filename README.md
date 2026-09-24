@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已實作 **Step-34：Goodinfo 公告清單查詢**；本環境的 Goodinfo 即時請求遇到 403 challenge，歷史清單仍待實際擷取驗證。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已實作 **Step-35：Goodinfo 保守搜尋時間窗**；本環境的 Goodinfo 即時請求遇到 403 challenge，歷史清單仍待實際擷取驗證。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -128,6 +128,11 @@ Step-34 提供明確公司代號與日期範圍的 Goodinfo 公告清單 GET 查
 HTML 與擷取 metadata；本環境的即時請求遇到 403 challenge，尚無真實歷史
 清單 fixture。候選列解析與詳細頁面處理留待 Step-36／37。
 詳見 `docs/step-34-acceptance.md`。
+
+Step-35 根據可追溯的《證券交易法》第 36 條歷史版本，對**已確認適用一般規則
+且採曆年制的 2024 會計年度**，產生期末翌日至一般公告申報期限的 Goodinfo
+查詢區間；其他範圍須提供已驗證規則，不能從範例月份推測。詳見
+`docs/step-35-acceptance.md`。
 
 ## 報告識別候選方案
 

@@ -17,5 +17,6 @@
 規則的 `window_for(query)` 只提供日期對，最終的 `rule_id` 由被選中的版本產生，
 避免計算器自行宣稱另一條規則。測試使用 `TEST-ONLY-NOT-LAW` 的虛構日期與
 明確的測試用選版函式，**不是任何實際法規或法定期限**。
-目前 repository 不內建真實規則、法規日期或其生效日映射；後續加入時必須保存
-原始法規來源、適用範圍與歷史版本證據，再以 regression tests 驗證。
+此通用 provider 本身不內建真實法規。Step-35 在 Goodinfo 專用模組加入限定
+2024 年、已證實適用一般《證券交易法》第 36 條的規則集，保存來源與範圍，
+並以 regression tests 驗證；詳見 `docs/step-35-acceptance.md`。
