@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已完成 **Step-25：延遲回收 lease**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已完成 **Step-26：定義語意耗盡**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -82,7 +82,7 @@ Step-22 因來源尚未證實，選擇第一版 **calendar-year companies only**
 
 Step-23 提供 `POST /lease`、`POST /result`、`GET /stats`、`GET /status` 與
 `GET /healthz`。可用 `xbrlswarm-worker-api --database <已 migration 的 SQLite 檔>`
-在 loopback 啟動；目前只支援成功回報，不含 evidence 上傳或失敗分類，
+在 loopback 啟動；目前支援成功與語意耗盡回報，不含 evidence 上傳或基礎設施失敗分類，
 **不可直接公開部署**。詳見 `docs/worker-api.md`。
 
 Step-24 將 lease 派發收斂為 SQLite 交易中的條件式更新；並行 worker 不得取得
@@ -92,6 +92,10 @@ Step-24 將 lease 派發收斂為 SQLite 交易中的條件式更新；並行 wo
 Step-25 在 `/lease` 請求內回收逾期租約，預設期限 300 秒，並保留
 `attempts` 以拒絕舊結果；`/result` 也拒絕逾期回報。詳見
 `docs/lazy-lease-recovery.md`。
+
+Step-26 定義 `not_found` 與 `rejected` 為目前 engine 沒有可信答案的結果；
+`/result` 將其保存為 task state，下一來源轉移留待 Step-28。
+詳見 `docs/semantic-exhaustion.md`。
 
 ## 報告識別候選方案
 
