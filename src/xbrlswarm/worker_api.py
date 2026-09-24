@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable
 from wsgiref.simple_server import make_server
@@ -12,8 +12,8 @@ from wsgiref.simple_server import make_server
 from .storage import connect_database
 
 
-def _utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace(
+def _utc_timestamp(value: datetime) -> str:
+    return value.astimezone(timezone.utc).isoformat(timespec="milliseconds").replace(
         "+00:00", "Z"
     )
 
@@ -21,8 +21,23 @@ def _utc_now() -> str:
 class TaskStore:
     """One SQLite connection per operation; no long-lived cross-request cursor."""
 
-    def __init__(self, database: str | Path) -> None:
+    def __init__(
+        self,
+        database: str | Path,
+        lease_timeout_seconds: int = 300,
+        clock: Callable[[], datetime] | None = None,
+    ) -> None:
+        if type(lease_timeout_seconds) is not int or lease_timeout_seconds <= 0:
+            raise ValueError("lease_timeout_seconds must be a positive integer")
         self.database = Path(database)
+        self.lease_timeout = timedelta(seconds=lease_timeout_seconds)
+        self.clock = clock or (lambda: datetime.now(timezone.utc))
+
+    def _lease_times(self) -> tuple[str, str]:
+        now = self.clock()
+        if now.tzinfo is None or now.utcoffset() is None:
+            raise ValueError("clock must return a timezone-aware datetime")
+        return _utc_timestamp(now), _utc_timestamp(now - self.lease_timeout)
 
     def _connect(self):
         if not self.database.is_file():
@@ -33,7 +48,13 @@ class TaskStore:
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
-            now = _utc_now()
+            now, cutoff = self._lease_times()
+            connection.execute(
+                """UPDATE task SET state = 'undone', worker_id = NULL,
+                          dispatched_at = NULL, updated_at = ?
+                   WHERE state = 'dispatched' AND dispatched_at <= ?""",
+                (now, cutoff),
+            )
             row = connection.execute(
                 """UPDATE task SET state = 'dispatched', worker_id = ?,
                           dispatched_at = ?, updated_at = ?, attempts = attempts + 1
@@ -67,12 +88,13 @@ class TaskStore:
         connection = self._connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
+            now, cutoff = self._lease_times()
             cursor = connection.execute(
                 """UPDATE task SET state = 'completed', worker_id = NULL,
                           dispatched_at = NULL, updated_at = ?
                    WHERE id = ? AND state = 'dispatched' AND worker_id = ?
-                         AND attempts = ?""",
-                (_utc_now(), task_id, worker_id, lease_attempt),
+                         AND attempts = ? AND dispatched_at > ?""",
+                (now, task_id, worker_id, lease_attempt, cutoff),
             )
             connection.commit()
             return cursor.rowcount == 1
@@ -224,8 +246,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--database", type=Path, required=True, help="migrated SQLite database")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument("--lease-timeout-seconds", type=int, default=300)
     args = parser.parse_args(argv)
-    store = TaskStore(args.database)
+    if args.lease_timeout_seconds <= 0:
+        parser.error("--lease-timeout-seconds must be positive")
+    store = TaskStore(args.database, lease_timeout_seconds=args.lease_timeout_seconds)
     connection = store._connect()
     try:
         connection.execute("SELECT 1 FROM task LIMIT 1")

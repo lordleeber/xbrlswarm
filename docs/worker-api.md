@@ -24,9 +24,10 @@ lease 的 generation，等於更新後的 `attempts`；回報結果時必須原�
 只回傳 task identity、engine 與 lease metadata，
 不讓 worker 直接改寫 task。`/result` 第一版只接受 `success`，把該 worker
 持有且 generation 相同的 `dispatched` task 改成 `completed`，清除 lease 欄位；
-重複回報、錯誤 worker 或舊 generation 回 `409`，不會改寫 task。Step-25 未來
-回收逾期 lease 時須保留 `attempts`，再次派發必須遞增它；即使同一 worker
-重取同一 task，舊結果也不得完成新 lease。這是任務執行控制狀態，**不是**已驗證的
+重複回報、錯誤 worker、逾期租約或舊 generation 回 `409`，不會改寫 task。
+Step-25 在每次 `/lease` 請求內回收逾期 task，預設 300 秒，可用
+`--lease-timeout-seconds` 調整；回收保留 `attempts`，再次派發會遞增它。
+即使同一 worker 重取同一 task，舊結果也不得完成新 lease。這是任務執行控制狀態，**不是**已驗證的
 來源證據或 XBRL 確認時間；目前沒有 evidence 上傳 API。
 
 無效 JSON、欄位、method 分別回 `400`、`405`；`405` 附 `Allow` header。
@@ -34,6 +35,6 @@ lease 的 generation，等於更新後的 `attempts`；回報結果時必須原�
 `/healthz` 不查資料庫，不能拿來宣稱 DB、外部來源或 worker 健康。
 
 Step-24 已以條件式更新及並行測試正式驗證多 worker 原子 lease 契約，詳見
-`docs/atomic-task-lease.md`；Step-25 處理過期 lease。失敗分類、換 engine、完整 stats／status
+`docs/atomic-task-lease.md`；Step-25 回收語意詳見 `docs/lazy-lease-recovery.md`。失敗分類、換 engine、完整 stats／status
 指標與 evidence ingestion 留待後續 Steps，不能將目前的 `success` 擴充解讀為
 完成來源稽核。
