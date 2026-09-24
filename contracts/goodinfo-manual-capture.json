@@ -1,0 +1,19 @@
+{
+  "step": 41,
+  "contract": "goodinfo_manual_browser_capture",
+  "version": 1,
+  "reason": "Goodinfo answers automated clients with a Cloudflare managed challenge (HTTP 403, cf-mitigated: challenge)",
+  "challenge_policy": "never solve, bypass or impersonate a browser automatically",
+  "capture_method": "manual_browser",
+  "entry_point": "xbrlswarm.goodinfo_manual",
+  "acceptance": "same list/detail validation as a network response, with status 200 and final_url equal to the requested URL",
+  "saved_from_comment": "when present, must identify the same list query or detail identity",
+  "charset": "meta charset in the first 4096 bytes, else utf-8",
+  "retrieved_at_basis": "saved_file_mtime",
+  "cache_layout": "Step-40 GoodinfoOperationalClient output root",
+  "existing_capture": "identical bytes are already_imported; different bytes are rejected, never overwritten",
+  "detail_matching": "detail files are imported only for period-hinted candidates of an imported list",
+  "pilot_replay": "run_goodinfo_pilot(offline=True) reads verified local captures only; missing captures are not_captured",
+  "network_requests": 0,
+  "evidence_and_task_effect": "none"
+}

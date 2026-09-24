@@ -90,29 +90,35 @@ class GoodinfoOperationalClient:
         payload = json.dumps({"next_allowed_at": value}).encode() + b"\n"
         _atomic_write(self.root / ".goodinfo-request-state.json", payload, overwrite=True)
 
-    def _run(self, cached: Callable[[], _T | None], fetch: Callable[[], _T]) -> _T:
+    def _locked(self, action: Callable[[], _T]) -> _T:
         self.root.mkdir(parents=True, exist_ok=True)
         fd = os.open(self.root / ".goodinfo-request.lock", os.O_CREAT | os.O_RDWR, 0o600)
         try:
             fcntl.flock(fd, fcntl.LOCK_EX)
-            hit = cached()
-            if hit is not None:
-                return hit
-            wait = max(0.0, self._next_allowed_at() - self.clock())
-            if wait:
-                self.sleeper(wait)
-            jitter = self.random_value()
-            if not isinstance(jitter, (float, int)) or not 0 <= jitter < 1:
-                raise ValueError("Goodinfo jitter source must return a value in [0, 1)")
-            delay = self.policy.min_delay_seconds + jitter * self.policy.jitter_seconds
-            self._set_next_allowed_at(self.clock() + delay)
-            try:
-                return fetch()
-            finally:
-                self._set_next_allowed_at(self.clock() + delay)
+            return action()
         finally:
             fcntl.flock(fd, fcntl.LOCK_UN)
             os.close(fd)
+
+    def _run(self, cached: Callable[[], _T | None], fetch: Callable[[], _T]) -> _T:
+        return self._locked(lambda: self._fetch_unless_cached(cached, fetch))
+
+    def _fetch_unless_cached(self, cached: Callable[[], _T | None], fetch: Callable[[], _T]) -> _T:
+        hit = cached()
+        if hit is not None:
+            return hit
+        wait = max(0.0, self._next_allowed_at() - self.clock())
+        if wait:
+            self.sleeper(wait)
+        jitter = self.random_value()
+        if not isinstance(jitter, (float, int)) or not 0 <= jitter < 1:
+            raise ValueError("Goodinfo jitter source must return a value in [0, 1)")
+        delay = self.policy.min_delay_seconds + jitter * self.policy.jitter_seconds
+        self._set_next_allowed_at(self.clock() + delay)
+        try:
+            return fetch()
+        finally:
+            self._set_next_allowed_at(self.clock() + delay)
 
     def _cached_list(self, query: AnnouncementListQuery) -> AnnouncementListCapture | None:
         name = f"{query.start_date.isoformat()}_{query.end_date.isoformat()}"
@@ -167,6 +173,17 @@ class GoodinfoOperationalClient:
         )
         parse_captured_goodinfo_detail(capture)
         return capture
+
+    def cached_list(self, query: AnnouncementListQuery) -> AnnouncementListCapture | None:
+        """Return a verified local list capture, or None; never contacts Goodinfo."""
+
+        return self._locked(lambda: self._cached_list(query))
+
+    def cached_detail(self, candidate: GoodinfoListCandidate) -> GoodinfoDetailCapture | None:
+        """Return a verified local detail capture, or None; never contacts Goodinfo."""
+
+        _locator(candidate.detail_url)
+        return self._locked(lambda: self._cached_detail(candidate))
 
     def capture_list(self, query: AnnouncementListQuery) -> AnnouncementListCapture:
         return self._run(

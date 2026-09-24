@@ -84,9 +84,12 @@ def test_pilot_captures_and_parses_fixed_cases_without_evidence(tmp_path):
     report = run_goodinfo_pilot(tmp_path, client=client)
     assert report["query_window_kind"] == "exploratory_not_legal_deadline"
     assert report["summary"] == {
-        "cases": 5, "lists_captured": 5, "access_blocked": 0,
+        "cases": 5, "lists_captured": 5, "access_blocked": 0, "not_captured": 0,
         "details_parsed": 5, "matching_period_details": 5,
     }
+    assert report["capture_mode"] == "network"
+    assert all(row["capture_method"] == "network" for row in report["results"])
+    assert report["results"][0]["detail_results"][0]["claim_time"] == "2024-05-10 14:48:53"
     assert all(row["matching_candidate_count"] == 1 for row in report["results"])
     assert all(row["detail_results"][0]["period_matches_case"] is True
                for row in report["results"])
@@ -153,3 +156,21 @@ def test_committed_live_report_preserves_blocked_cases_as_unknown():
                and row["candidate_count"] is None and row["matching_candidate_count"] is None
                and row["list_raw_payload_hash"] is None and row["detail_results"] == []
                for row in report["results"])
+
+
+def test_offline_pilot_never_contacts_goodinfo_and_marks_missing_captures(tmp_path):
+    def opener(request, **_):
+        raise AssertionError("offline pilot must not contact Goodinfo")
+
+    def sleeper(_):
+        raise AssertionError("offline pilot must not wait for a request slot")
+
+    client = GoodinfoOperationalClient(tmp_path, opener=opener, clock=lambda: 1000.0,
+        sleeper=sleeper, random_value=lambda: 0, retrieval_clock=lambda: NOW)
+    report = run_goodinfo_pilot(tmp_path, client=client, offline=True)
+    assert report["capture_mode"] == "offline_replay"
+    assert [row["status"] for row in report["results"]] == ["not_captured"] * 5
+    assert report["summary"]["not_captured"] == 5
+    assert report["summary"]["lists_captured"] == 0
+    assert all(row["candidate_count"] is None for row in report["results"])
+    assert not (tmp_path / ".goodinfo-request-state.json").exists()

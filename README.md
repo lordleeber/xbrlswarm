@@ -159,8 +159,11 @@ Step-40 以共用輸出根目錄的檔案鎖與冷卻時間，讓 Goodinfo 清�
 `docs/step-40-acceptance.md`。
 
 Step-41 固定試點涵蓋 4542／6147／2330 的 2024 Q1，另試 2022 與 2020 Q1。
-五筆即時清單請求均收到 HTTP 403，候選與詳細頁未能觀察；不將存取阻擋
-解讀為沒有公告。逐筆結果見 `docs/goodinfo-pilot-report.md`。
+五筆即時清單請求均收到 Cloudflare challenge（HTTP 403），不將存取阻擋
+解讀為沒有公告，也不自動繞過。改以 `python -m xbrlswarm.goodinfo_manual`
+匯入人在瀏覽器另存的頁面，經與網路回應相同的驗證後，以
+`goodinfo_pilot --offline` 離線重播。詳見 `docs/step-41-acceptance.md` 與
+`docs/goodinfo-pilot-report.md`。
 
 ## 報告識別候選方案
 

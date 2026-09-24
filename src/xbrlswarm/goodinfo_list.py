@@ -9,7 +9,7 @@ import re
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Mapping
 from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, urlencode, urlsplit
 from urllib.request import Request, urlopen
@@ -92,17 +92,27 @@ def _validate_list_response(
         raise ValueError("Goodinfo response is not an announcement list")
 
 
+def _merge_extra_metadata(metadata: dict, extra: Mapping[str, object] | None) -> None:
+    for key, value in (extra or {}).items():
+        if key in metadata:
+            raise ValueError(f"extra capture metadata cannot replace {key}")
+        metadata[key] = value
+
+
 def capture_announcement_list(
     query: AnnouncementListQuery,
     output_root: Path,
     *,
     opener: Callable = urlopen,
     clock: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
+    extra_metadata: Mapping[str, object] | None = None,
 ) -> AnnouncementListCapture:
     """Fetch and store raw list HTML without interpreting announcement rows.
 
     A rejected or challenged response is not an empty announcement list.
-    Existing captures are never overwritten.
+    Existing captures are never overwritten. ``extra_metadata`` adds
+    provenance fields such as a manual capture method; it cannot replace
+    the query, response or retrieval fields.
     """
 
     root = Path(output_root) / query.stock_id
@@ -112,7 +122,10 @@ def capture_announcement_list(
     lock_path = root / f".{name}.capture.lock"
     lock_fd = _acquire_capture_lock(lock_path)
     try:
-        return _capture_locked(query, body_path, metadata_path, opener=opener, clock=clock)
+        return _capture_locked(
+            query, body_path, metadata_path, opener=opener, clock=clock,
+            extra_metadata=extra_metadata,
+        )
     finally:
         _release_capture_lock(lock_fd, lock_path)
 
@@ -124,6 +137,7 @@ def _capture_locked(
     *,
     opener: Callable,
     clock: Callable[[], datetime],
+    extra_metadata: Mapping[str, object] | None = None,
 ) -> AnnouncementListCapture:
     if body_path.exists() or metadata_path.exists():
         raise FileExistsError(f"announcement list capture already exists: {body_path.name}")
@@ -168,6 +182,7 @@ def _capture_locked(
         },
         "retrieved_at": retrieved_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
+    _merge_extra_metadata(metadata, extra_metadata)
     _atomic_write(body_path, body, overwrite=False)
     _atomic_write(metadata_path, (json.dumps(metadata, ensure_ascii=False, indent=2) + "\n").encode(), overwrite=False)
     return AnnouncementListCapture(query, body_path, metadata_path, f"sha256:{digest}", len(body))

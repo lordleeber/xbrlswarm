@@ -10,13 +10,13 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Mapping
 from urllib.parse import parse_qs, urlsplit
 from urllib.request import Request, urlopen
 
 from .discovery.capture import _acquire_capture_lock, _atomic_write, _release_capture_lock
 from .goodinfo_candidates import GoodinfoListCandidate, _CHARSET, _DETAIL_PATHS
-from .goodinfo_list import _CHALLENGE_MARKERS
+from .goodinfo_list import _CHALLENGE_MARKERS, _merge_extra_metadata
 
 _DATE = r"\d{4}/\d{2}/\d{2}"
 _BOARD = re.compile(
@@ -203,6 +203,7 @@ def capture_goodinfo_detail(
     candidate: GoodinfoListCandidate, output_root: Path, *,
     opener: Callable = urlopen,
     clock: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
+    extra_metadata: Mapping[str, object] | None = None,
 ) -> GoodinfoDetailCapture:
     """Save raw detail bytes and provenance once per announcement URL."""
 
@@ -239,6 +240,7 @@ def capture_goodinfo_detail(
                          "raw_payload_hash": detail.raw_payload_hash, "size_bytes": len(body)},
             "retrieved_at": retrieved_at.astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
         }
+        _merge_extra_metadata(metadata, extra_metadata)
         _atomic_write(body_path, body, overwrite=False)
         metadata_bytes = (json.dumps(metadata, ensure_ascii=False, indent=2) + "\n").encode()
         _atomic_write(metadata_path, metadata_bytes, overwrite=False)

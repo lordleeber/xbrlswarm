@@ -1,6 +1,8 @@
 # Step-41 Goodinfo 試點報告
 
-## 案例與方法
+## 2026-09-24 網路試點
+
+### 案例與方法
 
 2026-09-24 執行固定的五個 Q1 案例：4542／6147／2330 的 2024 Q1、
 6147 的 2022 Q1，以及 2330 的 2020 Q1。每個案例使用當年 4 月 1 日至
@@ -41,3 +43,14 @@ PYTHONPATH=src python -m xbrlswarm.goodinfo_pilot \
   --output-root /tmp/xbrlswarm-goodinfo-pilot-captures \
   --report /tmp/xbrlswarm-goodinfo-pilot.json
 ```
+
+## 人工瀏覽器擷取
+
+403 回應的標頭為 `cf-mitigated: challenge`，屬 Cloudflare 對自動化程式的
+存取控制，降低頻率無法解決，本專案也不自動繞過。後續改由人在瀏覽器開啟
+`python -m xbrlswarm.goodinfo_manual plan` 列出的頁面並另存 HTML，匯入時
+套用與網路回應相同的驗證，再以 `python -m xbrlswarm.goodinfo_pilot --offline`
+重播。流程與驗收規則見 [`step-41-acceptance.md`](step-41-acceptance.md)。
+
+人工擷取的結果尚未產生；完成後以新的 `discovery/goodinfo_pilot_<date>.json`
+記錄，本節再補上逐筆結果。
