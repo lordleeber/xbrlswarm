@@ -1,0 +1,36 @@
+{
+  "excluded_response_headers": [
+    "Set-Cookie"
+  ],
+  "request": {
+    "body_sha256": "5bd55737a72c5a659dda14039656879650b69ad270a16c4bbad66adfd94e6362",
+    "body_size_bytes": 64,
+    "form": {
+      "TYPEK": "sii",
+      "firstin": "ture",
+      "isQuery": "Y",
+      "off": "1",
+      "season": "01",
+      "step": "1",
+      "year": "113"
+    },
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Referer": "https://mopsov.twse.com.tw/mops/web/t56sb31_q1",
+      "User-Agent": "Mozilla/5.0 xbrlswarm-step29/0.1"
+    },
+    "method": "POST",
+    "url": "https://mopsov.twse.com.tw/mops/web/ajax_t56sb31_q1"
+  },
+  "response": {
+    "body_file": "amendment-2024-q1.html.gz",
+    "content_encoding": "gzip",
+    "final_url": "https://mopsov.twse.com.tw/mops/web/ajax_t56sb31_q1",
+    "headers_file": "amendment-2024-q1.headers.json",
+    "sha256": "5d61decef2b2987d77155e8ee1eeca83d60cc9a9c41fbd96ca703b03f881b6a4",
+    "size_bytes": 32291,
+    "status": 200,
+    "stored_size_bytes": 5697
+  },
+  "retrieved_at": "2026-09-24T07:24:58.874Z"
+}

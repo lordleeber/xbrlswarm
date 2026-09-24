@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "source": "official_mops",
+  "consolidated": [
+    {
+      "stock_id": "2330",
+      "fiscal_year": 2024,
+      "period": "Q1",
+      "report_scope": "consolidated",
+      "body": "tests/fixtures/discovery/mops/2330/2024/Q1/xbrl-consolidated.bin.gz",
+      "headers": "tests/fixtures/discovery/mops/2330/2024/Q1/xbrl-consolidated.headers.json",
+      "metadata": "tests/fixtures/discovery/mops/2330/2024/Q1/xbrl-consolidated.meta.json",
+      "sha256": "68117c2ed0caa105921d9cfe27afe9ed02472dcc33066ead9b31e1603a77357c"
+    },
+    {
+      "stock_id": "2330",
+      "fiscal_year": 2024,
+      "period": "Q2",
+      "report_scope": "consolidated",
+      "body": "tests/fixtures/discovery/mops/2330/2024/Q2/xbrl-consolidated.bin.gz",
+      "headers": "tests/fixtures/discovery/mops/2330/2024/Q2/xbrl-consolidated.headers.json",
+      "metadata": "tests/fixtures/discovery/mops/2330/2024/Q2/xbrl-consolidated.meta.json",
+      "sha256": "9be8d57b462692580e572a5e0597a33879a096c086cccf6c02ffd2e9dd16152b"
+    },
+    {
+      "stock_id": "2330",
+      "fiscal_year": 2024,
+      "period": "Q3",
+      "report_scope": "consolidated",
+      "body": "tests/fixtures/discovery/mops/2330/2024/Q3/xbrl-consolidated.bin.gz",
+      "headers": "tests/fixtures/discovery/mops/2330/2024/Q3/xbrl-consolidated.headers.json",
+      "metadata": "tests/fixtures/discovery/mops/2330/2024/Q3/xbrl-consolidated.meta.json",
+      "sha256": "c89f1074e9a84ab40080c095dc5adc0295f4c4f6900ff80e7eefe8d5ecba0cdd"
+    },
+    {
+      "stock_id": "2330",
+      "fiscal_year": 2024,
+      "period": "FY",
+      "report_scope": "consolidated",
+      "body": "tests/fixtures/discovery/mops/2330/2024/FY/xbrl-consolidated.bin.gz",
+      "headers": "tests/fixtures/discovery/mops/2330/2024/FY/xbrl-consolidated.headers.json",
+      "metadata": "tests/fixtures/discovery/mops/2330/2024/FY/xbrl-consolidated.meta.json",
+      "sha256": "45a7f1e2008d4077320a3841a2ab5f2382e28a7af057144185ebbe33962ebfde"
+    }
+  ],
+  "raw_cases": [
+    {
+      "kind": "amendment_listing",
+      "body": "amendment-2024-q1.html.gz",
+      "headers": "amendment-2024-q1.headers.json",
+      "metadata": "amendment-2024-q1.meta.json",
+      "sha256": "5d61decef2b2987d77155e8ee1eeca83d60cc9a9c41fbd96ca703b03f881b6a4"
+    },
+    {
+      "kind": "individual_listing",
+      "body": "individual-2024-fy.html.gz",
+      "headers": "individual-2024-fy.headers.json",
+      "metadata": "individual-2024-fy.meta.json",
+      "sha256": "162b81280b13abcd2fed66d62576dde257f23591bd1847e4343588b787872863"
+    },
+    {
+      "kind": "missing_result",
+      "body": "missing-result-9999.html.gz",
+      "headers": "missing-result-9999.headers.json",
+      "metadata": "missing-result-9999.meta.json",
+      "sha256": "e8ec894b730655126626ec06ca1b335455689064f7010028b672641c47443721"
+    },
+    {
+      "kind": "unexpected_layout",
+      "body": "unexpected-layout-1216-2024-fy-a.html.gz",
+      "headers": "unexpected-layout-1216-2024-fy-a.headers.json",
+      "metadata": "unexpected-layout-1216-2024-fy-a.meta.json",
+      "sha256": "f919882278e8869916e3f75ea0cc27fab0afeafb643ed3176f12a12814f51875"
+    },
+    {
+      "kind": "amendment_detail",
+      "body": "amendment-202401-detail.html.gz",
+      "headers": "amendment-202401-detail.headers.json",
+      "metadata": "amendment-202401-detail.meta.json",
+      "sha256": "01f756e057d7be0bb114b3aabe89e190aea6dad6b14242d0e6aa3801583235fc"
+    },
+    {
+      "kind": "amendment_attachment",
+      "body": "amendment-202401-attachment.pdf.gz",
+      "headers": "amendment-202401-attachment.headers.json",
+      "metadata": "amendment-202401-attachment.meta.json",
+      "sha256": "807cfab2e3ee5e8b342ad3270769e5d4f75a8b3145d538d4e71574595f7d8c9d"
+    },
+    {
+      "kind": "individual_detail",
+      "body": "individual-202404-detail.html.gz",
+      "headers": "individual-202404-detail.headers.json",
+      "metadata": "individual-202404-detail.meta.json",
+      "sha256": "687cf973bd4b4d23d29e5eb62bbebd020191e2eb281561cf94a88de4c2d84747"
+    },
+    {
+      "kind": "individual_attachment",
+      "body": "individual-202404-attachment.pdf.gz",
+      "headers": "individual-202404-attachment.headers.json",
+      "metadata": "individual-202404-attachment.meta.json",
+      "sha256": "1ce47de956cb4745895a2340773bbef251813c49a58575999c2b42b0e1882b09"
+    }
+  ],
+  "missing_result_meaning": "query_returned_no_rows_only",
+  "individual_xbrl_document": "not_captured"
+}

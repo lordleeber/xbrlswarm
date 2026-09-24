@@ -1,0 +1,27 @@
+{
+  "excluded_response_headers": [
+    "Set-Cookie"
+  ],
+  "request": {
+    "body_sha256": null,
+    "body_size_bytes": 0,
+    "form": null,
+    "headers": {
+      "Referer": "https://mopsov.twse.com.tw/mops/web/t203sb01",
+      "User-Agent": "Mozilla/5.0 xbrlswarm-step29/0.1"
+    },
+    "method": "GET",
+    "url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=1216&year=2024&season=4&report_id=A"
+  },
+  "response": {
+    "body_file": "unexpected-layout-1216-2024-fy-a.html.gz",
+    "content_encoding": "gzip",
+    "final_url": "https://mopsov.twse.com.tw/server-java/FileDownLoad?functionName=t164sb01&step=9&co_id=1216&year=2024&season=4&report_id=A",
+    "headers_file": "unexpected-layout-1216-2024-fy-a.headers.json",
+    "sha256": "f919882278e8869916e3f75ea0cc27fab0afeafb643ed3176f12a12814f51875",
+    "size_bytes": 281,
+    "status": 200,
+    "stored_size_bytes": 247
+  },
+  "retrieved_at": "2026-09-24T07:24:59.177Z"
+}
