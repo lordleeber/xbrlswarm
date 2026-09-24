@@ -1,0 +1,18 @@
+{
+  "contract": "goodinfo_announcement_idempotency",
+  "version": 1,
+  "identity_fields": ["STOCK_ID", "CLAIM_TIME", "SUBJECT"],
+  "locator_prefix": "goodinfo:announcement:",
+  "locator_encoding": "fixed_order_urlencode_of_verified_identity",
+  "subject_normalization": ["Unicode NFKC", "remove whitespace", "ROC year to Gregorian year"],
+  "ignored_request_variants": ["accepted_detail_path", "query_parameter_order", "percent_encoding", "extra_query_parameters"],
+  "evidence_identity_comparison_fields": [
+    "task_id", "source_type", "evidence_type", "event_date", "event_time",
+    "event_precision", "source_subject", "raw_payload_hash"
+  ],
+  "new_capture_requires_raw_payload_hash": true,
+  "legacy_url_locator_policy": "reuse_one_equivalent_row_without_mutation; reject_ambiguous_rows",
+  "missing_locator_policy": "never_infer_from_source_url",
+  "source_url": "verified_response_url_not_identity",
+  "requires_migration": false
+}

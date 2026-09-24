@@ -16,6 +16,8 @@ Step-12 將同一邏輯證據定義為下列五個 ROADMAP 維度都相同：
 `contracts/logical-evidence-identity.json`。除 Step-17 明定的 Goodinfo legacy precision
 相容規則外，比較採 exact stored value；不做 URL canonicalization、大小寫轉換、
 日期推導或來源間的值合併。
+Step-39 在**寫入前**從已驗證的 Goodinfo 公告三元組建立固定 locator；上述比較
+規則仍對儲存後的 locator 原值運作，不對其他來源套用 Goodinfo 建構規則。
 
 ## 來源 profile
 
@@ -28,8 +30,10 @@ Step-12 將同一邏輯證據定義為下列五個 ROADMAP 維度都相同：
 | `goodinfo` | `goodinfo_announcement` | `source_locator`, `event_date`, `event_time`, `source_subject` | Step-39 使用詳細頁 URL／定位資訊及 STOCK_ID + CLAIM_TIME + SUBJECT |
 
 Goodinfo 的 `source_locator` 必須由詳細頁 URL 或可重播的定位資訊建立；task 已識別股票，
-`event_date` + `event_time` 保存 CLAIM_TIME，`source_subject` 保存 SUBJECT。Goodinfo 若另有
+`event_date` + `event_time` 保存 CLAIM_TIME，`source_subject` 保存頁面可見主旨。Goodinfo 若另有
 payload hash，兩邊皆有值時仍會參與差異判定，但缺少 hash 不妨礙同一公告去重。
+Step-39 的固定 locator 由 URL 的 `STOCK_ID`、`CLAIM_TIME`、`SUBJECT` 建立，
+並保留舊版 URL locator 的重播相容性；詳見 `docs/step-39-acceptance.md`。
 
 尚未定義 profile 的 source 保持 `unresolved`。Yahoo、Google 發現的各站 mirror 與
 Grounded AI 必須在各自來源契約證實穩定 identity evidence 後才能新增 profile，不能直接
