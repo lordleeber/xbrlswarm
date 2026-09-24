@@ -165,7 +165,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         query = AnnouncementListQuery(args.stock_id, args.start_date, args.end_date)
-        capture = capture_announcement_list(query, args.output_root)
+        from .goodinfo_operations import GoodinfoOperationalClient
+        capture = GoodinfoOperationalClient(args.output_root).capture_list(query)
     except (ValueError, FileExistsError, HTTPError, URLError) as error:
         parser.error(str(error))
     print(json.dumps({"body_path": str(capture.body_path), "metadata_path": str(capture.metadata_path), "raw_payload_hash": capture.raw_payload_hash}))
