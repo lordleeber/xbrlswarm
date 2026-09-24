@@ -84,6 +84,14 @@ class TaskStore:
                      AND engine = 'grounded_ai'""",
                 (now,),
             )
+            connection.execute(
+                """UPDATE task SET state = 'undone', engine = 'goodinfo',
+                       worker_id = NULL, dispatched_at = NULL,
+                       retry_at = NULL, updated_at = ?
+                   WHERE state IN ('not_found', 'rejected')
+                     AND engine = 'mops'""",
+                (now,),
+            )
             row = connection.execute(
                 """UPDATE task SET state = 'dispatched', worker_id = ?,
                           dispatched_at = ?, updated_at = ?, attempts = attempts + 1

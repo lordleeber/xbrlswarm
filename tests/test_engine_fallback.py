@@ -41,7 +41,7 @@ def test_domain_order_has_only_roadmap_engines() -> None:
 
 
 @pytest.mark.parametrize("outcome", ["not_found", "rejected"])
-def test_mops_exhaustion_waits_for_step33_gate(
+def test_mops_exhaustion_advances_to_goodinfo_on_next_lease(
     tmp_path: Path, outcome: str
 ) -> None:
     database = _database(tmp_path)
@@ -51,11 +51,17 @@ def test_mops_exhaustion_waits_for_step33_gate(
     assert store.complete(first["task_id"], "worker-1", 1, outcome)
     assert _row(database) == (outcome, "mops", 1, 0, None, None, None)
 
-    assert store.lease("worker-2") is None
-    assert _row(database) == (outcome, "mops", 1, 0, None, None, None)
+    second = store.lease("worker-2")
+    assert second["task_id"] == first["task_id"]
+    assert second["engine"] == "goodinfo"
+    assert second["lease_attempt"] == 2
+    assert _row(database) == (
+        "dispatched", "goodinfo", 2, 0, "worker-2",
+        "2026-09-24T01:02:03.000Z", None,
+    )
 
 
-@pytest.mark.parametrize("engine", ORDER[:-1])
+@pytest.mark.parametrize("engine", ORDER[1:-1])
 def test_unenabled_downstream_engine_is_not_dispatched(
     tmp_path: Path, engine: str
 ) -> None:
@@ -74,6 +80,46 @@ def test_retryable_failure_stays_on_engine_before_semantic_fallback(tmp_path: Pa
     assert store.complete(first["task_id"], "worker-1", 1, "transport_error")
     assert store.lease("worker-2") is None
     assert _row(database)[:4] == ("transport_error", "mops", 1, 1)
+
+
+def test_mops_exhaustion_preserves_counters_and_targeted_lease(tmp_path: Path) -> None:
+    database = _database(tmp_path)
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            """UPDATE task SET state = 'rejected', attempts = 4, fail_count = 2
+               WHERE id = 1"""
+        )
+        connection.execute(
+            """INSERT INTO task (stock_id, fiscal_year, report_period, state, engine)
+               VALUES ('0051', 2024, 'Q1', 'undone', 'mops')"""
+        )
+    store = TaskStore(database, clock=lambda: NOW)
+    second = store.lease("worker-2", task_id=2)
+    assert second["task_id"] == 2
+    assert second["engine"] == "mops"
+    assert _row(database)[:4] == ("undone", "goodinfo", 4, 2)
+    first = store.lease("worker-3", task_id=1)
+    assert first["engine"] == "goodinfo"
+    assert first["lease_attempt"] == 5
+    with sqlite3.connect(database) as connection:
+        assert connection.execute(
+            "SELECT fail_count FROM task WHERE id = 1"
+        ).fetchone() == (2,)
+
+
+def test_mops_advance_and_dispatch_roll_back_together(tmp_path: Path) -> None:
+    database = _database(tmp_path)
+    with sqlite3.connect(database) as connection:
+        connection.execute("UPDATE task SET state = 'not_found' WHERE id = 1")
+        connection.execute(
+            """CREATE TRIGGER fail_goodinfo_dispatch BEFORE UPDATE ON task
+               WHEN NEW.state = 'dispatched' AND NEW.engine = 'goodinfo'
+               BEGIN SELECT RAISE(ABORT, 'test dispatch failure'); END"""
+        )
+    store = TaskStore(database, clock=lambda: NOW)
+    with pytest.raises(sqlite3.IntegrityError, match="test dispatch failure"):
+        store.lease("worker-2")
+    assert _row(database) == ("not_found", "mops", 0, 0, None, None, None)
 
 
 def test_completed_task_does_not_fallback(tmp_path: Path) -> None:
@@ -145,5 +191,6 @@ def test_contract_documents_order_and_terminal_state() -> None:
     assert contract["engine_order"] == ORDER
     assert contract["advance_states"] == ["not_found", "rejected"]
     assert contract["terminal_state"] == "terminal_unresolved"
-    assert contract["runtime_fallback_enabled"] is False
+    assert contract["runtime_fallback_enabled"] is True
+    assert contract["enabled_transitions"] == [{"from": "mops", "to": "goodinfo"}]
     assert "terminal_unresolved" in Path("docs/engine-fallback.md").read_text()

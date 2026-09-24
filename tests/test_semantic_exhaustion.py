@@ -77,9 +77,10 @@ def test_semantic_exhaustion_ends_current_lease_without_changing_engine(
     assert _post(app, "/result", result) == (
         "409 Conflict", {"error": "lease_not_current"}
     )
-    assert _post(app, "/lease", {"worker_id": "worker-2"}) == (
-        "204 No Content", None
-    )
+    next_status, next_payload = _post(app, "/lease", {"worker_id": "worker-2"})
+    assert next_status == "200 OK"
+    assert next_payload["task"]["engine"] == "goodinfo"
+    assert next_payload["task"]["lease_attempt"] == 2
 
 
 @pytest.mark.parametrize("outcome", ["not_found", "rejected"])

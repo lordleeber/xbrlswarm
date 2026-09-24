@@ -24,6 +24,6 @@ Migration 只接受 enum 內的既有 task。若 Step-8 時期已寫入其他 en
 
 ## 本 Step 的邊界
 
-Enum 中的宣告順序與 ROADMAP 一致；Step-28 已固定語意耗盡後的 state transition 順序，但跨來源派發仍須通過後續來源 gate，詳見 `docs/engine-fallback.md`。Step-27 的基礎設施失敗仍留在同一 engine。
+Enum 中的宣告順序與 ROADMAP 一致；Step-28 固定 state transition 順序，Step-33 已開放 MOPS 語意耗盡後轉到 Goodinfo，其他跨來源派發仍須通過後續來源 gate，詳見 `docs/engine-fallback.md`。Step-27 的基礎設施失敗仍留在同一 engine。
 
 Step-9 不建立 worker、不實作來源請求，也不根據 enum 宣告順序自動改變 task engine。
