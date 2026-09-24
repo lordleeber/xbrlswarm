@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "source": "yahoo_tw_stock_and_search",
+  "target_task": {
+    "stock_id": "8119",
+    "company": "公信",
+    "fiscal_year": 2024,
+    "report_period": "FY",
+    "report_scope": "consolidated"
+  },
+  "cases": [
+    {
+      "scenario": "valid_result",
+      "origin": "live",
+      "page_kind": "article",
+      "body": "valid_result.html.gz",
+      "headers": "valid_result.headers.json",
+      "metadata": "valid_result.meta.json",
+      "sha256": "edd954cb2b531bc33688645b7cae8faee005b049222f7c67fc026d7a06c267d4",
+      "observed_identity": {
+        "stock_id": "8119",
+        "company": "公信",
+        "fiscal_year": 2024,
+        "report_period": "FY",
+        "report_scope": "consolidated"
+      }
+    },
+    {
+      "scenario": "wrong_year",
+      "origin": "live",
+      "page_kind": "article",
+      "body": "wrong_year.html.gz",
+      "headers": "wrong_year.headers.json",
+      "metadata": "wrong_year.meta.json",
+      "sha256": "e63a77067e417d533c8991acb2f19e46cf983a79d2da4638f8308c9c76330479",
+      "observed_identity": {
+        "stock_id": "8119",
+        "company": "公信",
+        "fiscal_year": 2025,
+        "report_period": "FY",
+        "report_scope": "consolidated"
+      }
+    },
+    {
+      "scenario": "wrong_quarter",
+      "origin": "live",
+      "page_kind": "article",
+      "body": "wrong_quarter.html.gz",
+      "headers": "wrong_quarter.headers.json",
+      "metadata": "wrong_quarter.meta.json",
+      "sha256": "27421ebe5ee44bf27916be96dc8ebd22ee69fe28c68703dbdca45d450c55b2b2",
+      "observed_identity": {
+        "stock_id": "8119",
+        "company": "公信",
+        "fiscal_year": 2024,
+        "report_period": "Q2",
+        "report_scope": "consolidated"
+      }
+    },
+    {
+      "scenario": "wrong_company",
+      "origin": "live",
+      "page_kind": "article",
+      "body": "wrong_company.html.gz",
+      "headers": "wrong_company.headers.json",
+      "metadata": "wrong_company.meta.json",
+      "sha256": "172be5df2f8c9c204c4bd25b7742b270ac96753210a1e6e381f168863bef18a3",
+      "observed_identity": {
+        "stock_id": "2409",
+        "company": "友達",
+        "fiscal_year": 2024,
+        "report_period": "FY",
+        "report_scope": "consolidated"
+      }
+    },
+    {
+      "scenario": "wrong_scope",
+      "origin": "live",
+      "page_kind": "article",
+      "body": "wrong_scope.html.gz",
+      "headers": "wrong_scope.headers.json",
+      "metadata": "wrong_scope.meta.json",
+      "sha256": "094c9424ddc7240c3b9f627a0a0e767719f05606ca4424c384217d27eed312fc",
+      "observed_identity": {
+        "stock_id": "8119",
+        "company": "公信",
+        "fiscal_year": 2024,
+        "report_period": "FY",
+        "report_scope": "individual"
+      }
+    },
+    {
+      "scenario": "unexpected_page",
+      "origin": "live",
+      "page_kind": "announcement_index",
+      "body": "unexpected_page.html.gz",
+      "headers": "unexpected_page.headers.json",
+      "metadata": "unexpected_page.meta.json",
+      "sha256": "43c8a8bd3ef811b584d477b860db483e2e3db67f023fbc06f9e0a64ae9fd44eb"
+    },
+    {
+      "scenario": "search_redirect",
+      "origin": "live",
+      "page_kind": "search_redirect",
+      "body": "search_redirect.html.gz",
+      "headers": "search_redirect.headers.json",
+      "metadata": "search_redirect.meta.json",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "scenario": "no_result",
+      "origin": "synthetic",
+      "page_kind": "search_results",
+      "body": "no_result.html.gz",
+      "headers": "no_result.headers.json",
+      "metadata": "no_result.meta.json",
+      "sha256": "08e30ae5ed8c261adbc8054630c1c838a9e49a15f0886e97a6c74f98b5a8679f"
+    },
+    {
+      "scenario": "rate_limit",
+      "origin": "synthetic",
+      "page_kind": "search_results",
+      "body": "rate_limit.html.gz",
+      "headers": "rate_limit.headers.json",
+      "metadata": "rate_limit.meta.json",
+      "sha256": "aa66ed2dcc7266cd1decf97294af60c7c7f52bb4f4ae1c6c89ab465b7e854a2a"
+    }
+  ]
+}

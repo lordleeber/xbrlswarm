@@ -1,0 +1,20 @@
+{
+  "origin": "synthetic",
+  "request": {
+    "headers": {},
+    "method": "GET",
+    "url": "https://tw.search.yahoo.com/search?p=xbrlswarm-fixture-no-result-8119"
+  },
+  "response": {
+    "body_file": "no_result.html.gz",
+    "content_encoding": "gzip",
+    "final_url": "https://tw.search.yahoo.com/search?p=xbrlswarm-fixture-no-result-8119",
+    "headers_file": "no_result.headers.json",
+    "sha256": "08e30ae5ed8c261adbc8054630c1c838a9e49a15f0886e97a6c74f98b5a8679f",
+    "size_bytes": 196,
+    "status": 200,
+    "stored_size_bytes": 194
+  },
+  "retrieved_at": null,
+  "synthetic_purpose": "offline control-flow test only; this HTML is not an observed Yahoo layout"
+}

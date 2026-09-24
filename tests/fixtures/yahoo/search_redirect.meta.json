@@ -1,0 +1,22 @@
+{
+  "origin": "live",
+  "request": {
+    "headers": {
+      "Accept-Language": "zh-TW,zh;q=0.9",
+      "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36"
+    },
+    "method": "GET",
+    "url": "https://tw.search.yahoo.com/search?p=8119%20%E5%85%AC%E4%BF%A1%202024%20%E5%B9%B4%E5%BA%A6%20%E5%90%88%E4%BD%B5%20%E8%B2%A1%E5%8B%99%E5%A0%B1%E5%91%8A"
+  },
+  "response": {
+    "body_file": "search_redirect.html.gz",
+    "content_encoding": "gzip",
+    "final_url": "https://tw.search.yahoo.com/search?p=8119%20%E5%85%AC%E4%BF%A1%202024%20%E5%B9%B4%E5%BA%A6%20%E5%90%88%E4%BD%B5%20%E8%B2%A1%E5%8B%99%E5%A0%B1%E5%91%8A",
+    "headers_file": "search_redirect.headers.json",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "size_bytes": 0,
+    "status": 307,
+    "stored_size_bytes": 20
+  },
+  "retrieved_at": "2026-09-24T17:13:59.551Z"
+}

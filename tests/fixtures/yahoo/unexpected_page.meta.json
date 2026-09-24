@@ -1,0 +1,22 @@
+{
+  "origin": "live",
+  "request": {
+    "headers": {
+      "Accept-Language": "zh-TW,zh;q=0.9",
+      "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36"
+    },
+    "method": "GET",
+    "url": "https://tw.stock.yahoo.com/quote/8119.TWO"
+  },
+  "response": {
+    "body_file": "unexpected_page.html.gz",
+    "content_encoding": "gzip",
+    "final_url": "https://tw.stock.yahoo.com/quote/8119.TWO",
+    "headers_file": "unexpected_page.headers.json",
+    "sha256": "43c8a8bd3ef811b584d477b860db483e2e3db67f023fbc06f9e0a64ae9fd44eb",
+    "size_bytes": 334587,
+    "status": 200,
+    "stored_size_bytes": 66162
+  },
+  "retrieved_at": "2026-09-24T17:13:59.371Z"
+}

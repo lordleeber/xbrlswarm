@@ -1,0 +1,22 @@
+{
+  "origin": "live",
+  "request": {
+    "headers": {
+      "Accept-Language": "zh-TW,zh;q=0.9",
+      "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36"
+    },
+    "method": "GET",
+    "url": "https://tw.stock.yahoo.com/news/%E5%85%AC%E5%91%8A-%E5%8F%8B%E9%81%94%E8%91%A3%E4%BA%8B%E6%9C%83%E9%80%9A%E9%81%8E113%E5%B9%B4%E5%BA%A6%E5%90%88%E4%BD%B5%E8%B2%A1%E5%8B%99%E5%A0%B1%E5%91%8A-055538775.html"
+  },
+  "response": {
+    "body_file": "wrong_company.html.gz",
+    "content_encoding": "gzip",
+    "final_url": "https://tw.stock.yahoo.com/news/%E5%85%AC%E5%91%8A-%E5%8F%8B%E9%81%94%E8%91%A3%E4%BA%8B%E6%9C%83%E9%80%9A%E9%81%8E113%E5%B9%B4%E5%BA%A6%E5%90%88%E4%BD%B5%E8%B2%A1%E5%8B%99%E5%A0%B1%E5%91%8A-055538775.html",
+    "headers_file": "wrong_company.headers.json",
+    "sha256": "172be5df2f8c9c204c4bd25b7742b270ac96753210a1e6e381f168863bef18a3",
+    "size_bytes": 508517,
+    "status": 200,
+    "stored_size_bytes": 96259
+  },
+  "retrieved_at": "2026-09-24T17:13:57.789Z"
+}
