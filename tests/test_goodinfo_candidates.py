@@ -72,6 +72,37 @@ def test_annual_and_unknown_scope_remain_hints() -> None:
     assert candidates[0].report_scope_hints == ()
 
 
+@pytest.mark.parametrize(("title", "period", "scope"), [
+    ("2026年度第二季個別財務報告", ReportPeriod.Q2, ("個體",)),
+    ("2026年上半年度財務報告", ReportPeriod.Q2, ()),
+    ("董事會通過2025年個別財務報告", ReportPeriod.FY, ("個體",)),
+    ("董事會通過2026年第2季個別財務報告", ReportPeriod.Q2, ("個體",)),
+    ("2025年度個體財務報告", ReportPeriod.FY, ("個體",)),
+])
+def test_real_title_forms_normalize_period_and_individual_scope(
+    title: str, period: ReportPeriod, scope: tuple[str, ...],
+) -> None:
+    query = AnnouncementListQuery("6152", date(2026, 8, 1), date(2026, 8, 31))
+    detail = _detail("6152", "2026/08/07 14:46:08", title)
+    candidates = parse_goodinfo_candidates(
+        _page((detail, title)), query=query, final_url=query.url,
+        content_type="text/html; charset=utf-8",
+    )
+    assert len(candidates) == 1
+    assert candidates[0].report_period_hints == (period,)
+    assert candidates[0].report_scope_hints == scope
+
+
+def test_lower_half_year_is_not_mistaken_for_an_annual_report() -> None:
+    query = AnnouncementListQuery("6152", date(2026, 8, 1), date(2026, 8, 31))
+    title = "2026年下半年度財務報告"
+    detail = _detail("6152", "2026/08/07 14:46:08", title)
+    assert parse_goodinfo_candidates(
+        _page((detail, title)), query=query, final_url=query.url,
+        content_type="text/html; charset=utf-8",
+    ) == ()
+
+
 def test_big5_list_title_is_decoded_without_changing_raw_hash() -> None:
     detail = _detail("6152", "2024/05/07 14:19:00", "本公司第1季合併財務報告")
     body = f'<html><a href="{detail.replace("&", "&amp;")}">第1季合併財務報告</a></html>'.encode("big5")

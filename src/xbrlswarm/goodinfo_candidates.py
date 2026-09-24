@@ -18,8 +18,9 @@ _PERIOD_MARKERS = {
     ReportPeriod.Q1: re.compile(r"第\s*[1１一]\s*季"),
     ReportPeriod.Q2: re.compile(r"第\s*[2２二]\s*季"),
     ReportPeriod.Q3: re.compile(r"第\s*[3３三]\s*季"),
-    ReportPeriod.FY: re.compile(r"年度"),
 }
+_HALF_YEAR = re.compile(r"([上下])半年度")
+_ANNUAL_REPORT = re.compile(r"年度|\d{3,4}\s*年\s*(?:合併|個體|個別)?\s*財務報告")
 _DETAIL_PATHS = {
     "/tw/StockAnnounceDetail.asp",
     "/tw2/StockAnnounceDetail.asp",
@@ -98,6 +99,18 @@ def _detail_url(href: str, *, list_url: str, query: AnnouncementListQuery) -> st
     return url
 
 
+def _period_hints(title: str) -> tuple[ReportPeriod, ...]:
+    quarters = tuple(period for period, marker in _PERIOD_MARKERS.items() if marker.search(title))
+    if quarters:
+        return quarters
+    half_year = _HALF_YEAR.search(title)
+    if half_year:
+        return (ReportPeriod.Q2,) if half_year.group(1) == "上" else ()
+    if _ANNUAL_REPORT.search(title):
+        return (ReportPeriod.FY,)
+    return ()
+
+
 def parse_goodinfo_candidates(
     body: bytes,
     *,
@@ -118,10 +131,13 @@ def parse_goodinfo_candidates(
         detail_url = _detail_url(href, list_url=final_url, query=query)
         if detail_url is None or detail_url in seen or "財務報告" not in title:
             continue
-        periods = tuple(period for period, marker in _PERIOD_MARKERS.items() if marker.search(title))
+        periods = _period_hints(title)
         if not periods:
             continue
-        scopes = tuple(scope for scope in ("合併", "個體") if scope in title)
+        scopes = tuple(scope for scope, present in (
+            ("合併", "合併" in title),
+            ("個體", "個體" in title or "個別" in title),
+        ) if present)
         candidates.append(GoodinfoListCandidate(
             display_title=title,
             detail_url=detail_url,
