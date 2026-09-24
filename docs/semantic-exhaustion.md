@@ -12,8 +12,9 @@ Worker 透過 `POST /result` 回報其中一種 outcome，並帶回目前的 `ta
 錯誤 worker 或逾期結果回 `409 lease_not_current`。`success` 仍轉成 `completed`。
 `GET /status` 會分別列出 `Not Found`、`Rejected` 計數，避免總數與狀態列不一致。
 
-這兩種狀態允許後續流程轉到下一個 engine。Step-28 已固定來源順序；
-下一次 `/lease` 才會將 task 轉至下一個 engine 並派發，因此結果回報當下
-仍保留原 engine 與語意耗盡狀態。Step-27 已定義留在同一 engine 的基礎設施錯誤。
+這兩種狀態允許後續流程轉到下一個 engine。Step-28 已固定來源順序，
+但跨來源轉移受後續來源驗收 gate 約束；Step-33 的 MOPS gate 尚未通過時，
+`/lease` 會保留原 engine 與語意耗盡狀態。Step-27 已定義留在同一 engine
+的基礎設施錯誤。
 不新增 migration：既有 `task.state` 欄位可保存這兩個狀態。
 機器可讀契約見 `contracts/semantic-exhaustion.json`。

@@ -101,9 +101,10 @@ Step-27 定義 `rate_limited`、`transport_error`、`temporary_error` 為可重�
 任務留在同一 engine，預設等待 60 秒後由 `/lease` 再次派發；等待期限保存於
 `retry_at`。詳見 `docs/retryable-failures.md`。
 
-Step-28 固定 `mops → goodinfo → yahoo → google → grounded_ai`；語意耗盡
-在下一次 `/lease` 轉往下一來源，最後一層仍無可信答案時成為
-`terminal_unresolved`。詳見 `docs/engine-fallback.md`。
+Step-28 固定 `mops → goodinfo → yahoo → google → grounded_ai`；跨來源派發
+等待後續來源 gate，Step-33 通過前不啟用 Goodinfo 備援。已有的
+`grounded_ai` task 耗盡時成為 `terminal_unresolved`。
+詳見 `docs/engine-fallback.md`。
 
 ## 報告識別候選方案
 

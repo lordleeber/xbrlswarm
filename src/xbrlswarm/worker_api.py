@@ -75,18 +75,11 @@ class TaskStore:
                 (now, now),
             )
             connection.execute(
-                """UPDATE task SET
-                       engine = CASE engine
-                           WHEN 'mops' THEN 'goodinfo'
-                           WHEN 'goodinfo' THEN 'yahoo'
-                           WHEN 'yahoo' THEN 'google'
-                           WHEN 'google' THEN 'grounded_ai'
-                           ELSE engine END,
-                       state = CASE WHEN engine = 'grounded_ai'
-                           THEN 'terminal_unresolved' ELSE 'undone' END,
+                """UPDATE task SET state = 'terminal_unresolved',
                        worker_id = NULL, dispatched_at = NULL,
                        retry_at = NULL, updated_at = ?
-                   WHERE state IN ('not_found', 'rejected')""",
+                   WHERE state IN ('not_found', 'rejected')
+                     AND engine = 'grounded_ai'""",
                 (now,),
             )
             row = connection.execute(
