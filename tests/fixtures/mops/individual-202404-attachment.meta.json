@@ -1,0 +1,24 @@
+{
+  "excluded_response_headers": [
+    "Set-Cookie"
+  ],
+  "request": {
+    "headers": {
+      "Referer": "https://mopsov.twse.com.tw/mops/web/t56sb31_q1",
+      "User-Agent": "Mozilla/5.0 xbrlswarm-step29/0.1"
+    },
+    "method": "GET",
+    "url": "https://mopsov.twse.com.tw/nas/t56sa23/202404/t56sa23_1216_202404_5_1_I3.pdf"
+  },
+  "response": {
+    "body_file": "individual-202404-attachment.pdf.gz",
+    "content_encoding": "gzip",
+    "final_url": "https://mopsov.twse.com.tw/nas/t56sa23/202404/t56sa23_1216_202404_5_1_I3.pdf",
+    "headers_file": "individual-202404-attachment.headers.json",
+    "sha256": "1ce47de956cb4745895a2340773bbef251813c49a58575999c2b42b0e1882b09",
+    "size_bytes": 2211681,
+    "status": 200,
+    "stored_size_bytes": 1848845
+  },
+  "retrieved_at": "2026-09-24T07:28:46.922Z"
+}

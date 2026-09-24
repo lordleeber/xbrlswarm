@@ -1,0 +1,24 @@
+{
+  "excluded_response_headers": [
+    "Set-Cookie"
+  ],
+  "request": {
+    "headers": {
+      "Referer": "https://mopsov.twse.com.tw/mops/web/t56sb31_q1",
+      "User-Agent": "Mozilla/5.0 xbrlswarm-step29/0.1"
+    },
+    "method": "GET",
+    "url": "https://mopsov.twse.com.tw/nas/t56sa23/202401/t56sa23_1314_202401_4_1_I1.pdf"
+  },
+  "response": {
+    "body_file": "amendment-202401-attachment.pdf.gz",
+    "content_encoding": "gzip",
+    "final_url": "https://mopsov.twse.com.tw/nas/t56sa23/202401/t56sa23_1314_202401_4_1_I1.pdf",
+    "headers_file": "amendment-202401-attachment.headers.json",
+    "sha256": "807cfab2e3ee5e8b342ad3270769e5d4f75a8b3145d538d4e71574595f7d8c9d",
+    "size_bytes": 237305,
+    "status": 200,
+    "stored_size_bytes": 228098
+  },
+  "retrieved_at": "2026-09-24T07:28:44.418Z"
+}

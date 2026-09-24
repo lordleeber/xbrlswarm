@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Server",
+    "value": "TWSE Server"
+  },
+  {
+    "name": "Date",
+    "value": "Thu, 24 Sep 2026 07:28:45 GMT"
+  },
+  {
+    "name": "Content-type",
+    "value": "application/pdf"
+  },
+  {
+    "name": "Last-Modified",
+    "value": "Thu, 18 Dec 2025 11:28:00 GMT"
+  },
+  {
+    "name": "X-Content-Type-Options",
+    "value": "nosniff "
+  },
+  {
+    "name": "X-Content-Security-Policy",
+    "value": "frame-ancestors 'self' *.twse.com.tw "
+  },
+  {
+    "name": "Content-Security-Policy",
+    "value": "frame-ancestors 'self' *.twse.com.tw; script-src 'self' https://*.twse.com.tw http://www.google-analytics.com/ https://www.google-analytics.com/ https://code.jquery.com/ https://unpkg.com https://www.gstatic.com https://www.googletagmanager.com 'unsafe-inline' 'unsafe-eval';"
+  },
+  {
+    "name": "Referrer-Policy",
+    "value": "no-referrer"
+  },
+  {
+    "name": "Permissions-Policy",
+    "value": "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()"
+  },
+  {
+    "name": "X-XSS-Protection",
+    "value": "1;mode=block"
+  },
+  {
+    "name": "Strict-Transport-Security",
+    "value": "max-age=31536000; includeSubDomains; preload"
+  },
+  {
+    "name": "Content-Length",
+    "value": "2211681"
+  }
+]

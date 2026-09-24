@@ -1,0 +1,40 @@
+{
+  "excluded_response_headers": [
+    "Set-Cookie"
+  ],
+  "request": {
+    "body_sha256": "be2a53b7a21ab7d27f48ba527e23c82d5fff1f1d7c270555cfa24ec51c4985de",
+    "body_size_bytes": 101,
+    "form": {
+      "CID": "1216",
+      "DTYPE": "I3",
+      "RID": "5",
+      "SKEY": "1",
+      "TYPEK": "sii",
+      "YEAR_SEASON": "202404",
+      "firstin": "1",
+      "off": "1",
+      "season": "04",
+      "step": "2",
+      "year": "113"
+    },
+    "headers": {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "Referer": "https://mopsov.twse.com.tw/mops/web/t56sb31_q1",
+      "User-Agent": "Mozilla/5.0 xbrlswarm-step29/0.1"
+    },
+    "method": "POST",
+    "url": "https://mopsov.twse.com.tw/mops/web/ajax_t56sb31_q1"
+  },
+  "response": {
+    "body_file": "individual-202404-detail.html.gz",
+    "content_encoding": "gzip",
+    "final_url": "https://mopsov.twse.com.tw/mops/web/ajax_t56sb31_q1",
+    "headers_file": "individual-202404-detail.headers.json",
+    "sha256": "687cf973bd4b4d23d29e5eb62bbebd020191e2eb281561cf94a88de4c2d84747",
+    "size_bytes": 6312,
+    "status": 200,
+    "stored_size_bytes": 2088
+  },
+  "retrieved_at": "2026-09-24T07:28:46.856Z"
+}
