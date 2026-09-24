@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已完成 **Step-32：MOPS 試點**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已完成 **Step-33：MOPS 閘門**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -101,8 +101,9 @@ Step-27 定義 `rate_limited`、`transport_error`、`temporary_error` 為可重�
 任務留在同一 engine，預設等待 60 秒後由 `/lease` 再次派發；等待期限保存於
 `retry_at`。詳見 `docs/retryable-failures.md`。
 
-Step-28 固定 `mops → goodinfo → yahoo → google → grounded_ai`；跨來源派發
-等待後續來源 gate，Step-33 通過前不啟用 Goodinfo 備援。已有的
+Step-28 固定 `mops → goodinfo → yahoo → google → grounded_ai`；Step-33
+通過後，MOPS 語意耗盡的 task 可在下次 lease 轉至 Goodinfo；其他跨來源
+轉移等待後續 gate。已有的
 `grounded_ai` task 耗盡時成為 `terminal_unresolved`。
 詳見 `docs/engine-fallback.md`。
 
@@ -118,6 +119,10 @@ Step-31 接受 MOPS evidence 時保存原始 response 的 SHA-256；開啟快照
 
 Step-32 對 2330、6147、4542 的 2024 Q1／Q2／Q3／FY 執行官方 MOPS 即時
 試點；逐筆結果與限制見 `docs/mops-pilot-report.md`。
+
+Step-33 稽核來源契約、fixture、parser、失敗語意與試點後，只開放
+`mops → goodinfo` 的語意耗盡轉移。Goodinfo 查詢與解析尚待後續步驟；
+驗收範圍和未驗證事項見 `docs/step-33-acceptance.md`。
 
 ## 報告識別候選方案
 
