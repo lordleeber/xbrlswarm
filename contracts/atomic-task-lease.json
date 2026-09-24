@@ -1,0 +1,13 @@
+{
+  "contract": "atomic_task_lease",
+  "version": 1,
+  "eligible_state": "undone",
+  "leased_state": "dispatched",
+  "selection_order": "lowest_task_id_first",
+  "transaction": "begin_immediate_then_conditional_update_returning",
+  "lease_fields": ["worker_id", "dispatched_at", "attempts", "updated_at"],
+  "empty_queue": "no_task",
+  "concurrency_invariant": "one_active_lease_per_task",
+  "result_generation": "lease_attempt_equals_attempts_after_increment",
+  "expiry_recovery_deferred_to_step": 25
+}

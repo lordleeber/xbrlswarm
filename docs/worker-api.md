@@ -33,7 +33,7 @@ lease 的 generation，等於更新後的 `attempts`；回報結果時必須原�
 不存在的路徑回 `404`。
 `/healthz` 不查資料庫，不能拿來宣稱 DB、外部來源或 worker 健康。
 
-本 Step 的基礎交易避免一般重複派發，但 Step-24 將正式定義並驗證多 worker
-原子 lease 契約；Step-25 處理過期 lease。失敗分類、換 engine、完整 stats／status
+Step-24 已以條件式更新及並行測試正式驗證多 worker 原子 lease 契約，詳見
+`docs/atomic-task-lease.md`；Step-25 處理過期 lease。失敗分類、換 engine、完整 stats／status
 指標與 evidence ingestion 留待後續 Steps，不能將目前的 `success` 擴充解讀為
 完成來源稽核。
