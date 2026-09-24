@@ -73,10 +73,12 @@ source_title
 retrieved_at
 verification_state
 company_name
+raw_snapshot_path
 ```
 
 因此同一 artifact 再次擷取，即使 `retrieved_at`、URL、標題、驗證狀態或公司名稱表示不同，
-也不會只因這些欄位產生新 logical evidence。`source_subject` 是 Goodinfo announcement
+或快照保存路徑不同，也不會只因這些欄位產生新 logical evidence。快照路徑是
+本地保存位置，原始內容由 `raw_payload_hash` 識別。`source_subject` 是 Goodinfo announcement
 profile 的 event identity 欄位，但不參與 MOPS profile。Profile 中兩邊皆已知的 locator、
 event 或 payload 值若不同，則必須視為不同證據；這會保留不同來源、新公告與 payload 修訂。
 
