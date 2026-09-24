@@ -118,7 +118,7 @@ def test_worker_api_lease_result_and_read_endpoints(tmp_path: Path) -> None:
         ("POST", "/lease", {"worker_id": " "}, "400 Bad Request"),
         ("POST", "/lease", {"worker_id": "x", "extra": 1}, "400 Bad Request"),
         ("POST", "/result", {"task_id": True, "worker_id": "x", "lease_attempt": 1, "outcome": "success"}, "400 Bad Request"),
-        ("POST", "/result", {"task_id": 1, "worker_id": "x", "lease_attempt": 1, "outcome": "transport_error"}, "400 Bad Request"),
+        ("POST", "/result", {"task_id": 1, "worker_id": "x", "lease_attempt": 1, "outcome": "unknown"}, "400 Bad Request"),
     ],
 )
 def test_invalid_methods_and_bodies_are_rejected(

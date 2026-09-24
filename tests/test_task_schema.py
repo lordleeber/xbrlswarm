@@ -51,7 +51,7 @@ def _insert_task(
     )
 
 
-def test_task_table_has_only_the_step8_columns() -> None:
+def test_task_table_has_expected_columns_after_all_migrations() -> None:
     connection = _database()
     columns = connection.execute("PRAGMA table_info(task)").fetchall()
 
@@ -68,6 +68,7 @@ def test_task_table_has_only_the_step8_columns() -> None:
         "worker_id",
         "created_at",
         "updated_at",
+        "retry_at",
     ]
     assert "report_scope" not in {column[1] for column in columns}
     assert {column[1]: column[2] for column in columns} == {
@@ -83,6 +84,7 @@ def test_task_table_has_only_the_step8_columns() -> None:
         "worker_id": "TEXT",
         "created_at": "TEXT",
         "updated_at": "TEXT",
+        "retry_at": "TEXT",
     }
     assert next(column for column in columns if column[1] == "id")[5] == 1
     assert {column[1] for column in columns if column[3]} == {

@@ -98,7 +98,8 @@ def test_status_includes_semantic_exhaustion_state(
         "200 OK",
         f"Tasks: 1\nUndone: 0\nDispatched: 0\nCompleted: 0\n"
         f"Not Found: {int(outcome == 'not_found')}\n"
-        f"Rejected: {int(outcome == 'rejected')}\n",
+        f"Rejected: {int(outcome == 'rejected')}\n"
+        "Rate Limited: 0\nTransport Error: 0\nTemporary Error: 0\n",
     )
 
 
@@ -128,7 +129,7 @@ def test_semantic_result_at_expiry_is_rejected(tmp_path: Path, outcome: str) -> 
     assert store.lease("worker-2")["lease_attempt"] == 2
 
 
-@pytest.mark.parametrize("outcome", ["rate_limited", "transport_error", "temporary_error", "unknown"])
+@pytest.mark.parametrize("outcome", ["unknown"])
 def test_other_outcomes_are_rejected_without_mutating_task(
     tmp_path: Path, outcome: str
 ) -> None:

@@ -14,6 +14,7 @@ from .publication_window import (
 )
 from .report_period import ReportPeriod
 from .revision_kind import RevisionKind
+from .retryable_failure import RetryableFailure
 from .semantic_exhaustion import SemanticExhaustion
 from .versioned_publication_rules import (
     VersionedPublicationRule,
@@ -30,6 +31,7 @@ __all__ = [
     "PublicationWindowRuleProvider",
     "ReportPeriod",
     "RevisionKind",
+    "RetryableFailure",
     "SemanticExhaustion",
     "VersionedPublicationRule",
     "VersionedPublicationRuleProvider",

@@ -13,9 +13,9 @@ xbrlswarm-worker-api --database ./xbrlswarm.sqlite --host 127.0.0.1 --port 8000
 | 端點 | 請求 | 回應 |
 | --- | --- | --- |
 | `POST /lease` | JSON `{"worker_id":"worker-1"}` | `200` 與含 `lease_attempt` 的 `task`，無可派任務時 `204` |
-| `POST /result` | JSON `{"task_id":1,"worker_id":"worker-1","lease_attempt":1,"outcome":"success"}`；outcome 也可為 `not_found`、`rejected` | 持有未逾期 lease 時 `200`，否則 `409` |
+| `POST /result` | JSON `{"task_id":1,"worker_id":"worker-1","lease_attempt":1,"outcome":"success"}`；也接受語意耗盡或可重試失敗 outcome | 持有未逾期 lease 時 `200`，否則 `409` |
 | `GET /stats` | 無 | JSON `total`、`by_state`、`by_engine` |
-| `GET /status` | 無 | 人類可讀的總數及 `undone`、`dispatched`、`completed`、`not_found`、`rejected` 計數 |
+| `GET /status` | 無 | 人類可讀的總數及目前正式 task state 計數 |
 | `GET /healthz` | 無 | `{"status":"ok"}`，只代表 HTTP server 存活 |
 
 `/lease` 在交易內選取最早的 `undone` task，更新成 `dispatched`，記錄
@@ -25,6 +25,9 @@ lease 的 generation，等於更新後的 `attempts`；回報結果時必須原�
 不讓 worker 直接改寫 task。`/result` 接受 `success`，將 task 改成 `completed`；
 Step-26 也接受 `not_found`、`rejected`，將 task 改成同名語意耗盡狀態。
 三者都要求該 worker 持有有效且 generation 相同的 `dispatched` task，並清除 lease 欄位；
+Step-27 另接受 `rate_limited`、`transport_error`、`temporary_error`，
+保留目前 engine、增加 `fail_count` 並記錄 `retry_at`，預設 60 秒後可再派發。
+`--retry-delay-seconds` 可設定正整數秒數；等待中的 task 不會立即重新派發。
 重複回報、錯誤 worker、逾期租約或舊 generation 回 `409`，不會改寫 task。
 Step-25 在每次 `/lease` 請求內回收逾期 task，預設 300 秒，可用
 `--lease-timeout-seconds` 調整；回收保留 `attempts`，再次派發會遞增它。
@@ -37,6 +40,7 @@ Step-25 在每次 `/lease` 請求內回收逾期 task，預設 300 秒，可用
 
 Step-24 已以條件式更新及並行測試正式驗證多 worker 原子 lease 契約，詳見
 `docs/atomic-task-lease.md`；Step-25 回收語意詳見 `docs/lazy-lease-recovery.md`。
-Step-26 語意耗盡詳見 `docs/semantic-exhaustion.md`。基礎設施失敗分類、換 engine、完整 stats／status
+Step-26 語意耗盡詳見 `docs/semantic-exhaustion.md`；Step-27 重試語意詳見
+`docs/retryable-failures.md`。換 engine、完整 stats／status
 指標與 evidence ingestion 留待後續 Steps，不能將目前的 `success` 擴充解讀為
 完成來源稽核。
