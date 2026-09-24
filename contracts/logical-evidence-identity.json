@@ -1,6 +1,6 @@
 {
   "contract": "logical_evidence_identity",
-  "version": 3,
+  "version": 4,
   "identity_kind": "logical_evidence",
   "comparison": "exact_stored_value_with_legacy_goodinfo_precision",
   "legacy_goodinfo_null_precision_equivalent_to": "second",
@@ -100,7 +100,8 @@
     "source_title",
     "retrieved_at",
     "verification_state",
-    "company_name"
+    "company_name",
+    "raw_snapshot_path"
   ],
   "boundaries": {
     "deduplication_constraint_step": 13,

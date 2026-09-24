@@ -89,7 +89,7 @@ def test_contract_defines_the_five_roadmap_identity_dimensions() -> None:
     contract = _load_contract()
 
     assert contract["contract"] == "logical_evidence_identity"
-    assert contract["version"] == 3
+    assert contract["version"] == 4
     assert contract["identity_kind"] == "logical_evidence"
     assert contract["comparison"] == "exact_stored_value_with_legacy_goodinfo_precision"
     assert contract["legacy_goodinfo_null_precision_equivalent_to"] == "second"
@@ -124,13 +124,17 @@ def test_contract_defines_the_five_roadmap_identity_dimensions() -> None:
     ]
 
 
-def test_identity_fields_exist_in_the_production_evidence_schema() -> None:
+def test_identity_contract_classifies_every_production_evidence_column() -> None:
     connection = sqlite3.connect(":memory:")
     for path in sorted(MIGRATIONS_DIR.glob("*.sql")):
         connection.executescript(path.read_text(encoding="utf-8"))
     columns = {row[1] for row in connection.execute("PRAGMA table_info(evidence)")}
 
-    assert set(_load_contract()["fields"]) <= columns
+    contract = _load_contract()
+    identity = set(contract["fields"])
+    non_identity = set(contract["non_identity_fields"])
+    assert identity.isdisjoint(non_identity)
+    assert identity | non_identity == columns
 
 
 def test_retrieval_and_descriptive_metadata_do_not_create_new_evidence() -> None:
@@ -152,8 +156,19 @@ def test_retrieval_and_descriptive_metadata_do_not_create_new_evidence() -> None
         "retrieved_at",
         "verification_state",
         "company_name",
+        "raw_snapshot_path",
     }
     assert _compare(contract, left, right) == "same"
+
+
+def test_mops_snapshot_path_does_not_change_logical_identity() -> None:
+    contract = _load_contract()
+    original = {**_base_evidence(), "raw_snapshot_path": None}
+    moved = {**original, "raw_snapshot_path": "/archive/mops/abc.bin"}
+    elsewhere = {**original, "raw_snapshot_path": "/mirror/mops/abc.bin"}
+
+    assert _compare(contract, original, moved) == "same"
+    assert _compare(contract, moved, elsewhere) == "same"
 
 
 def test_legacy_goodinfo_null_precision_matches_explicit_second_only() -> None:
