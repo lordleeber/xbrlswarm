@@ -1,0 +1,27 @@
+{
+  "contract": "goodinfo_announcement_evidence",
+  "version": 2,
+  "input": "step_37_verified_detail_capture",
+  "requires": [
+    "matching_goodinfo_task_stock_and_engine",
+    "independently_verified_calendar_year_fiscal_calendar",
+    "visible_report_period_matches_task",
+    "visible_subject_period_matches_task",
+    "not_a_scheduled_meeting"
+  ],
+  "event_mapping": {
+    "evidence_type": "material_announcement",
+    "source_type": "goodinfo",
+    "event_date": "visible_speech_date",
+    "event_time": "visible_speech_time",
+    "event_precision": "second"
+  },
+  "source_locator": "detail_url",
+  "source_url": "verified_final_url",
+  "raw_payload_hash": "sha256_of_captured_detail_bytes",
+  "retrieved_at": "capture_metadata_only",
+  "verification_state": "unverified",
+  "completes_task": false,
+  "xbrl_confirmed_at": null,
+  "requires_migration": false
+}

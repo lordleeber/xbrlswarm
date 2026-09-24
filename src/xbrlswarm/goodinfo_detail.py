@@ -42,6 +42,7 @@ class GoodinfoDetail:
     board_date: date | None
     audit_committee_date: date | None
     detail_url: str
+    final_url: str
     raw_payload_hash: str
     list_url: str
     list_raw_payload_hash: str
@@ -188,6 +189,7 @@ def parse_goodinfo_detail(
         board_date=_one_date(explanation, _BOARD, "board date"),
         audit_committee_date=_one_date(explanation, _AUDIT, "audit committee date"),
         detail_url=candidate.detail_url,
+        final_url=final_url,
         raw_payload_hash=f"sha256:{hashlib.sha256(body).hexdigest()}",
         list_url=candidate.list_url,
         list_raw_payload_hash=candidate.list_raw_payload_hash,

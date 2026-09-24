@@ -64,6 +64,7 @@ def test_extracts_visible_detail_fields_and_preserves_provenance() -> None:
     assert detail.board_date == date(2026, 8, 7)
     assert detail.audit_committee_date == date(2026, 8, 7)
     assert detail.detail_url == candidate.detail_url
+    assert detail.final_url == candidate.detail_url
     assert detail.list_raw_payload_hash == candidate.list_raw_payload_hash
     assert detail.raw_payload_hash.startswith("sha256:")
 
@@ -129,6 +130,18 @@ def test_rejects_redirect_challenge_and_conflicting_dates() -> None:
             "1.提報董事會或經董事會決議日期:2026/08/07<br>"
             "2.提報董事會或經董事會決議日期:2026/08/08"
         )))
+
+
+def test_same_identity_redirect_preserves_final_url() -> None:
+    candidate = _candidate()
+    final_url = candidate.detail_url.replace(
+        "/tw/StockAnnounceDetail.asp", "/tw2/StockAnnounceDetail.asp", 1,
+    )
+    detail = parse_goodinfo_detail(
+        _page(), candidate=candidate, final_url=final_url, content_type="text/html",
+    )
+    assert detail.detail_url == candidate.detail_url
+    assert detail.final_url == final_url
 
 
 def test_invalid_period_date_is_rejected() -> None:
@@ -230,6 +243,7 @@ def test_subject_mismatch_does_not_create_capture(tmp_path) -> None:
 def test_contract_keeps_detail_parsing_separate_from_evidence() -> None:
     contract = json.loads(Path("contracts/goodinfo-detail.json").read_text())
     assert contract["required_visible_fields"] == ["stock_id", "claim_time", "subject"]
+    assert "final_url" in contract["provenance"]
     assert "ROC year to Gregorian year" in contract["subject_identity_normalization"]
     assert contract["writes_evidence"] is False
     assert contract["writes_task"] is False
