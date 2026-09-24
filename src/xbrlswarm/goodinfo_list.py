@@ -69,6 +69,29 @@ def _same_query(requested: str, actual: str) -> bool:
     )
 
 
+def _validate_list_response(
+    query: AnnouncementListQuery,
+    body: bytes,
+    *,
+    status: int,
+    final_url: str,
+    content_type: str,
+    challenge: str = "",
+) -> None:
+    """Apply the same response acceptance rules to network and cached bytes."""
+
+    if status != 200:
+        raise ValueError(f"Goodinfo list returned HTTP {status}")
+    if not _same_query(query.url, final_url):
+        raise ValueError("Goodinfo list redirected away from the requested stock/date range")
+    if challenge or any(marker.lower() in body[:20_000].lower() for marker in _CHALLENGE_MARKERS):
+        raise ValueError("Goodinfo list returned an access challenge")
+    if "html" not in content_type.lower() or b"<html" not in body[:20_000].lower():
+        raise ValueError("Goodinfo list did not return HTML")
+    if not any(marker in body for marker in _LIST_MARKERS):
+        raise ValueError("Goodinfo response is not an announcement list")
+
+
 def capture_announcement_list(
     query: AnnouncementListQuery,
     output_root: Path,
@@ -119,16 +142,10 @@ def _capture_locked(
         content_type = response.headers.get("Content-Type", "")
         challenge = response.headers.get("cf-mitigated", "")
 
-    if status != 200:
-        raise ValueError(f"Goodinfo list returned HTTP {status}")
-    if not _same_query(query.url, final_url):
-        raise ValueError("Goodinfo list redirected away from the requested stock/date range")
-    if challenge or any(marker.lower() in body[:20_000].lower() for marker in _CHALLENGE_MARKERS):
-        raise ValueError("Goodinfo list returned an access challenge")
-    if "html" not in content_type.lower() or b"<html" not in body[:20_000].lower():
-        raise ValueError("Goodinfo list did not return HTML")
-    if not any(marker in body for marker in _LIST_MARKERS):
-        raise ValueError("Goodinfo response is not an announcement list")
+    _validate_list_response(
+        query, body, status=status, final_url=final_url,
+        content_type=content_type, challenge=challenge,
+    )
 
     retrieved_at = clock()
     if retrieved_at.tzinfo is None or retrieved_at.utcoffset() is None:

@@ -26,7 +26,7 @@ from .goodinfo_detail import (
 from .goodinfo_list import (
     AnnouncementListCapture,
     AnnouncementListQuery,
-    _same_query,
+    _validate_list_response,
     capture_announcement_list,
 )
 
@@ -39,9 +39,9 @@ class GoodinfoRequestPolicy:
     jitter_seconds: float = 2.0
 
     def __post_init__(self) -> None:
-        if (not math.isfinite(self.min_delay_seconds) or self.min_delay_seconds <= 0
-                or not math.isfinite(self.jitter_seconds) or self.jitter_seconds < 0):
-            raise ValueError("Goodinfo delay must be positive and jitter nonnegative")
+        if (not math.isfinite(self.min_delay_seconds) or self.min_delay_seconds < 3.0
+                or not math.isfinite(self.jitter_seconds) or self.jitter_seconds < 2.0):
+            raise ValueError("Goodinfo delay must be at least 3 seconds with 2 seconds of jitter")
 
 
 class GoodinfoOperationalClient:
@@ -133,11 +133,13 @@ class GoodinfoOperationalClient:
             "url": query.url,
         }
         if (metadata.get("source_type") != "goodinfo" or metadata.get("query") != expected_query
-                or response.get("http_status") != 200
-                or not _same_query(query.url, response["final_url"])
                 or digest != response.get("raw_payload_hash")
                 or len(body) != response.get("size_bytes")):
             raise ValueError("Goodinfo list cache provenance does not match raw bytes")
+        _validate_list_response(
+            query, body, status=response["http_status"],
+            final_url=response["final_url"], content_type=response["content_type"],
+        )
         return AnnouncementListCapture(query, body_path, metadata_path, digest, len(body))
 
     def _cached_detail(self, candidate: GoodinfoListCandidate) -> GoodinfoDetailCapture | None:

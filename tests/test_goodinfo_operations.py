@@ -167,6 +167,10 @@ def test_concurrent_same_range_uses_one_request(tmp_path):
 
 def test_different_queries_serialize_across_clients(tmp_path):
     entered, release, second_entered = Event(), Event(), Event()
+    now = [1000.0]
+
+    def sleep(seconds):
+        now[0] += seconds
 
     def first_opener(request, **_):
         entered.set()
@@ -178,9 +182,11 @@ def test_different_queries_serialize_across_clients(tmp_path):
         return Response(request.full_url, LIST_HTML)
 
     first_client = GoodinfoOperationalClient(tmp_path, opener=first_opener,
-        policy=GoodinfoRequestPolicy(0.001, 0), retrieval_clock=lambda: NOW)
+        clock=lambda: now[0], sleeper=sleep, random_value=lambda: 0,
+        retrieval_clock=lambda: NOW)
     second_client = GoodinfoOperationalClient(tmp_path, opener=second_opener,
-        policy=GoodinfoRequestPolicy(0.001, 0), retrieval_clock=lambda: NOW)
+        clock=lambda: now[0], sleeper=sleep, random_value=lambda: 0,
+        retrieval_clock=lambda: NOW)
     with ThreadPoolExecutor(max_workers=2) as pool:
         first = pool.submit(first_client.capture_list, query())
         try:
@@ -192,6 +198,7 @@ def test_different_queries_serialize_across_clients(tmp_path):
         first.result(timeout=5)
         second.result(timeout=5)
     assert second_entered.is_set()
+    assert now[0] == 1003.0
 
 
 def test_rejected_request_consumes_cooldown_but_creates_no_cache(tmp_path):
@@ -231,7 +238,37 @@ def test_incomplete_or_corrupt_cache_fails_without_refetch(tmp_path):
         client.capture_list(query())
 
 
-@pytest.mark.parametrize("delay,jitter", [(0, 0), (-1, 0), (1, -1)])
-def test_policy_rejects_nonpositive_delay_or_negative_jitter(delay, jitter):
+@pytest.mark.parametrize("body,content_type,message", [
+    (b"<html>Just a moment... StockAnnounceList</html>", "text/html", "challenge"),
+    ("<html>初始化中 StockAnnounceList</html>".encode(), "text/html", "challenge"),
+    (LIST_HTML, "application/json", "HTML"),
+    (b"<html>unrelated page</html>", "text/html", "announcement list"),
+])
+def test_self_consistent_but_invalid_list_cache_is_rejected(
+    tmp_path, body, content_type, message,
+):
+    import hashlib
+
+    client = GoodinfoOperationalClient(tmp_path,
+        opener=lambda request, **_: Response(request.full_url, LIST_HTML), retrieval_clock=lambda: NOW)
+    capture = client.capture_list(query())
+    metadata = json.loads(capture.metadata_path.read_text())
+    capture.body_path.write_bytes(body)
+    metadata["response"].update({
+        "raw_payload_hash": f"sha256:{hashlib.sha256(body).hexdigest()}",
+        "size_bytes": len(body), "content_type": content_type,
+    })
+    capture.metadata_path.write_text(json.dumps(metadata))
+    with pytest.raises(ValueError, match=message):
+        GoodinfoOperationalClient(tmp_path,
+            opener=lambda *_args, **_kwargs: pytest.fail("refetch")).capture_list(query())
+
+
+@pytest.mark.parametrize("delay,jitter", [(0, 2), (2.999, 2), (3, 0), (3, 1.999), (-1, -1)])
+def test_policy_rejects_values_below_operational_floor(delay, jitter):
     with pytest.raises(ValueError):
         GoodinfoRequestPolicy(delay, jitter)
+
+
+def test_policy_allows_more_conservative_values():
+    assert GoodinfoRequestPolicy(5, 4).min_delay_seconds == 5
