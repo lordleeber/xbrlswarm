@@ -1,0 +1,12 @@
+{
+  "contract": "goodinfo_announcement_detail",
+  "version": 1,
+  "input": "step_36_list_candidate",
+  "required_visible_fields": ["stock_id", "claim_time", "subject"],
+  "optional_visible_fields": ["period_start", "period_end", "board_date", "audit_committee_date"],
+  "provenance": ["detail_url", "raw_payload_hash", "list_url", "list_raw_payload_hash"],
+  "accepts_evidence": false,
+  "writes_evidence": false,
+  "writes_task": false,
+  "announcement_evidence_step": 38
+}
