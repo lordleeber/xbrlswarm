@@ -95,7 +95,7 @@ def _locator(url: str) -> tuple[str, datetime, str]:
     parsed = urlsplit(url)
     if (parsed.scheme, parsed.netloc) != ("https", "goodinfo.tw") or parsed.path not in _DETAIL_PATHS:
         raise ValueError("invalid Goodinfo detail URL")
-    params = parse_qs(parsed.query)
+    params = parse_qs(parsed.query, keep_blank_values=True)
     if any(len(params.get(key, [])) != 1 or not params[key][0].strip()
            for key in ("STOCK_ID", "CLAIM_TIME", "SUBJECT")):
         raise ValueError("Goodinfo detail URL has missing or repeated identity parameters")

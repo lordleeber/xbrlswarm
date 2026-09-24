@@ -1,7 +1,8 @@
 {
   "contract": "goodinfo_announcement_idempotency",
-  "version": 1,
+  "version": 2,
   "identity_fields": ["STOCK_ID", "CLAIM_TIME", "SUBJECT"],
+  "identity_parameter_multiplicity": "exactly_one_including_blank_values",
   "locator_prefix": "goodinfo:announcement:",
   "locator_encoding": "fixed_order_urlencode_of_verified_identity",
   "subject_normalization": ["Unicode NFKC", "remove whitespace", "ROC year to Gregorian year"],

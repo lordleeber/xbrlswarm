@@ -82,7 +82,7 @@ def _detail_url(href: str, *, list_url: str, query: AnnouncementListQuery) -> st
     parsed = urlsplit(url)
     if (parsed.scheme, parsed.netloc) != ("https", "goodinfo.tw") or parsed.path not in _DETAIL_PATHS:
         return None
-    params = parse_qs(parsed.query)
+    params = parse_qs(parsed.query, keep_blank_values=True)
     if params.get("STOCK_ID") != [query.stock_id]:
         return None
     if len(params.get("SUBJECT", [])) != 1 or not params["SUBJECT"][0].strip():

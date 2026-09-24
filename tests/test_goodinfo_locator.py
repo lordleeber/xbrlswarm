@@ -47,9 +47,16 @@ def test_invalid_or_repeated_identity_parameter_is_rejected() -> None:
         goodinfo_announcement_locator(_url() + "&STOCK_ID=2330")
 
 
+@pytest.mark.parametrize("suffix", ["&STOCK_ID=", "&CLAIM_TIME=", "&SUBJECT="])
+def test_blank_duplicate_identity_parameter_is_rejected(suffix: str) -> None:
+    with pytest.raises(ValueError, match="repeated identity parameters"):
+        goodinfo_announcement_locator(_url() + suffix)
+
+
 def test_contract_preserves_payload_and_subject_as_identity_dimensions() -> None:
     contract = json.loads(Path("contracts/goodinfo-idempotency.json").read_text())
     assert contract["identity_fields"] == ["STOCK_ID", "CLAIM_TIME", "SUBJECT"]
+    assert contract["identity_parameter_multiplicity"] == "exactly_one_including_blank_values"
     assert "raw_payload_hash" in contract["evidence_identity_comparison_fields"]
     assert "source_subject" in contract["evidence_identity_comparison_fields"]
     assert contract["new_capture_requires_raw_payload_hash"] is True

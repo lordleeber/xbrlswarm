@@ -6,6 +6,9 @@ Step-39 的 `goodinfo_announcement_locator` 從 Step-37 已核對的 URL 解出
 `STOCK_ID`、`CLAIM_TIME`、`SUBJECT`，固定欄位順序建立
 `goodinfo:announcement:` locator。主旨僅套用 Step-37 已驗證的 Unicode NFKC、
 空白移除及民國年轉西元年規則。其他 query 參數、路徑和轉址目標不進 locator。
+三個 identity 參數各須恰好出現一次且非空；解析 query 時保留空值，故
+`&SUBJECT=` 等重複空參數也會被拒絕。清單候選和 redirect 查詢驗證沿用
+同一規則，避免 malformed URL 在前段被接受。
 `source_url` 仍保存實際回應 URL，不參與 identity。
 
 Step-13／17 的既有 Goodinfo unique index 會對新 locator、公告事件欄位、頁面
