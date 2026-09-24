@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "source": "goodinfo_low_volume_pilot",
+  "query_window_kind": "exploratory_not_legal_deadline",
+  "pilot_cases": [
+    "4542-2024-Q1",
+    "6147-2024-Q1",
+    "2330-2024-Q1",
+    "6147-2022-Q1",
+    "2330-2020-Q1"
+  ],
+  "results": [
+    {
+      "case": "4542-2024-Q1",
+      "query_url": "https://goodinfo.tw/tw/StockAnnounceList.asp?STOCK_ID=4542&START_DT=2024%2F04%2F01&END_DT=2024%2F06%2F30",
+      "start_date": "2024-04-01",
+      "end_date": "2024-06-30",
+      "status": "access_blocked",
+      "list_raw_payload_hash": null,
+      "candidate_count": null,
+      "matching_candidate_count": null,
+      "detail_results": [],
+      "detail_limit_reached": false,
+      "error": "HTTP 403"
+    },
+    {
+      "case": "6147-2024-Q1",
+      "query_url": "https://goodinfo.tw/tw/StockAnnounceList.asp?STOCK_ID=6147&START_DT=2024%2F04%2F01&END_DT=2024%2F06%2F30",
+      "start_date": "2024-04-01",
+      "end_date": "2024-06-30",
+      "status": "access_blocked",
+      "list_raw_payload_hash": null,
+      "candidate_count": null,
+      "matching_candidate_count": null,
+      "detail_results": [],
+      "detail_limit_reached": false,
+      "error": "HTTP 403"
+    },
+    {
+      "case": "2330-2024-Q1",
+      "query_url": "https://goodinfo.tw/tw/StockAnnounceList.asp?STOCK_ID=2330&START_DT=2024%2F04%2F01&END_DT=2024%2F06%2F30",
+      "start_date": "2024-04-01",
+      "end_date": "2024-06-30",
+      "status": "access_blocked",
+      "list_raw_payload_hash": null,
+      "candidate_count": null,
+      "matching_candidate_count": null,
+      "detail_results": [],
+      "detail_limit_reached": false,
+      "error": "HTTP 403"
+    },
+    {
+      "case": "6147-2022-Q1",
+      "query_url": "https://goodinfo.tw/tw/StockAnnounceList.asp?STOCK_ID=6147&START_DT=2022%2F04%2F01&END_DT=2022%2F06%2F30",
+      "start_date": "2022-04-01",
+      "end_date": "2022-06-30",
+      "status": "access_blocked",
+      "list_raw_payload_hash": null,
+      "candidate_count": null,
+      "matching_candidate_count": null,
+      "detail_results": [],
+      "detail_limit_reached": false,
+      "error": "HTTP 403"
+    },
+    {
+      "case": "2330-2020-Q1",
+      "query_url": "https://goodinfo.tw/tw/StockAnnounceList.asp?STOCK_ID=2330&START_DT=2020%2F04%2F01&END_DT=2020%2F06%2F30",
+      "start_date": "2020-04-01",
+      "end_date": "2020-06-30",
+      "status": "access_blocked",
+      "list_raw_payload_hash": null,
+      "candidate_count": null,
+      "matching_candidate_count": null,
+      "detail_results": [],
+      "detail_limit_reached": false,
+      "error": "HTTP 403"
+    }
+  ],
+  "summary": {
+    "cases": 5,
+    "lists_captured": 0,
+    "access_blocked": 5,
+    "details_parsed": 0,
+    "matching_period_details": 0
+  }
+}
