@@ -12,7 +12,9 @@ Goodinfo engine 不符時拒絕
 evidence。頁面「發言日期」與「發言時間」分別存成 `event_date`、`event_time`，
 精度是 `second`；這三欄合起來對應 ROADMAP 的 `announcement_at`。
 `retrieved_at` 只取 capture metadata，原始 detail bytes 的 SHA-256 保存在
-`raw_payload_hash`，`source_url`／`source_locator` 保存詳細頁 URL，頁面可見主旨
+`raw_payload_hash`。`source_url` 保存實際回應的已驗證 final URL；
+`source_locator` 保留原候選詳細頁 URL，留待 Step-39 處理定位資訊。
+頁面可見主旨
 存於 `source_subject`。清單標題仍是未驗證 hint，不寫入 `source_title`。
 重播完全相同的公告和原始
 bytes 時回傳既有 evidence；不同原始回應保留為另一筆不可變 evidence。

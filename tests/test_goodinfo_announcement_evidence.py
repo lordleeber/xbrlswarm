@@ -4,7 +4,7 @@ import json
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit, urlunsplit
 
 import pytest
 
@@ -35,7 +35,8 @@ def _database(tmp_path: Path, *, stock: str = "2330", year: int = 2024,
 def _capture(tmp_path: Path, *, period: str | None = "2024/01/01~2024/03/31",
              scheduled: bool = False, speech_time: str = "14:48:53",
              fiscal_year: int = 2024, report_period: str = "Q1",
-             speech_date: str = "2024/05/10", extra: str = ""):
+             speech_date: str = "2024/05/10", extra: str = "",
+             final_path: str | None = None):
     period_label = "年度" if report_period == "FY" else f"年第{report_period[1]}季"
     url_subject = f"公告本公司董事會通過{fiscal_year - 1911}{period_label}合併財務報告"
     visible_subject = f"公告本公司董事會通過{fiscal_year}{period_label}合併財務報告"
@@ -43,6 +44,8 @@ def _capture(tmp_path: Path, *, period: str | None = "2024/01/01~2024/03/31",
         "STOCK_ID": "2330", "CLAIM_TIME": f"{speech_date} {speech_time}",
         "SUBJECT": url_subject,
     })
+    url_parts = urlsplit(detail_url)
+    final_url = urlunsplit(url_parts._replace(path=final_path)) if final_path else detail_url
     candidate = GoodinfoListCandidate(
         f"台積電董事會通過{fiscal_year}{period_label}合併財務報告", detail_url,
         "https://goodinfo.tw/tw/StockAnnounceList.asp", "sha256:list",
@@ -74,7 +77,7 @@ def _capture(tmp_path: Path, *, period: str | None = "2024/01/01~2024/03/31",
             return body
 
         def geturl(self):
-            return detail_url
+            return final_url
 
     return capture_goodinfo_detail(
         candidate, tmp_path / "captures", opener=lambda request, **_: Response(),
@@ -153,6 +156,21 @@ def test_changed_raw_detail_appends_new_immutable_evidence(tmp_path: Path) -> No
         assert connection.execute("SELECT COUNT(*) FROM evidence").fetchone()[0] == 2
 
 
+def test_source_url_uses_verified_redirect_target(tmp_path: Path) -> None:
+    database = _database(tmp_path)
+    capture = _capture(tmp_path, final_path="/tw2/StockAnnounceDetail.asp")
+    stored = accept_goodinfo_announcement(
+        database, 1, capture, fiscal_calendar="calendar_year",
+    )
+    with connect_database(database) as connection:
+        source_url, locator = connection.execute(
+            "SELECT source_url, source_locator FROM evidence WHERE id = ?", (stored.id,),
+        ).fetchone()
+    assert urlsplit(source_url).path == "/tw2/StockAnnounceDetail.asp"
+    assert source_url == json.loads(capture.metadata_path.read_text())["response"]["final_url"]
+    assert locator == capture.candidate.detail_url
+
+
 @pytest.mark.parametrize("changes", [
     {"stock": "2317"}, {"year": 2023}, {"period": "Q2"}, {"engine": "mops"},
 ])
@@ -214,5 +232,6 @@ def test_contract_distinguishes_announcement_from_xbrl_confirmation() -> None:
         "event_precision": "second",
     }
     assert contract["xbrl_confirmed_at"] is None
+    assert contract["source_url"] == "verified_final_url"
     assert contract["completes_task"] is False
     assert contract["requires_migration"] is False

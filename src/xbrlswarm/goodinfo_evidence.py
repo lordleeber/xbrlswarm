@@ -103,7 +103,7 @@ def accept_goodinfo_announcement(
                  :source_subject, :retrieved_at, :raw_payload_hash,
                  'unverified'
                )""",
-            {**event, "task_id": task_id, "source_url": detail.detail_url,
+            {**event, "task_id": task_id, "source_url": detail.final_url,
              "source_locator": detail.detail_url,
              "source_subject": detail.subject, "retrieved_at": retrieved_at,
              "raw_payload_hash": detail.raw_payload_hash},
