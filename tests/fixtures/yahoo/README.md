@@ -23,10 +23,18 @@ request URL、method、可重現的 request headers、HTTP status、final URL、
 有關的 response headers，排除 cookie。`origin` 明確區分 `live` 和 `synthetic`。
 合成回應的 `retrieved_at` 為 `null`，不能引用為 Yahoo 的實際觀察。
 
-Yahoo 搜尋在本環境未提供可用的真實「零結果」頁，因此合成 `no_result`
-只能測試控制流程，**不能作為 Step-45 的搜尋版型解析依據**。`search_redirect`
-也不能解讀成沒有相關公告，更不能把 HTTP 307 當成空結果。後續若取得
-可重播的真實零結果或限流頁，應新增真實 fixture，並保留來源性質標記。
+舊專案 `revswarm/worker/yahoo_worker.py` 實際使用 `curl --http1.1` 向
+`tw.search.yahoo.com/search` 查詢，並把非 HTTP 200 或過短的回應列為可重試的
+抓取失敗，而非「查無結果」。本次以相同的 HTTP/1.1 設定查詢公信財報，
+仍得到 HTTP 307 與空 body；`search_redirect` 保存此回應。這**不能**解讀成
+沒有相關公告，也不能單憑 307 判定 Yahoo 已限流。舊 worker 針對的是
+**月營收**；其月份查詢字串與次月日期窗不能直接用於財務報告。
+
+Yahoo 搜尋在本環境未提供可用的真實 SERP，包括命中與零結果頁。因此合成
+`no_result` 只能測試控制流程，**不能作為 Step-45 的搜尋版型解析依據**。
+目前的真實 HTTP 200 fixture 可驗證 Step-46 的文章內容，不能驗證 SERP 候選
+擷取。後續取得可重播的真實 SERP 或限流頁時，須新增真實 fixture，
+並保留來源性質標記；在此之前搜尋解析不能宣稱已由真實頁面驗證。
 
 五篇公告的標題、公司名稱／代號、主旨與財務報告報導期間可以供 Step-46
 驗證候選 identity。Yahoo 頁面的 `datePublished` 是**文章發布時間**；內文
