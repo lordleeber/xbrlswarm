@@ -1,0 +1,18 @@
+{
+  "contract": "goodinfo_search_window",
+  "version": 1,
+  "built_in_fiscal_years": [2024],
+  "built_in_company_class": "securities_act_article_36_general",
+  "built_in_fiscal_calendar": "calendar_year",
+  "rule_selection_date": "report_period_end",
+  "search_start": "day_after_report_period_end",
+  "quarter_search_end": "report_period_end_plus_45_calendar_days",
+  "annual_search_end": "following_march_31",
+  "source_refs": {
+    "Q1_Q2": "https://twse-regulation.twse.com.tw/TW/law/DAT06.aspx?FLCODE=FL007009&FLDATE=20230510&LSER=001",
+    "Q3_FY": "https://twse-regulation.twse.com.tw/TW/law/DAT07.aspx?FLCODE=FE396664&LDATE=20240807&LSID=FL007009&TY=E"
+  },
+  "unsupported_scope": "publication_rule_unavailable",
+  "empty_list_means_absence": false,
+  "includes_late_amendments_or_extensions": false
+}
