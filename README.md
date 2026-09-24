@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已完成 **Step-29：定版 MOPS 測試 fixture**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已完成 **Step-30：只解析已證實的 MOPS 欄位**。Repository 保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -109,6 +109,9 @@ Step-28 固定 `mops → goodinfo → yahoo → google → grounded_ai`；跨來
 Step-29 在 `tests/fixtures/mops/` 固定 Q1／Q2／Q3／FY 合併報告、官方更正及
 個體財報更正的清單／明細／PDF 附件、查無資料和非 XBRL 錯誤頁。個體 XBRL
 文件尚未取得，詳見該目錄的 README 與 `docs/step-29-acceptance.md`。
+
+Step-30 的 MOPS parser 只輸出來源矩陣已驗證的身份、期別、範圍和來源位置；
+未知申報欄位與非 XBRL 回應會被拒絕。詳見 `docs/step-30-acceptance.md`。
 
 ## 報告識別候選方案
 
