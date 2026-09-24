@@ -7,7 +7,10 @@ SHA-256、byte 長度、回應 URL 和清單來源 hash。相同 URL 的 capture
 與 URL 不符會被拒絕，不能當成空結果。
 
 `parse_goodinfo_detail` 從頁面可見的發言日期與時間組成 `claim_time`，並與 URL
-核對；從主旨抽取 `subject`，從說明欄位抽取有明確標籤的報導期間起訖、董事會
+核對；從主旨抽取 `subject`，並核對 URL 的 `SUBJECT`。Goodinfo 會把 URL 主旨
+中的民國年（例如 115 年）顯示為西元年（2026 年），因此比對前只做 Unicode
+NFKC、空白移除與民國年轉西元年；回傳的 `subject` 保留頁面原字樣。
+其他主旨差異會被拒絕。從說明欄位抽取有明確標籤的報導期間起訖、董事會
 日期和審計委員會日期。未出現的日期保留 `None`。矛盾或無效的日期會被拒絕。
 清單中的期別與範圍仍只是 hint；本 Step 不把候選轉成 evidence，不改 task，
 也不把 `claim_time` 當作 XBRL 確認時間。後續 Step-38 才處理公告事件。

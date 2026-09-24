@@ -68,6 +68,18 @@ def test_extracts_visible_detail_fields_and_preserves_provenance() -> None:
     assert detail.raw_payload_hash.startswith("sha256:")
 
 
+def test_subject_identity_allows_observed_minguo_year_rendering() -> None:
+    detail = _parse(_page(subject="公告本公司董事會通過 ２０２６年 第2季合併財務報告"))
+    assert detail.subject == "公告本公司董事會通過 ２０２６年 第2季合併財務報告"
+
+
+def test_same_stock_and_time_with_different_subject_is_rejected() -> None:
+    with pytest.raises(ValueError, match="subject disagrees"):
+        _parse(_page(subject="公告本公司董事會通過2026年第3季合併財務報告"))
+    with pytest.raises(ValueError, match="subject disagrees"):
+        _parse(_page(subject="公告本公司董事會通過2026年第2季個別財務報告"))
+
+
 def test_alternate_labels_and_missing_fields_remain_unknown() -> None:
     explanation = (
         "1.提報董事會或經董事會決議日期:2026/08/07<br>"
@@ -190,9 +202,35 @@ def test_rejected_capture_does_not_create_raw_files(tmp_path) -> None:
     assert list(tmp_path.rglob("*.json")) == []
 
 
+def test_subject_mismatch_does_not_create_capture(tmp_path) -> None:
+    candidate = _candidate()
+
+    class Response:
+        status = 200
+        headers = {"Content-Type": "text/html; charset=utf-8"}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_):
+            return None
+
+        def read(self):
+            return _page(subject="公告本公司董事會通過2026年第3季合併財務報告")
+
+        def geturl(self):
+            return candidate.detail_url
+
+    with pytest.raises(ValueError, match="subject disagrees"):
+        capture_goodinfo_detail(candidate, tmp_path, opener=lambda request, **_: Response())
+    assert list(tmp_path.rglob("*.html")) == []
+    assert list(tmp_path.rglob("*.json")) == []
+
+
 def test_contract_keeps_detail_parsing_separate_from_evidence() -> None:
     contract = json.loads(Path("contracts/goodinfo-detail.json").read_text())
     assert contract["required_visible_fields"] == ["stock_id", "claim_time", "subject"]
+    assert "ROC year to Gregorian year" in contract["subject_identity_normalization"]
     assert contract["writes_evidence"] is False
     assert contract["writes_task"] is False
     assert contract["announcement_evidence_step"] == 38

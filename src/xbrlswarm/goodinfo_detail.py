@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import unicodedata
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from html.parser import HTMLParser
@@ -28,6 +29,7 @@ _PERIOD = re.compile(
 )
 _SPEECH = re.compile(r"發言日期\s*(" + _DATE + r")\s*發言時間\s*(\d{2}:\d{2}:\d{2})")
 _SUBJECT = re.compile(r"主旨\s+(.+?)\s+說\s*明(?:\s|\d+\.)", re.S)
+_MINGUO_YEAR = re.compile(r"(?<![0-9])([1-9][0-9]{0,2})年")
 
 
 @dataclass(frozen=True, slots=True)
@@ -116,12 +118,21 @@ def _one_date(text: str, pattern: re.Pattern[str], name: str) -> date | None:
     return dates.pop()
 
 
+def _normalized_subject(subject: str) -> str:
+    """Match Goodinfo's observed ROC-to-Gregorian year rendering in subjects."""
+
+    compact = "".join(unicodedata.normalize("NFKC", subject).split())
+    return _MINGUO_YEAR.sub(
+        lambda match: f"{int(match.group(1)) + 1911}年", compact
+    )
+
+
 def parse_goodinfo_detail(
     body: bytes, *, candidate: GoodinfoListCandidate, final_url: str, content_type: str,
 ) -> GoodinfoDetail:
     """Extract only fields visible on a matching detail page; do not write evidence."""
 
-    stock_id, claim_time, _ = _locator(candidate.detail_url)
+    stock_id, claim_time, url_subject = _locator(candidate.detail_url)
     if _locator(final_url) != _locator(candidate.detail_url):
         raise ValueError("Goodinfo detail redirected to a different announcement")
     if "html" not in content_type.lower() or b"<html" not in body[:20_000].lower():
@@ -156,6 +167,8 @@ def parse_goodinfo_detail(
     subject = " ".join(subject_match.group(1).split())
     if not subject or "財務報告" not in subject:
         raise ValueError("Goodinfo detail subject is not a financial report announcement")
+    if _normalized_subject(subject) != _normalized_subject(url_subject):
+        raise ValueError("Goodinfo detail subject disagrees with URL SUBJECT")
     explanation = text[subject_match.end():]
     periods = _PERIOD.findall(explanation)
     if len(set(periods)) > 1:
