@@ -1,0 +1,20 @@
+{
+  "step": 40,
+  "source": "goodinfo",
+  "role": "low-volume backup",
+  "entry_point": "xbrlswarm.goodinfo_operations.GoodinfoOperationalClient",
+  "shared_output_root": "one root for every cooperating Goodinfo process",
+  "concurrency": 1,
+  "min_delay_seconds": 3.0,
+  "jitter_seconds": 2.0,
+  "jitter_distribution": "uniform [0, 2) seconds",
+  "cache": {
+    "list_key": "stock_id + exact start_date + exact end_date",
+    "detail_key": "sha256(request detail URL)",
+    "hit": "validate saved raw bytes and metadata; return without network or delay",
+    "incomplete_or_corrupt": "raise; never silently refetch or overwrite"
+  },
+  "rejected_request": "no capture; cooldown remains active",
+  "scope": "list and detail requests through one shared output root",
+  "evidence_and_task_effect": "none"
+}

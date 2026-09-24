@@ -17,8 +17,10 @@ python -m xbrlswarm.goodinfo_list \
 ```
 
 輸出到 `<output-root>/<stock-id>/<start>_<end>.html` 和同名 `.json`；既有檔案
-不覆寫。同一查詢的擷取會持有專用 lock，涵蓋既有檔案檢查、來源請求與兩個
-檔案寫入；並行擷取會被拒絕，避免 HTML 與 metadata 來自不同回應。
+不覆寫。底層單次擷取會持有專用 lock，涵蓋既有檔案檢查、來源請求與兩個
+檔案寫入；底層並行擷取會被拒絕，避免 HTML 與 metadata 來自不同回應。
+Step-40 起，上述 CLI 改經操作防護入口：驗證後的同範圍快取會直接回傳，
+未快取的請求會受到共用速率限制。詳見 `docs/step-40-acceptance.md`。
 允許同站 `/tw2/` 路徑及附加分頁參數，但必須保留原公司與日期範圍。
 HTTP 失敗、查詢條件被改寫、Cloudflare challenge、初始化頁或非公告
 HTML 都不會被當成空清單，也不會建立有效 capture。原始回應仍須經 Step-36
