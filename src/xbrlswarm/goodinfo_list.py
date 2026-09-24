@@ -14,7 +14,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, urlencode, urlsplit
 from urllib.request import Request, urlopen
 
-from .discovery.capture import _atomic_write
+from .discovery.capture import _acquire_capture_lock, _atomic_write, _release_capture_lock
 
 _ENDPOINT = "https://goodinfo.tw/tw/StockAnnounceList.asp"
 _STOCK_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*\Z")
@@ -86,8 +86,24 @@ def capture_announcement_list(
     name = f"{query.start_date.isoformat()}_{query.end_date.isoformat()}"
     body_path = root / f"{name}.html"
     metadata_path = root / f"{name}.json"
+    lock_path = root / f".{name}.capture.lock"
+    lock_fd = _acquire_capture_lock(lock_path)
+    try:
+        return _capture_locked(query, body_path, metadata_path, opener=opener, clock=clock)
+    finally:
+        _release_capture_lock(lock_fd, lock_path)
+
+
+def _capture_locked(
+    query: AnnouncementListQuery,
+    body_path: Path,
+    metadata_path: Path,
+    *,
+    opener: Callable,
+    clock: Callable[[], datetime],
+) -> AnnouncementListCapture:
     if body_path.exists() or metadata_path.exists():
-        raise FileExistsError(f"announcement list capture already exists: {name}")
+        raise FileExistsError(f"announcement list capture already exists: {body_path.name}")
 
     request = Request(
         query.url,

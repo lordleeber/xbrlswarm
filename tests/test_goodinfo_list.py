@@ -2,8 +2,10 @@
 
 import hashlib
 import json
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timezone
 from pathlib import Path
+from threading import Event
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
@@ -88,6 +90,47 @@ def test_capture_preserves_raw_html_and_query_provenance(tmp_path: Path) -> None
     assert len(seen) == 1
 
 
+def test_concurrent_capture_cannot_mix_body_and_metadata(tmp_path: Path) -> None:
+    first_started = Event()
+    release_first = Event()
+    second_opened = Event()
+    first_body = HTML + b"<!-- first -->"
+
+    def first_opener(request, *, timeout):
+        first_started.set()
+        assert release_first.wait(timeout=5)
+        return Response(request.full_url, body=first_body)
+
+    def second_opener(request, *, timeout):
+        second_opened.set()
+        return Response(request.full_url, body=HTML + b"<!-- second -->")
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(
+            capture_announcement_list, query(), tmp_path,
+            opener=first_opener, clock=lambda: NOW,
+        )
+        try:
+            assert first_started.wait(timeout=5)
+            second = pool.submit(
+                capture_announcement_list, query(), tmp_path,
+                opener=second_opener, clock=lambda: NOW,
+            )
+            with pytest.raises(FileExistsError):
+                second.result(timeout=5)
+        finally:
+            release_first.set()
+        capture = first.result(timeout=5)
+
+    assert not second_opened.is_set()
+    assert capture.body_path.read_bytes() == first_body
+    metadata = json.loads(capture.metadata_path.read_text())
+    assert metadata["response"]["raw_payload_hash"] == (
+        f"sha256:{hashlib.sha256(first_body).hexdigest()}"
+    )
+    assert not list(tmp_path.rglob("*.capture.lock"))
+
+
 def test_same_query_may_redirect_to_tw2_and_add_page_parameter(tmp_path: Path) -> None:
     final_url = query().url.replace("/tw/", "/tw2/") + "&PAGE=1"
     capture = capture_announcement_list(
@@ -124,4 +167,4 @@ def test_capture_accepts_big5_announcement_title(tmp_path: Path) -> None:
 def test_rejected_response_does_not_create_list_files(tmp_path: Path, response, message: str) -> None:
     with pytest.raises(ValueError, match=message):
         capture_announcement_list(query(), tmp_path, opener=lambda request, **_: response(request.full_url))
-    assert list(tmp_path.rglob("*")) == []
+    assert not [path for path in tmp_path.rglob("*") if path.is_file()]
