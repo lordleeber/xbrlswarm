@@ -1,0 +1,13 @@
+{
+  "contract": "goodinfo_list_candidates",
+  "version": 1,
+  "input": "step_34_raw_announcement_list_capture",
+  "link_path": "StockAnnounceDetail.asp",
+  "required_link_parameters": ["STOCK_ID", "CLAIM_TIME", "SUBJECT"],
+  "required_title_markers": ["財務報告", "第1季|第2季|第3季|年度"],
+  "scope_hints": ["合併", "個體"],
+  "candidate_only": true,
+  "writes_evidence": false,
+  "empty_result_means_absence": false,
+  "detail_verification_step": 37
+}
