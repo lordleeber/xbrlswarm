@@ -109,6 +109,24 @@ def test_worker_api_lease_result_and_read_endpoints(tmp_path: Path) -> None:
     assert row == ("completed", None, None, 1)
 
 
+def test_targeted_lease_selects_requested_undone_task(tmp_path: Path) -> None:
+    database = _database(tmp_path)
+    with sqlite3.connect(database) as connection:
+        second_id = connection.execute(
+            """INSERT INTO task (stock_id, fiscal_year, report_period, state, engine)
+               VALUES ('2330', 2024, 'Q1', 'undone', 'mops')"""
+        ).lastrowid
+    assert second_id is not None
+    store = TaskStore(database)
+
+    selected = store.lease("worker-1", task_id=second_id)
+    assert selected is not None and selected["task_id"] == second_id
+    assert store.lease("worker-2")["task_id"] == 1
+    assert store.lease("worker-3", task_id=second_id) is None
+    with pytest.raises(ValueError, match="task_id"):
+        store.lease("worker-4", task_id=True)
+
+
 @pytest.mark.parametrize(
     "method,path,payload,expected",
     [
