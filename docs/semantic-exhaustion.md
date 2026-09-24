@@ -10,6 +10,7 @@ Worker 透過 `POST /result` 回報其中一種 outcome，並帶回目前的 `ta
 `task.state` 設為對應的 `not_found` 或 `rejected`，清除 lease 欄位並更新
 `updated_at`。`task.engine`、`attempts`、`fail_count` 不變。重複回報、舊 lease、
 錯誤 worker 或逾期結果回 `409 lease_not_current`。`success` 仍轉成 `completed`。
+`GET /status` 會分別列出 `Not Found`、`Rejected` 計數，避免總數與狀態列不一致。
 
 這兩種狀態允許後續流程轉到下一個 engine，但 Step-26 不決定來源順序，
 因此不直接更改 `task.engine`，也不自動重新派發同一 engine。Step-28 將定義

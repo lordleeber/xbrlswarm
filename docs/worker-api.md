@@ -15,7 +15,7 @@ xbrlswarm-worker-api --database ./xbrlswarm.sqlite --host 127.0.0.1 --port 8000
 | `POST /lease` | JSON `{"worker_id":"worker-1"}` | `200` 與含 `lease_attempt` 的 `task`，無可派任務時 `204` |
 | `POST /result` | JSON `{"task_id":1,"worker_id":"worker-1","lease_attempt":1,"outcome":"success"}`；outcome 也可為 `not_found`、`rejected` | 持有未逾期 lease 時 `200`，否則 `409` |
 | `GET /stats` | 無 | JSON `total`、`by_state`、`by_engine` |
-| `GET /status` | 無 | 人類可讀的總數及初步 state 計數 |
+| `GET /status` | 無 | 人類可讀的總數及 `undone`、`dispatched`、`completed`、`not_found`、`rejected` 計數 |
 | `GET /healthz` | 無 | `{"status":"ok"}`，只代表 HTTP server 存活 |
 
 `/lease` 在交易內選取最早的 `undone` task，更新成 `dispatched`，記錄

@@ -39,6 +39,18 @@ def _post(app, path: str, payload: dict):
     return response["status"], json.loads(body) if body else None
 
 
+def _status(app) -> tuple[str, str]:
+    response = {}
+
+    def start_response(status, headers):
+        response["status"] = status
+
+    body = b"".join(app({
+        "PATH_INFO": "/status", "REQUEST_METHOD": "GET",
+    }, start_response))
+    return response["status"], body.decode()
+
+
 @pytest.mark.parametrize("outcome", ["not_found", "rejected"])
 def test_semantic_exhaustion_ends_current_lease_without_changing_engine(
     tmp_path: Path, outcome: str
@@ -67,6 +79,26 @@ def test_semantic_exhaustion_ends_current_lease_without_changing_engine(
     )
     assert _post(app, "/lease", {"worker_id": "worker-2"}) == (
         "204 No Content", None
+    )
+
+
+@pytest.mark.parametrize("outcome", ["not_found", "rejected"])
+def test_status_includes_semantic_exhaustion_state(
+    tmp_path: Path, outcome: str
+) -> None:
+    app = create_app(TaskStore(_database(tmp_path)))
+    _, grant = _post(app, "/lease", {"worker_id": "worker-1"})
+    task = grant["task"]
+    result = {
+        "task_id": task["task_id"], "worker_id": task["worker_id"],
+        "lease_attempt": task["lease_attempt"], "outcome": outcome,
+    }
+    assert _post(app, "/result", result)[0] == "200 OK"
+    assert _status(app) == (
+        "200 OK",
+        f"Tasks: 1\nUndone: 0\nDispatched: 0\nCompleted: 0\n"
+        f"Not Found: {int(outcome == 'not_found')}\n"
+        f"Rejected: {int(outcome == 'rejected')}\n",
     )
 
 

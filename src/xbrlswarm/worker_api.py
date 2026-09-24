@@ -216,6 +216,8 @@ def create_app(store: TaskStore):
                 f"Undone: {states.get('undone', 0)}\n"
                 f"Dispatched: {states.get('dispatched', 0)}\n"
                 f"Completed: {states.get('completed', 0)}\n"
+                f"Not Found: {states.get('not_found', 0)}\n"
+                f"Rejected: {states.get('rejected', 0)}\n"
             ).encode("utf-8")
             return _response(start_response, "200 OK", body, "text/plain; charset=utf-8")
 
