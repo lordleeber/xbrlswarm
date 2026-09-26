@@ -1,0 +1,20 @@
+{
+  "origin": "synthetic",
+  "request": {
+    "headers": {},
+    "method": "GET",
+    "url": "https://tw.search.yahoo.com/search?p=8119%20%E5%85%AC%E4%BF%A1%202024%20%E5%B9%B4%E5%BA%A6%20%E5%90%88%E4%BD%B5%20%E8%B2%A1%E5%8B%99%E5%A0%B1%E5%91%8A"
+  },
+  "response": {
+    "body_file": "rate_limit.html.gz",
+    "content_encoding": "gzip",
+    "final_url": "https://tw.search.yahoo.com/search?p=8119%20%E5%85%AC%E4%BF%A1%202024%20%E5%B9%B4%E5%BA%A6%20%E5%90%88%E4%BD%B5%20%E8%B2%A1%E5%8B%99%E5%A0%B1%E5%91%8A",
+    "headers_file": "rate_limit.headers.json",
+    "sha256": "aa66ed2dcc7266cd1decf97294af60c7c7f52bb4f4ae1c6c89ab465b7e854a2a",
+    "size_bytes": 52,
+    "status": 429,
+    "stored_size_bytes": 64
+  },
+  "retrieved_at": null,
+  "synthetic_purpose": "offline control-flow test only; this HTML is not an observed Yahoo layout"
+}
