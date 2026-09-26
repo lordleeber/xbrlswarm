@@ -990,6 +990,9 @@ grounded_ai
 terminal unresolved
 ```
 
+暫停中的 engine 在執行時跳過，但不改變上列固定順序。目前 Goodinfo
+pending，見階段 11。
+
 ---
 
 # 階段 9 — MOPS Worker
@@ -1198,6 +1201,19 @@ avoid duplicate date-range queries
 ---
 
 # 階段 11 — Goodinfo 試點閘門
+
+> **狀態：pending（2026-09-26）**
+>
+> Goodinfo 對自動化 client 回 Cloudflare managed challenge，Step-41 試點
+> 取不到真實清單或詳細頁。Step-41–43 暫停，已開始的 `step-41-goodinfo-pilot`
+> 分支保留不合併。暫停期間：
+>
+> ```text
+> mops ──(not_found / rejected)──→ yahoo
+> ```
+>
+> 階段 12 起不需等待本閘門。恢復 Goodinfo 前須完成 Step-41–43，並另行決定
+> 暫停期間已轉到 Yahoo 的 task 是否回補 Goodinfo。
 
 ## Step-41 — 試點案例
 

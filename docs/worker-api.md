@@ -29,8 +29,8 @@ Step-27 另接受 `rate_limited`、`transport_error`、`temporary_error`，
 保留目前 engine、增加 `fail_count` 並記錄 `retry_at`，預設 60 秒後可再派發。
 `--retry-delay-seconds` 可設定正整數秒數；等待中的 task 不會立即重新派發。
 Step-28 定義了固定 engine 順序；跨來源派發依各來源 gate 開放。
-Step-33 通過後，MOPS 語意耗盡 task 在下一次 lease 請求轉到 Goodinfo；
-Goodinfo 的查詢及解析由後續步驟提供。
+Step-33 通過後，MOPS 語意耗盡 task 在下一次 lease 請求轉到下一個未暫停的來源；
+Goodinfo 目前 pending，因此轉到 Yahoo。Yahoo 的查詢及解析由後續步驟提供。
 已有的 `grounded_ai` task 耗盡時轉為 `terminal_unresolved`，不再派發。
 重複回報、錯誤 worker、逾期租約或舊 generation 回 `409`，不會改寫 task。
 Step-25 在每次 `/lease` 請求內回收逾期 task，預設 300 秒，可用

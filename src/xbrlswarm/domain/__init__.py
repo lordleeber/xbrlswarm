@@ -3,7 +3,7 @@
 from .announcement_time import announcement_event_fields
 from .calendar_period import calendar_year_period_end
 from .evidence_type import EvidenceType
-from .engine import Engine, next_engine
+from .engine import PAUSED_ENGINES, Engine, next_active_engine, next_engine
 from .event_time import EventPrecision, event_time_fields
 from .publication_window import (
     PublicationRuleUnavailable,
@@ -22,6 +22,7 @@ from .versioned_publication_rules import (
 )
 
 __all__ = [
+    "PAUSED_ENGINES",
     "Engine",
     "EvidenceType",
     "EventPrecision",
@@ -39,5 +40,6 @@ __all__ = [
     "calendar_year_period_end",
     "event_time_fields",
     "expected_publication_window",
+    "next_active_engine",
     "next_engine",
 ]

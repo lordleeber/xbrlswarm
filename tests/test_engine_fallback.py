@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from xbrlswarm.domain import Engine, next_engine
+from xbrlswarm.domain import PAUSED_ENGINES, Engine, next_active_engine, next_engine
 from xbrlswarm.worker_api import TaskStore, create_app
 
 
@@ -40,8 +40,23 @@ def test_domain_order_has_only_roadmap_engines() -> None:
     assert next_engine(Engine.GROUNDED_AI) is None
 
 
+def test_goodinfo_is_paused_and_skipped_without_changing_fixed_order() -> None:
+    assert PAUSED_ENGINES == frozenset({Engine.GOODINFO})
+    assert next_engine(Engine.MOPS) is Engine.GOODINFO
+    assert next_active_engine(Engine.MOPS) is Engine.YAHOO
+    assert next_active_engine(Engine.GOODINFO) is Engine.YAHOO
+    assert next_active_engine(Engine.YAHOO) is Engine.GOOGLE
+    assert next_active_engine(Engine.GROUNDED_AI) is None
+    assert next_active_engine(Engine.MOPS, paused=frozenset()) is Engine.GOODINFO
+    assert next_active_engine(
+        Engine.MOPS, paused=frozenset({Engine.GOODINFO, Engine.YAHOO})
+    ) is Engine.GOOGLE
+    with pytest.raises(ValueError):
+        next_active_engine("mops")
+
+
 @pytest.mark.parametrize("outcome", ["not_found", "rejected"])
-def test_mops_exhaustion_advances_to_goodinfo_on_next_lease(
+def test_mops_exhaustion_skips_paused_goodinfo_to_yahoo_on_next_lease(
     tmp_path: Path, outcome: str
 ) -> None:
     database = _database(tmp_path)
@@ -53,10 +68,10 @@ def test_mops_exhaustion_advances_to_goodinfo_on_next_lease(
 
     second = store.lease("worker-2")
     assert second["task_id"] == first["task_id"]
-    assert second["engine"] == "goodinfo"
+    assert second["engine"] == "yahoo"
     assert second["lease_attempt"] == 2
     assert _row(database) == (
-        "dispatched", "goodinfo", 2, 0, "worker-2",
+        "dispatched", "yahoo", 2, 0, "worker-2",
         "2026-09-24T01:02:03.000Z", None,
     )
 
@@ -97,9 +112,9 @@ def test_mops_exhaustion_preserves_counters_and_targeted_lease(tmp_path: Path) -
     second = store.lease("worker-2", task_id=2)
     assert second["task_id"] == 2
     assert second["engine"] == "mops"
-    assert _row(database)[:4] == ("undone", "goodinfo", 4, 2)
+    assert _row(database)[:4] == ("undone", "yahoo", 4, 2)
     first = store.lease("worker-3", task_id=1)
-    assert first["engine"] == "goodinfo"
+    assert first["engine"] == "yahoo"
     assert first["lease_attempt"] == 5
     with sqlite3.connect(database) as connection:
         assert connection.execute(
@@ -112,14 +127,63 @@ def test_mops_advance_and_dispatch_roll_back_together(tmp_path: Path) -> None:
     with sqlite3.connect(database) as connection:
         connection.execute("UPDATE task SET state = 'not_found' WHERE id = 1")
         connection.execute(
-            """CREATE TRIGGER fail_goodinfo_dispatch BEFORE UPDATE ON task
-               WHEN NEW.state = 'dispatched' AND NEW.engine = 'goodinfo'
+            """CREATE TRIGGER fail_yahoo_dispatch BEFORE UPDATE ON task
+               WHEN NEW.state = 'dispatched' AND NEW.engine = 'yahoo'
                BEGIN SELECT RAISE(ABORT, 'test dispatch failure'); END"""
         )
     store = TaskStore(database, clock=lambda: NOW)
     with pytest.raises(sqlite3.IntegrityError, match="test dispatch failure"):
         store.lease("worker-2")
     assert _row(database) == ("not_found", "mops", 0, 0, None, None, None)
+
+
+@pytest.mark.parametrize("state", ["undone", "not_found", "rejected"])
+def test_existing_goodinfo_tasks_are_neither_migrated_nor_dispatched_while_paused(
+    tmp_path: Path, state: str
+) -> None:
+    database = _database(tmp_path)
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "UPDATE task SET state = ?, engine = 'goodinfo'", (state,)
+        )
+        connection.execute(
+            """INSERT INTO task (stock_id, fiscal_year, report_period, state, engine)
+               VALUES ('0051', 2024, 'Q1', 'rejected', 'mops')"""
+        )
+    store = TaskStore(database, clock=lambda: NOW)
+    grant = store.lease("worker-2")
+    assert grant["task_id"] == 2
+    assert grant["engine"] == "yahoo"
+    assert store.lease("worker-3") is None
+    assert store.lease("worker-3", task_id=1) is None
+    with sqlite3.connect(database) as connection:
+        assert connection.execute(
+            "SELECT state, engine, attempts, worker_id FROM task WHERE id = 1"
+        ).fetchone() == (state, "goodinfo", 0, None)
+
+
+def test_paused_goodinfo_task_is_not_redispatched_after_retry_or_lease_expiry(
+    tmp_path: Path,
+) -> None:
+    database = _database(tmp_path)
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            """UPDATE task SET engine = 'goodinfo', state = 'dispatched',
+                   worker_id = 'old', dispatched_at = '2026-09-24T00:00:00.000Z',
+                   attempts = 3"""
+        )
+        connection.execute(
+            """INSERT INTO task (stock_id, fiscal_year, report_period, state,
+                                 engine, retry_at, fail_count)
+               VALUES ('0051', 2024, 'Q1', 'temporary_error', 'goodinfo',
+                       '2026-09-24T00:00:00.000Z', 2)"""
+        )
+    store = TaskStore(database, clock=lambda: NOW)
+    assert store.lease("worker-2") is None
+    with sqlite3.connect(database) as connection:
+        assert connection.execute(
+            "SELECT state, engine, attempts, fail_count FROM task ORDER BY id"
+        ).fetchall() == [("undone", "goodinfo", 3, 0), ("undone", "goodinfo", 0, 2)]
 
 
 def test_completed_task_does_not_fallback(tmp_path: Path) -> None:
@@ -192,5 +256,13 @@ def test_contract_documents_order_and_terminal_state() -> None:
     assert contract["advance_states"] == ["not_found", "rejected"]
     assert contract["terminal_state"] == "terminal_unresolved"
     assert contract["runtime_fallback_enabled"] is True
-    assert contract["enabled_transitions"] == [{"from": "mops", "to": "goodinfo"}]
+    assert contract["enabled_transitions"] == [{"from": "mops", "to": "yahoo"}]
+    assert contract["paused_engines"] == sorted(engine.value for engine in PAUSED_ENGINES)
+    assert contract["paused_engine_tasks_migrated"] is False
+    assert contract["paused_engine_tasks_dispatched"] is False
+    assert all(
+        transition["to"] not in contract["paused_engines"]
+        for transition in contract["enabled_transitions"]
+    )
+    assert "pending" in Path("docs/engine-fallback.md").read_text()
     assert "terminal_unresolved" in Path("docs/engine-fallback.md").read_text()

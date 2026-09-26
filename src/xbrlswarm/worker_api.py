@@ -9,12 +9,21 @@ from pathlib import Path
 from typing import Callable
 from wsgiref.simple_server import make_server
 
-from .domain import RetryableFailure, SemanticExhaustion
+from .domain import (
+    PAUSED_ENGINES,
+    Engine,
+    RetryableFailure,
+    SemanticExhaustion,
+    next_active_engine,
+)
 from .storage import connect_database
 
 _SEMANTIC_OUTCOMES = frozenset(SemanticExhaustion)
 _RETRYABLE_OUTCOMES = frozenset(RetryableFailure)
 _RESULT_OUTCOMES = _SEMANTIC_OUTCOMES | _RETRYABLE_OUTCOMES | {"success"}
+_MOPS_FALLBACK_ENGINE = next_active_engine(Engine.MOPS).value
+_PAUSED_ENGINE_VALUES = tuple(sorted(engine.value for engine in PAUSED_ENGINES))
+_PAUSED_ENGINE_PLACEHOLDERS = ", ".join("?" for _ in _PAUSED_ENGINE_VALUES)
 
 
 def _utc_timestamp(value: datetime) -> str:
@@ -85,24 +94,25 @@ class TaskStore:
                 (now,),
             )
             connection.execute(
-                """UPDATE task SET state = 'undone', engine = 'goodinfo',
+                """UPDATE task SET state = 'undone', engine = ?,
                        worker_id = NULL, dispatched_at = NULL,
                        retry_at = NULL, updated_at = ?
                    WHERE state IN ('not_found', 'rejected')
                      AND engine = 'mops'""",
-                (now,),
+                (_MOPS_FALLBACK_ENGINE, now),
             )
             row = connection.execute(
-                """UPDATE task SET state = 'dispatched', worker_id = ?,
+                f"""UPDATE task SET state = 'dispatched', worker_id = ?,
                           dispatched_at = ?, updated_at = ?, attempts = attempts + 1
                    WHERE id = (
                        SELECT id FROM task
                        WHERE state = 'undone' AND (? IS NULL OR id = ?)
+                         AND engine NOT IN ({_PAUSED_ENGINE_PLACEHOLDERS})
                        ORDER BY id LIMIT 1
                    ) AND state = 'undone'
                    RETURNING id, stock_id, fiscal_year, report_period, engine,
                              dispatched_at, attempts""",
-                (worker_id, now, now, task_id, task_id),
+                (worker_id, now, now, task_id, task_id, *_PAUSED_ENGINE_VALUES),
             ).fetchone()
             connection.commit()
             if row is None:

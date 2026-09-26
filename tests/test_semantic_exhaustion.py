@@ -79,7 +79,7 @@ def test_semantic_exhaustion_ends_current_lease_without_changing_engine(
     )
     next_status, next_payload = _post(app, "/lease", {"worker_id": "worker-2"})
     assert next_status == "200 OK"
-    assert next_payload["task"]["engine"] == "goodinfo"
+    assert next_payload["task"]["engine"] == "yahoo"
     assert next_payload["task"]["lease_attempt"] == 2
 
 

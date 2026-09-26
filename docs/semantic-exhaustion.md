@@ -13,8 +13,9 @@ Worker 透過 `POST /result` 回報其中一種 outcome，並帶回目前的 `ta
 `GET /status` 會分別列出 `Not Found`、`Rejected` 計數，避免總數與狀態列不一致。
 
 這兩種狀態允許後續流程轉到下一個 engine。Step-28 已固定來源順序，
-Step-33 的 MOPS gate 已通過；下一次 `/lease` 會將 MOPS 的語意耗盡 task
-轉到 Goodinfo。其他跨來源轉移仍受後續 gate 約束。Step-27 已定義留在同一
+Step-33 的 MOPS gate 已通過；Goodinfo 目前 pending，下一次 `/lease` 會將
+MOPS 的語意耗盡 task 跳過 Goodinfo 轉到 Yahoo（見 `docs/engine-fallback.md`）。
+其他跨來源轉移仍受後續 gate 約束。Step-27 已定義留在同一
 engine 的基礎設施錯誤。
 不新增 migration：既有 `task.state` 欄位可保存這兩個狀態。
 機器可讀契約見 `contracts/semantic-exhaustion.json`。
