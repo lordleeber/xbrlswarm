@@ -24,7 +24,10 @@ ARTICLE_CASES = {
 }
 
 
-SEARCH_CASES = {"search_results", "no_result"}
+SEARCH_CASES = {
+    "search_results", "no_result", "builder_fy_consolidated", "builder_q2_consolidated",
+    "builder_fy_other_wording",
+}
 
 
 class _Head(HTMLParser):
@@ -115,8 +118,7 @@ def test_page_kind_matches_observed_response() -> None:
         **{scenario: "article" for scenario in ARTICLE_CASES},
         "unexpected_page": "quote_page",
         "search_redirect": "search_redirect",
-        "search_results": "search_results",
-        "no_result": "search_results",
+        **{scenario: "search_results" for scenario in SEARCH_CASES},
         "rate_limit": "rate_limit",
     }
     for case in MANIFEST["cases"]:

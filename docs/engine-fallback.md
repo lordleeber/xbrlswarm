@@ -33,8 +33,9 @@ Goodinfo 對自動化 client 回 Cloudflare managed challenge，Step-41 試點�
 
 Gate 僅涵蓋已驗證的 MOPS 合併 XBRL 下載路徑。個體 XBRL、修訂分類、申報
 時間及 XBRL 確認時間仍未驗證；對未知版面或變更的 payload 回報可重試的
-`temporary_error`，不得把它們當成 `not_found` 以觸發備援。Yahoo 查詢與
-解析由 Step-45 起實作；目前 Worker API 只提供任務狀態轉移與租約。
+`temporary_error`，不得把它們當成 `not_found` 以觸發備援。Step-45 已提供
+Yahoo 查詢、SERP 解析與結果分類（`docs/step-45-acceptance.md`）；Yahoo worker
+仍未實作，目前 Worker API 只提供任務狀態轉移與租約。
 
 若已有 `grounded_ai` task 回報語意耗盡，下一次 `/lease` 會在
 `BEGIN IMMEDIATE` 交易內把它設為 `terminal_unresolved`，不再派發，

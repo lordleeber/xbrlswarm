@@ -1,7 +1,7 @@
-# Step-44 Yahoo worker fixtures
+# Step-44／45 Yahoo worker fixtures
 
-`manifest.json` 固定 Yahoo worker 後續開發使用的十個 raw response 案例。共同的
-目標任務是 **公信 (8119)、2024 年 FY、合併財務報告**。五篇公告鏡像均由
+`manifest.json` 固定 Yahoo worker 後續開發使用的 raw response 案例：Step-44 的十個
+案例及 Step-45 的三個 `builder_*` SERP。Step-44 案例共同的目標任務是 **公信 (8119)、2024 年 FY、合併財務報告**。五篇公告鏡像均由
 `tw.stock.yahoo.com` 在 2026-09-25（台灣時間）實際回傳 HTTP 200；
 「wrong」案例各自只與目標任務相差一個條件（公司名稱與代號視為同一條件）。
 
@@ -17,12 +17,19 @@
 | `search_results` | 真實 Yahoo SERP（瀏覽器） | 目標查詢通過 `/_bv/` 後的 HTTP 200 結果頁；7 筆自然結果均為 8119 的第三方財報頁 |
 | `no_result` | 真實 Yahoo SERP（瀏覽器） | 亂碼查詢的 HTTP 200 結果頁；Yahoo 仍給出無關的填充結果，沒有任何 8119／公信候選 |
 | `rate_limit` | **合成** | HTTP 429、`Retry-After: 60` 的控制流程樣本；不是觀察到的 Yahoo 限流回應 |
+| `builder_fy_consolidated` | 真實 Yahoo SERP（瀏覽器） | Step-45 builder 的 8119 FY 查詢；第 1 筆即 `valid_result` 公告 |
+| `builder_q2_consolidated` | 真實 Yahoo SERP（瀏覽器） | Step-45 builder 的 8119 Q2 查詢；7 筆 Yahoo 結果都不是 113 年第二季公告 |
+| `builder_fy_other_wording` | 真實 Yahoo SERP（瀏覽器） | Step-45 builder 的 6147 頎邦 FY 查詢；公告標題用「業經董事會決議」 |
+
+三個 `builder_*` 案例由 Step-45 於 2026-09-26 擷取，manifest 的 `query_target`
+記錄各自的查詢對象（不一定是上方的 `target_task`），其 request URL 必須等於
+`xbrlswarm.yahoo_search.yahoo_search_plan()` 對該對象產生的 URL。
 
 每筆 `.html.gz` 只對 response bytes 做無損 gzip。對應的 `.meta.json` 保存
 request URL、method、可重現的 request headers、HTTP status、final URL、
 擷取時間、解壓後 body 的 SHA-256 與位元組長度；`.headers.json` 保存與重播
 有關的 response headers，排除 cookie。`origin` 明確區分 `live` 和 `synthetic`。
-合成回應的 `retrieved_at` 為 `null`，不能引用為 Yahoo 的實際觀察。兩個 SERP 的
+合成回應的 `retrieved_at` 為 `null`，不能引用為 Yahoo 的實際觀察。SERP 的
 `.meta.json` 另外記錄 `client`（擷取用的瀏覽器）與 `redirect_chain`（每一跳的
 status、URL、`Location`）；request headers 是瀏覽器實際送出的內容，但排除 cookie。
 
@@ -36,7 +43,7 @@ GET /_bv/v.gif?...          → 307, 設定 YBV cookie, Location: 原搜尋 URL
 GET /search?p=...           → 200, 真實 SERP
 ```
 
-`search_results` 與 `no_result` 即是第三跳的 response bytes。同一瀏覽器 session
+所有 SERP fixture 都是第三跳的 response bytes。同一瀏覽器 session
 內連續查詢時，`/_bv/v.gif` 偶爾回 HTTP 500（Playwright 取得的 body 是 Chromium
 自己的錯誤頁，不是 Yahoo 回傳的內容；curl 遇到的 500 則是空 body），換下一個
 查詢又恢復 200；因此 500
@@ -71,12 +78,13 @@ PLAYWRIGHT_MODULE=/path/to/node_modules/playwright \
 
 - 自然結果位於 `algo-sr` 區塊，標題連結帶 `data-matarget="algo"`，`href` 是
   `rd.search.yahoo.com/.../RU=<URL 編碼的目標網址>/...`，真正目標網址須從
-  `RU=` 解碼。測試中的 `_serp_targets()` 只是驗證 fixture 的最小解析，不是
-  Step-45 的正式 parser。
+  `RU=` 解碼一次。正式 parser 是 Step-45 的 `xbrlswarm.yahoo_search.parse_yahoo_serp()`；
+  `tests/test_yahoo_fixtures.py` 的 `_serp_targets()` 只驗證 fixture 本身。
 - `search_results` 的 7 筆自然結果是 Goodinfo、財報狗、treelazy、自由財經、
   HiStock、鉅亨網等**第三方財報頁**，沒有任何 `tw.stock.yahoo.com` 公告鏡像。
-  對這個查詢字串，Yahoo 搜尋不會直接帶出 Step-46 要優先採用的公告頁；
-  Step-45 需要調整查詢字串，例如加入「董事會通過」或公告標題用語，並另行驗證。
+  對這個查詢字串，Yahoo 搜尋不會直接帶出 Step-46 要優先採用的公告頁。
+  Step-45 改用民國年、公告用語與 `site:tw.stock.yahoo.com`，驗證見
+  `docs/step-45-acceptance.md`。
 - Yahoo 對亂碼查詢也回傳填充結果（本次為愛奇藝、Wikipedia、LiTV 等），
   **沒有觀察到空白的零結果頁**。因此 worker 的「查無結果」應定義為「SERP 中
   沒有任何符合目標 identity 的候選」，不能靠「找不到結果」之類的字樣判斷。

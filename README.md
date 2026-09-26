@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已實作 **Step-40：Goodinfo 操作防護**及 **Step-44：Yahoo 測試 fixture**；本環境的 Goodinfo 即時請求遇到 403 challenge，歷史清單與詳細頁仍待實際擷取驗證，Step-41–43 Goodinfo 試點閘門因此 **pending**，MOPS 語意耗盡後暫時跳過 Goodinfo 轉至 Yahoo。Step-44 固定五篇真實 Yahoo 財報公告鏡像、以瀏覽器通過 `/_bv/` bot 驗證後擷取的真實 Yahoo SERP 及異常案例，來源與限制見 [Yahoo fixture 說明](tests/fixtures/yahoo/README.md)；Yahoo 查詢及 worker 尚未實作。Repository 也保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已實作 **Step-40：Goodinfo 操作防護**、**Step-44：Yahoo 測試 fixture**及 **Step-45：Yahoo 查詢建構器**；本環境的 Goodinfo 即時請求遇到 403 challenge，歷史清單與詳細頁仍待實際擷取驗證，Step-41–43 Goodinfo 試點閘門因此 **pending**，MOPS 語意耗盡後暫時跳過 Goodinfo 轉至 Yahoo。Step-44 固定五篇真實 Yahoo 財報公告鏡像、以瀏覽器通過 `/_bv/` bot 驗證後擷取的真實 Yahoo SERP 及異常案例，來源與限制見 [Yahoo fixture 說明](tests/fixtures/yahoo/README.md)；Step-45 以民國年、公告用語與 `site:tw.stock.yahoo.com` 建構查詢，解析 SERP 並把回應分類成候選、`not_found` 或可重試失敗，已對兩家公司的真實 SERP 驗證；Yahoo worker 尚未實作。Repository 也保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -158,6 +158,14 @@ Step-40 以共用輸出根目錄的檔案鎖與冷卻時間，讓 Goodinfo 清�
 一次只送出一筆，間隔至少 3 秒並加上 jitter；同公司、同起訖日期的完整清單
 直接讀取驗證後的本地快取。清單 CLI 已套用此操作入口，詳見
 `docs/step-40-acceptance.md`。
+
+Step-45 的 `xbrlswarm.yahoo_search` 把 task 轉成
+`site:tw.stock.yahoo.com {代號} {公司} 董事會通過 {民國年}{期別} {範圍}財務報告`
+查詢，解析瀏覽器擷取的 SERP，並以標題／URL slug 的公司、民國年期別與範圍
+篩選公告鏡像候選。只有可辨識的 HTTP 200 SERP 且無候選才是 `not_found`；
+`/_bv/` 轉址或 500、無法辨識的頁面是 `temporary_error`，429 是 `rate_limited`。
+8119 與 6147 的 2024 FY 查詢命中公告；8119 Q2 公告存在但未被帶出。
+候選不是採信證據，也不寫入 evidence。詳見 `docs/step-45-acceptance.md`。
 
 ## 報告識別候選方案
 

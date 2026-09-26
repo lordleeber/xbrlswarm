@@ -133,6 +133,54 @@
       "headers": "rate_limit.headers.json",
       "metadata": "rate_limit.meta.json",
       "sha256": "aa66ed2dcc7266cd1decf97294af60c7c7f52bb4f4ae1c6c89ab465b7e854a2a"
+    },
+    {
+      "scenario": "builder_fy_consolidated",
+      "origin": "live",
+      "page_kind": "search_results",
+      "body": "builder_fy_consolidated.html.gz",
+      "headers": "builder_fy_consolidated.headers.json",
+      "metadata": "builder_fy_consolidated.meta.json",
+      "sha256": "78e1b3e1b7cd8975e166956a0b885cd24a34faeecc9f0e56ff3d71afc3794208",
+      "query_target": {
+        "stock_id": "8119",
+        "company": "公信",
+        "fiscal_year": 2024,
+        "report_period": "FY",
+        "report_scope": "consolidated"
+      }
+    },
+    {
+      "scenario": "builder_q2_consolidated",
+      "origin": "live",
+      "page_kind": "search_results",
+      "body": "builder_q2_consolidated.html.gz",
+      "headers": "builder_q2_consolidated.headers.json",
+      "metadata": "builder_q2_consolidated.meta.json",
+      "sha256": "74c6e1dee2c55095ec38a8d1e04854026097ebb8cd7bc2727b7112e3402448f5",
+      "query_target": {
+        "stock_id": "8119",
+        "company": "公信",
+        "fiscal_year": 2024,
+        "report_period": "Q2",
+        "report_scope": "consolidated"
+      }
+    },
+    {
+      "scenario": "builder_fy_other_wording",
+      "origin": "live",
+      "page_kind": "search_results",
+      "body": "builder_fy_other_wording.html.gz",
+      "headers": "builder_fy_other_wording.headers.json",
+      "metadata": "builder_fy_other_wording.meta.json",
+      "sha256": "3bcc9de16d5c81d379672f312b7d7361bde1999c67c64abaf40d0c8e23b1de0d",
+      "query_target": {
+        "stock_id": "6147",
+        "company": "頎邦",
+        "fiscal_year": 2024,
+        "report_period": "FY",
+        "report_scope": "consolidated"
+      }
     }
   ]
 }

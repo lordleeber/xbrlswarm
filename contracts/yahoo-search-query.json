@@ -1,0 +1,44 @@
+{
+  "contract": "yahoo_search_query",
+  "version": 1,
+  "search_url": "https://tw.search.yahoo.com/search?p=",
+  "url_encoding": "encodeURIComponent",
+  "site_restriction": "tw.stock.yahoo.com",
+  "query_template": "site:{site_restriction} {stock_id} {company} {announcement_wording} {roc_year}{period_wording} {scope_wording}財務報告",
+  "announcement_wording": "董事會通過",
+  "fiscal_year_format": "roc_year",
+  "period_wording": {
+    "FY": "年度",
+    "Q1": "年第一季",
+    "Q2": "年第二季",
+    "Q3": "年第三季"
+  },
+  "scope_wording": {
+    "consolidated": "合併",
+    "individual": "個體",
+    "unspecified": ""
+  },
+  "default_fetch_client": "real_browser",
+  "browser_capture_tool": "tools/yahoo_serp_capture.js",
+  "candidate_pages": "https://tw.stock.yahoo.com/news/*",
+  "result_without_usable_target_url": "skipped",
+  "result_without_title": "kept_identified_by_url_slug",
+  "candidate_identity": [
+    "company name as a whole short name in result title or URL slug: no CJK character before it, and after it only a non-CJK character, the end, or 董事會/民國/公告/本公司",
+    "ROC fiscal year and report period wording in result title or URL slug",
+    "財務報告 in result title or URL slug",
+    "no opposite scope wording without the target scope wording",
+    "snippet company code, when present, equals stock_id"
+  ],
+  "no_result_means": "no_serp_candidate_matches_target_identity",
+  "empty_serp_text_means_absence": false,
+  "outcomes": {
+    "http_200_serp_with_candidates": "candidates",
+    "http_200_serp_without_candidates": "not_found",
+    "http_200_unrecognized_page": "temporary_error",
+    "http_429": "rate_limited",
+    "bot_validation_redirect_or_other_status": "temporary_error",
+    "capture_without_http_200_document": "temporary_error"
+  },
+  "candidate_is_accepted_evidence": false
+}
