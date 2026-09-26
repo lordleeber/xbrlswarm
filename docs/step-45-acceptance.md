@@ -38,13 +38,16 @@ URL 為 `https://tw.search.yahoo.com/search?p=` 加上與 `encodeURIComponent` �
 | --- | --- |
 | HTTP 200、可辨識的 SERP、至少一筆候選 | 候選清單（`outcome=None`） |
 | HTTP 200、可辨識的 SERP、沒有候選 | `not_found` |
-| HTTP 200，但不是 SERP，或自然結果無法解析 | `temporary_error` |
+| HTTP 200，但不是 SERP，或沒有任何一筆自然結果解得出目標網址 | `temporary_error` |
 | HTTP 429 | `rate_limited` |
 | 307 `/_bv/` 轉址、`/_bv/` 500、其他狀態 | `temporary_error` |
 | 擷取工具沒有取得 HTTP 200 文件（非零結束碼，不寫檔） | `temporary_error` |
 
 「可辨識的 SERP」指 `<title>` 以 `- Yahoo 網頁搜尋` 結尾，且至少有一筆能解出
-目標網址與標題的自然結果。Yahoo 對亂碼查詢仍回填充結果，因此**沒有**以
+目標網址的自然結果。解不出絕對目標網址的單筆結果（相對 href、沒有 `RU=` 的
+Yahoo 轉址）直接略過，不讓整頁變成 `temporary_error`：查詢固定，重試會拿到
+同一頁，而 Step-27 沒有重試上限，整頁失敗會讓 task 永遠重試。缺標題的結果
+保留，標題為空字串，仍可由 URL slug 判斷 identity。Yahoo 對亂碼查詢仍回填充結果，因此**沒有**以
 「找不到結果」字樣判斷查無結果；零筆自然結果視為版面異常而非 `not_found`。
 
 `classify_yahoo_serp_capture()` 直接讀擷取工具的 `.meta.json`：request URL 必須
@@ -61,7 +64,10 @@ URL 為 `https://tw.search.yahoo.com/search?p=` 加上與 `encodeURIComponent` �
 候選須同時符合：
 
 - 網址為 `https://tw.stock.yahoo.com/news/...`（個股頁 `/quote/...` 不算）；
-- 標題或 URL slug（兩者合併、NFKC 正規化）含公司名稱與 `財務報告`；
+- 標題或 URL slug（兩者合併、NFKC 正規化）以**完整簡稱**含公司名稱，並含
+  `財務報告`。完整簡稱指名稱前面不是漢字，後面是非漢字（標點、空白、數字）、
+  字串結尾，或 `董事會`／`民國`／`公告`／`本公司`，因此 `統一` 不會命中
+  `統一超`，`華電` 不會命中 `中華電`；
 - 含 `{民國年}年度`（後面不接 `第`）或 `{民國年}年[度]第{一|1}季` 形式的期別，
   年份前不得緊接數字；
 - 指定範圍時，不能只含相反範圍字樣（`合併及個體` 可接受）；
@@ -72,7 +78,7 @@ Step-46 驗證，文章時間與公告時間的區分由 Step-47 處理。
 
 ## 驗收證據
 
-測試：`pytest` 由基線 473 passed 增至 **553 passed**（`tests/test_yahoo_search.py`
+測試：`pytest` 由基線 473 passed 增至 **553 passed**，code review 修正後為 **566 passed**（`tests/test_yahoo_search.py`
 與 `tests/test_yahoo_fixtures.py` 的新 SERP 參數）。`test_yahoo_search.py` 先以只有
 介面的 stub 執行，71 項全數 FAILED 後才實作；頎邦案例的測試在 fixture 入庫前 FAILED。
 
@@ -119,8 +125,18 @@ manifest 以 `query_target` 記錄查詢對象：
 - 只驗證兩家公司的 FY 與一個 Q2 查詢；季報查詢在本次樣本中沒有命中，季報的
   Yahoo 命中率尚未量測。
 - 期別只接受已觀察到的寫法；`上半年度` 等其他 Q2 寫法尚未觀察，現在會被當成非候選。
-- 公司名稱以子字串比對；同名前綴（例如某公司名稱是另一公司名稱的前段）可能產生
-  多餘候選，交由 Step-46 以頁面內容剔除。
+- 公司名稱的接續詞只接受已觀察到的 `董事會`／`民國`／`公告`／`本公司`；其他漢字
+  接續寫法會被當成非候選。（原本「公司名稱以子字串比對、同名前綴交由 Step-46
+  剔除」的限制已在 code review 後修正，見下節。）
+
+## Code review 修正（2026-09-26）
+
+- 單一自然結果解不出目標網址時，原本整頁判為 `temporary_error`，已找到的候選
+  也被丟棄，且固定查詢會無限重試。改為略過該筆；全頁都沒有可用結果才是版面異常。
+- 公司名稱原本以子字串比對，`統一` 會命中 `統一超`（2912）。改為完整簡稱比對，
+  同時處理名稱在後段的情形（`華電`／`中華電`）。
+- 回歸測試：以真實 `builder_fy_consolidated` 改壞第 1 或第 5 筆 href、缺標題結果、
+  四組前後綴撞名，以及五種已觀察到的公司名稱接續寫法。
 - 沒有 resident Yahoo worker：`/lease` 仍不能依 engine 篩選，`/result` 也不能上傳
   evidence。本步驟只提供查詢、解析與分類，不寫入 evidence 或 task 狀態。
 - `rate_limit` 仍是合成樣本；真實 Yahoo 限流頁尚未觀察到。

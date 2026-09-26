@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import gzip
 import json
+import re
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlsplit
 
@@ -136,6 +137,8 @@ def test_contract_matches_builder() -> None:
         "consolidated": "合併", "individual": "個體", "unspecified": "",
     }
     assert CONTRACT["default_fetch_client"] == "real_browser"
+    assert CONTRACT["result_without_usable_target_url"] == "skipped"
+    assert CONTRACT["result_without_title"] == "kept_identified_by_url_slug"
     assert CONTRACT["no_result_means"] == "no_serp_candidate_matches_target_identity"
     assert CONTRACT["empty_serp_text_means_absence"] is False
     assert CONTRACT["outcomes"] == {
@@ -207,11 +210,47 @@ def test_non_serp_pages_are_layout_errors(scenario) -> None:
     b"",
     b"<html><head><title>x - Yahoo \xe7\xb6\xb2\xe9\xa0\x81\xe6\x90\x9c\xe5\xb0\x8b</title></head></html>",
     "<title>q - Yahoo 網頁搜尋</title><a data-matarget=\"algo\" href=\"/relative\"><h3>t</h3></a>".encode(),
-    "<title>q - Yahoo 網頁搜尋</title><a data-matarget=\"algo\" href=\"https://x.test/\"></a>".encode(),
+    "<title>q - Yahoo 網頁搜尋</title><a data-matarget=\"algo\" href=\"/x\"><h3>t</h3></a>"
+    "<a data-matarget=\"algo\" href=\"https://r.search.yahoo.com/_ylt=x\"><h3>u</h3></a>".encode(),
 ])
 def test_serp_without_parseable_results_is_a_layout_error(body) -> None:
     with pytest.raises(YahooSerpLayoutError):
         parse_yahoo_serp(body)
+
+
+def _break_result(body: bytes, index: int, href: str) -> bytes:
+    text = body.decode("utf-8")
+    hrefs = re.findall(r'data-matarget="algo"[^>]*?href="([^"]+)"', text)
+    return text.replace(hrefs[index], href).encode("utf-8")
+
+
+@pytest.mark.parametrize("href", ["/relative", "https://r.search.yahoo.com/_ylt=no-ru"])
+def test_one_unusable_result_does_not_discard_the_page(href) -> None:
+    _, _, body = _raw("builder_fy_consolidated")
+    broken = _break_result(body, 4, href)
+
+    results = parse_yahoo_serp(broken)
+    assert len(results) == 6
+    outcome = classify_yahoo_serp_response(FY_TARGET, 200, broken)
+    assert outcome.outcome is None
+    assert [candidate.url for candidate in outcome.candidates] == [VALID_MIRROR]
+
+
+def test_one_unusable_result_on_a_page_without_the_mirror_is_still_not_found() -> None:
+    _, _, body = _raw("builder_fy_consolidated")
+    broken = _break_result(body, 0, "/relative")
+    outcome = classify_yahoo_serp_response(FY_TARGET, 200, broken)
+    assert outcome.outcome is SemanticExhaustion.NOT_FOUND
+
+
+def test_result_without_title_is_kept_and_identified_by_its_slug() -> None:
+    body = (
+        "<title>q - Yahoo 網頁搜尋</title>"
+        f'<ul><li><a data-matarget="algo" href="{VALID_MIRROR}"></a></li></ul>'
+    ).encode("utf-8")
+    [result] = parse_yahoo_serp(body)
+    assert (result.title, result.url) == ("", VALID_MIRROR)
+    assert classify_yahoo_serp_response(FY_TARGET, 200, body).candidates == (result,)
 
 
 # --- target identity ----------------------------------------------------------------
@@ -240,6 +279,29 @@ def test_only_the_matching_mirror_is_a_candidate_on_the_live_fy_serp() -> None:
 ])
 def test_single_dimension_mismatches_are_not_candidates(title) -> None:
     assert not is_target_candidate(_mirror(title), FY_TARGET)
+
+
+@pytest.mark.parametrize("company,title", [
+    ("統一", "統一超董事會通過113年度合併財務報告"),   # 1216 vs 2912
+    ("台塑", "台塑化董事會通過113年度合併財務報告"),
+    ("中鋼", "中鋼構董事會通過113年度合併財務報告"),
+    ("華電", "中華電董事會通過113年度合併財務報告"),   # shared suffix
+])
+def test_company_name_inside_another_company_name_is_not_a_candidate(company, title) -> None:
+    target = YahooTarget("1216", company, 2024, ReportPeriod.FY, ReportScope.CONSOLIDATED)
+    assert not is_target_candidate(_mirror(title), target)
+    assert is_target_candidate(_mirror(title.replace(title[:title.index("董事會")], company)), target)
+
+
+@pytest.mark.parametrize("title,slug", [
+    ("公信113年度合併財務報告", None),
+    ("公信民國113年度合併財務報告業經董事會決議", None),
+    ("公信公告本公司113年度合併財務報告", None),
+    ("興櫃：公信 8119 113年度合併財務報告", "興櫃-公信-8119-113年度合併財務報告"),
+    ("公信 公告本公司董事會通過113年度合併財務報告", "公信-公告本公司董事會通過113年度合併財務報告"),
+])
+def test_observed_company_name_boundaries_are_candidates(title, slug) -> None:
+    assert is_target_candidate(_mirror(title, slug), FY_TARGET)
 
 
 @pytest.mark.parametrize("title,target", [

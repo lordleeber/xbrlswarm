@@ -35,6 +35,7 @@ _PERIOD_WORDING = {
 _QUARTER_NUMERALS = {ReportPeriod.Q1: "一1", ReportPeriod.Q2: "二2", ReportPeriod.Q3: "三3"}
 _STOCK_ID = re.compile(r"[0-9A-Za-z]+")
 _COMPANY = re.compile(r"[^\s\"'“”:：]+")
+_COMPANY_CONTINUATIONS = ("董事會", "民國", "公告", "本公司")
 _SNIPPET_CODE = re.compile(r"公司名稱:\s*[^()]*?\(\s*([0-9A-Za-z]+)\s*\)")
 
 
@@ -210,9 +211,12 @@ def parse_yahoo_serp(body: bytes | str) -> tuple[SerpResult, ...]:
     """Return the organic results of a Yahoo SERP in page order.
 
     Organic result links carry ``data-matarget="algo"`` and point at a
-    ``*.search.yahoo.com/.../RU=<encoded target>/...`` redirect. A page that is not
-    a SERP, or a SERP without parseable organic results, raises
-    ``YahooSerpLayoutError``: Yahoo was never observed to return an empty SERP.
+    ``*.search.yahoo.com/.../RU=<encoded target>/...`` redirect. A result without a
+    usable absolute target URL is skipped, since it names no page to verify; a
+    result without a title is kept because its URL slug can still identify it.
+    A page that is not a SERP, or a SERP where no organic result has a usable
+    target URL, raises ``YahooSerpLayoutError``: Yahoo was never observed to
+    return an empty SERP.
     """
 
     try:
@@ -224,14 +228,15 @@ def parse_yahoo_serp(body: bytes | str) -> tuple[SerpResult, ...]:
     parser.close()
     if not _collapse(parser.page_title).endswith(_SERP_TITLE_SUFFIX.strip()):
         raise YahooSerpLayoutError(f"not a Yahoo SERP: title {parser.page_title!r}")
-    if not parser.results:
-        raise YahooSerpLayoutError("Yahoo SERP has no organic results")
     results = []
     for raw in parser.results:
-        title = _collapse(raw["title"])
-        if not title:
-            raise YahooSerpLayoutError("organic result has no title")
-        results.append(SerpResult(title, _target_url(raw["href"]), _collapse(raw["snippet"])))
+        try:
+            url = _target_url(raw["href"])
+        except YahooSerpLayoutError:
+            continue
+        results.append(SerpResult(_collapse(raw["title"]), url, _collapse(raw["snippet"])))
+    if not results:
+        raise YahooSerpLayoutError("Yahoo SERP has no organic result with a usable target URL")
     return tuple(results)
 
 
@@ -240,6 +245,29 @@ def _period_pattern(target: YahooTarget) -> re.Pattern[str]:
     if target.report_period is ReportPeriod.FY:
         return re.compile(rf"{year}年度(?!第)")
     return re.compile(rf"{year}年度?第[{_QUARTER_NUMERALS[target.report_period]}]季")
+
+
+def _is_cjk(character: str) -> bool:
+    return "\u3400" <= character <= "\u4dbf" or "\u4e00" <= character <= "\u9fff"
+
+
+def _names_company(text: str, company: str) -> bool:
+    """Whether ``company`` appears as a whole short name, not inside another one.
+
+    Yahoo mirror titles and slugs put the MOPS subject after punctuation
+    (``【公告】``, ``公告-``, ``興櫃：``), and the subject continues after the name
+    with 董事會, 民國, 公告, 本公司, a year or punctuation. A CJK character on
+    either side otherwise means a longer name: 統一 inside 統一超, 華電 inside 中華電.
+    """
+
+    for match in re.finditer(re.escape(company), text):
+        before = text[match.start() - 1] if match.start() else ""
+        after = text[match.end():]
+        if before and _is_cjk(before):
+            continue
+        if not after or not _is_cjk(after[0]) or after.startswith(_COMPANY_CONTINUATIONS):
+            return True
+    return False
 
 
 def is_target_candidate(result: SerpResult, target: YahooTarget) -> bool:
@@ -257,7 +285,7 @@ def is_target_candidate(result: SerpResult, target: YahooTarget) -> bool:
         return False
     text = unicodedata.normalize("NFKC", f"{result.title} {unquote(split.path)}")
     company = unicodedata.normalize("NFKC", target.company)
-    if company not in text or "財務報告" not in text:
+    if not _names_company(text, company) or "財務報告" not in text:
         return False
     if not _period_pattern(target).search(text):
         return False

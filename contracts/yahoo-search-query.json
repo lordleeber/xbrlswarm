@@ -21,8 +21,10 @@
   "default_fetch_client": "real_browser",
   "browser_capture_tool": "tools/yahoo_serp_capture.js",
   "candidate_pages": "https://tw.stock.yahoo.com/news/*",
+  "result_without_usable_target_url": "skipped",
+  "result_without_title": "kept_identified_by_url_slug",
   "candidate_identity": [
-    "company name in result title or URL slug",
+    "company name as a whole short name in result title or URL slug: no CJK character before it, and after it only a non-CJK character, the end, or 董事會/民國/公告/本公司",
     "ROC fiscal year and report period wording in result title or URL slug",
     "財務報告 in result title or URL slug",
     "no opposite scope wording without the target scope wording",
