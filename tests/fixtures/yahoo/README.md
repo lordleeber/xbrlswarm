@@ -52,6 +52,21 @@ HTTP 500、空 body；補上完整瀏覽器 headers 也是 500。樣本少，且
 worker 應以真實瀏覽器（或能完成 `/_bv/` 流程的 client）作為預設抓取方式**。
 舊 worker 針對的是**月營收**；其月份查詢字串與次月日期窗不能直接用於財務報告。
 
+## 重新擷取 SERP
+
+`tools/yahoo_serp_capture.js` 以有畫面的 Chromium 完成 `/_bv/` 流程，直接輸出
+與上述格式相同的 `.html.gz`、`.headers.json`、`.meta.json`，並印出 manifest
+項目供人工審閱後加入（`page_kind` 須自行確認）：
+
+```text
+PLAYWRIGHT_MODULE=/path/to/node_modules/playwright \
+  node tools/yahoo_serp_capture.js <scenario> '<查詢字串>' [--out DIR]
+```
+
+未指定 `--out` 時寫入本目錄並覆蓋同名檔案，試驗時請先輸出到暫存目錄。
+沒有取得 HTTP 200 文件（例如 `/_bv/` 回 500）時不寫任何檔案、以非零碼結束，
+應視為可重試的抓取失敗。請低頻率使用，連續查詢之間保留間隔。
+
 ## SERP 的觀察與限制
 
 - 自然結果位於 `algo-sr` 區塊，標題連結帶 `data-matarget="algo"`，`href` 是
