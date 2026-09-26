@@ -8,6 +8,7 @@
   "paused_engine_reason": "goodinfo_automated_access_blocked_by_cloudflare_managed_challenge",
   "paused_engine_resume_gate": "steps_41_to_43_goodinfo_pilot_gate",
   "paused_engine_tasks_migrated": false,
+  "paused_engine_tasks_dispatched": false,
   "enabled_transitions": [{"from": "mops", "to": "yahoo"}],
   "first_fallback_gate": "step_33_mops_gate",
   "advance_trigger": "next_lease_request_after_mops_semantic_exhaustion",

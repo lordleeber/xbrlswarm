@@ -95,7 +95,7 @@ def test_retryable_failure_does_not_block_other_ready_tasks(tmp_path: Path) -> N
     with sqlite3.connect(database) as connection:
         connection.execute(
             """INSERT INTO task (stock_id, fiscal_year, report_period, state, engine)
-               VALUES ('0051', 2024, 'Q1', 'undone', 'goodinfo')"""
+               VALUES ('0051', 2024, 'Q1', 'undone', 'yahoo')"""
         )
     now = [START]
     store = TaskStore(database, retry_delay_seconds=60, clock=lambda: now[0])
@@ -103,7 +103,7 @@ def test_retryable_failure_does_not_block_other_ready_tasks(tmp_path: Path) -> N
     assert store.complete(first["task_id"], "worker-1", 1, "rate_limited")
     second = store.lease("worker-2")
     assert second["stock_id"] == "0051"
-    assert second["engine"] == "goodinfo"
+    assert second["engine"] == "yahoo"
 
 
 def test_invalid_or_stale_retry_result_does_not_increment_fail_count(tmp_path: Path) -> None:

@@ -138,7 +138,7 @@ def test_mops_advance_and_dispatch_roll_back_together(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("state", ["undone", "not_found", "rejected"])
-def test_existing_goodinfo_tasks_are_not_migrated_while_paused(
+def test_existing_goodinfo_tasks_are_neither_migrated_nor_dispatched_while_paused(
     tmp_path: Path, state: str
 ) -> None:
     database = _database(tmp_path)
@@ -151,12 +151,39 @@ def test_existing_goodinfo_tasks_are_not_migrated_while_paused(
                VALUES ('0051', 2024, 'Q1', 'rejected', 'mops')"""
         )
     store = TaskStore(database, clock=lambda: NOW)
-    grant = store.lease("worker-2", task_id=2)
+    grant = store.lease("worker-2")
+    assert grant["task_id"] == 2
     assert grant["engine"] == "yahoo"
+    assert store.lease("worker-3") is None
+    assert store.lease("worker-3", task_id=1) is None
     with sqlite3.connect(database) as connection:
         assert connection.execute(
-            "SELECT state, engine, attempts FROM task WHERE id = 1"
-        ).fetchone() == (state, "goodinfo", 0)
+            "SELECT state, engine, attempts, worker_id FROM task WHERE id = 1"
+        ).fetchone() == (state, "goodinfo", 0, None)
+
+
+def test_paused_goodinfo_task_is_not_redispatched_after_retry_or_lease_expiry(
+    tmp_path: Path,
+) -> None:
+    database = _database(tmp_path)
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            """UPDATE task SET engine = 'goodinfo', state = 'dispatched',
+                   worker_id = 'old', dispatched_at = '2026-09-24T00:00:00.000Z',
+                   attempts = 3"""
+        )
+        connection.execute(
+            """INSERT INTO task (stock_id, fiscal_year, report_period, state,
+                                 engine, retry_at, fail_count)
+               VALUES ('0051', 2024, 'Q1', 'temporary_error', 'goodinfo',
+                       '2026-09-24T00:00:00.000Z', 2)"""
+        )
+    store = TaskStore(database, clock=lambda: NOW)
+    assert store.lease("worker-2") is None
+    with sqlite3.connect(database) as connection:
+        assert connection.execute(
+            "SELECT state, engine, attempts, fail_count FROM task ORDER BY id"
+        ).fetchall() == [("undone", "goodinfo", 3, 0), ("undone", "goodinfo", 0, 2)]
 
 
 def test_completed_task_does_not_fallback(tmp_path: Path) -> None:
@@ -232,6 +259,7 @@ def test_contract_documents_order_and_terminal_state() -> None:
     assert contract["enabled_transitions"] == [{"from": "mops", "to": "yahoo"}]
     assert contract["paused_engines"] == sorted(engine.value for engine in PAUSED_ENGINES)
     assert contract["paused_engine_tasks_migrated"] is False
+    assert contract["paused_engine_tasks_dispatched"] is False
     assert all(
         transition["to"] not in contract["paused_engines"]
         for transition in contract["enabled_transitions"]

@@ -20,8 +20,11 @@ Goodinfo 對自動化 client 回 Cloudflare managed challenge，Step-41 試點�
 下一次 `/lease` 改為 `state=undone, engine=yahoo`，交易、回滾與計數保留規則
 與上段相同。
 
-- 已經在 `goodinfo` 的 task **不搬移**：`undone` 仍可被派發，`not_found`／
-  `rejected` 仍停留，因為 `goodinfo → yahoo` 未開放。
+- 已經在 `goodinfo` 的 task **不搬移，也不派發**：`/lease` 選取任務時排除
+  `PAUSED_ENGINES`，指定 `task_id` 也一樣。`undone` 與 `not_found`／`rejected`
+  都停留原狀，`attempts`、`fail_count` 不再增加；進行中的 lease 逾期或
+  `retry_at` 到期後回到 `undone`，同樣不會再派發。`GET /stats` 的
+  `by_engine` 仍會列出這些 task。
 - 暫停期間轉到 Yahoo 的 task 不會自動回到 Goodinfo；恢復 Goodinfo 須先通過
   Step-41–43 閘門，再另行決定是否回補。
 - `yahoo → google` 等下游轉移仍關閉。Yahoo worker 尚未實作，`/lease` 也還
