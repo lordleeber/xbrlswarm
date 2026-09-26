@@ -92,7 +92,7 @@
     {
       "scenario": "unexpected_page",
       "origin": "live",
-      "page_kind": "announcement_index",
+      "page_kind": "quote_page",
       "body": "unexpected_page.html.gz",
       "headers": "unexpected_page.headers.json",
       "metadata": "unexpected_page.meta.json",
@@ -128,7 +128,7 @@
     {
       "scenario": "rate_limit",
       "origin": "synthetic",
-      "page_kind": "search_results",
+      "page_kind": "rate_limit",
       "body": "rate_limit.html.gz",
       "headers": "rate_limit.headers.json",
       "metadata": "rate_limit.meta.json",

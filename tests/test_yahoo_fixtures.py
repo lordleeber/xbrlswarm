@@ -108,6 +108,25 @@ def test_manifest_has_required_scenarios_and_single_dimension_mismatches() -> No
         assert differences == expected
 
 
+def test_page_kind_matches_observed_response() -> None:
+    kinds = {case["scenario"]: case["page_kind"] for case in MANIFEST["cases"]}
+    assert kinds == {
+        **{scenario: "article" for scenario in ARTICLE_CASES},
+        "unexpected_page": "quote_page",
+        "search_redirect": "search_redirect",
+        "search_results": "search_results",
+        "no_result": "search_results",
+        "rate_limit": "rate_limit",
+    }
+    for case in MANIFEST["cases"]:
+        metadata, _, _ = _raw(case)
+        if case["page_kind"] in {"article", "quote_page", "search_results"}:
+            assert metadata["response"]["status"] == 200
+    unexpected = next(case for case in MANIFEST["cases"] if case["scenario"] == "unexpected_page")
+    metadata, _, _ = _raw(unexpected)
+    assert urlparse(metadata["request"]["url"]).path == "/quote/8119.TWO"
+
+
 @pytest.mark.parametrize("case", MANIFEST["cases"], ids=lambda case: case["scenario"])
 def test_raw_response_and_metadata_are_replayable(case: dict) -> None:
     metadata, headers, body = _raw(case)
