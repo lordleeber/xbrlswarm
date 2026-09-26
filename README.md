@@ -2,7 +2,7 @@
 
 `xbrlswarm` 用來蒐集、保存與稽核台灣上市櫃公司的歷史財務報告 / XBRL 發布證據。
 
-目前已實作 **Step-40：Goodinfo 操作防護**、**Step-44：Yahoo 測試 fixture**及 **Step-45：Yahoo 查詢建構器**；本環境的 Goodinfo 即時請求遇到 403 challenge，歷史清單與詳細頁仍待實際擷取驗證，Step-41–43 Goodinfo 試點閘門因此 **pending**，MOPS 語意耗盡後暫時跳過 Goodinfo 轉至 Yahoo。Step-44 固定五篇真實 Yahoo 財報公告鏡像、以瀏覽器通過 `/_bv/` bot 驗證後擷取的真實 Yahoo SERP 及異常案例，來源與限制見 [Yahoo fixture 說明](tests/fixtures/yahoo/README.md)；Step-45 以民國年、公告用語與 `site:tw.stock.yahoo.com` 建構查詢，解析 SERP 並把回應分類成候選、`not_found` 或可重試失敗，已對兩家公司的真實 SERP 驗證；Yahoo worker 尚未實作。Repository 也保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
+目前已實作 **Step-40：Goodinfo 操作防護**、**Step-44：Yahoo 測試 fixture**、**Step-45：Yahoo 查詢建構器**及 **Step-46：MOPS 形式公告鏡像**；本環境的 Goodinfo 即時請求遇到 403 challenge，歷史清單與詳細頁仍待實際擷取驗證，Step-41–43 Goodinfo 試點閘門因此 **pending**，MOPS 語意耗盡後暫時跳過 Goodinfo 轉至 Yahoo。Step-44 固定五篇真實 Yahoo 財報公告鏡像、以瀏覽器通過 `/_bv/` bot 驗證後擷取的真實 Yahoo SERP 及異常案例，來源與限制見 [Yahoo fixture 說明](tests/fixtures/yahoo/README.md)；Step-45 以民國年、公告用語與 `site:tw.stock.yahoo.com` 建構查詢，解析 SERP 並把回應分類成候選、`not_found` 或可重試失敗，已對兩家公司的真實 SERP 驗證。Step-46 只接受帶齊公司代號、公司名稱、主旨與財務報告期間，且身分與 task 相符的 Yahoo 公告鏡像，頎邦 2024 Q3 已從查詢走到接受。Yahoo worker 尚未實作。Repository 也保存 2330 / 6147 / 4542 × 2024 Q1/Q2/Q3/FY 共 12 個從官方 MOPS XBRL 下載介面實際擷取的 raw fixtures，並以可重播分析器產生逐筆欄位 observation 與 evidence-backed matrix。
 
 Step-3 證實 `stock_id`、公司中文全名、`fiscal_year`、`report_scope` 可由 iXBRL fact 直接取得，`report_period` 與 `source_locator` 可由已測試規則決定性推導。本次 download endpoint 的 12 個 payload 未觀察到 filing identifier、filing date/time 或 filing kind，但不能外推成整體 MOPS 來源不可得；這些欄位與公開歷史 `xbrl_confirmed_at` 均維持 **NOT PUBLICLY VERIFIED**。
 
@@ -166,6 +166,13 @@ Step-45 的 `xbrlswarm.yahoo_search` 把 task 轉成
 `/_bv/` 轉址或 500、無法辨識的頁面是 `temporary_error`，429 是 `rate_limited`。
 8119 與 6147 的 2024 FY 查詢命中公告；8119 Q2 公告存在但未被帶出。
 候選不是採信證據，也不寫入 evidence。詳見 `docs/step-45-acceptance.md`。
+
+Step-46 的 `xbrlswarm.yahoo_announcement` 只讀 Yahoo 文章本體裡的 MOPS 標頭
+（日期、公司名稱 (代號)、主旨）與說明中的財務報告報導期間。缺任一欄位的文章為
+`not_mops_form`，不論排名都不被接受。欄位齊全時，再核對代號、公司、年度、
+曆年制期別、範圍與財務報告主旨。沒有鏡像被接受時，任何一篇可重試的審查都讓
+task 維持可重試；全部都有最終判定才是 `rejected`。本步驟不寫入 evidence，
+也不輸出文章時間。詳見 `docs/step-46-acceptance.md`。
 
 ## 報告識別候選方案
 

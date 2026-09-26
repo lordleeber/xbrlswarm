@@ -24,9 +24,15 @@ ARTICLE_CASES = {
 }
 
 
+STEP_46_ARTICLE_CASES = {
+    "article_other_wording", "article_not_mops_form", "article_without_report_period",
+    "article_q3_other_wording",
+}
+
+
 SEARCH_CASES = {
     "search_results", "no_result", "builder_fy_consolidated", "builder_q2_consolidated",
-    "builder_fy_other_wording",
+    "builder_fy_other_wording", "builder_q3_other_wording",
 }
 
 
@@ -92,7 +98,7 @@ def test_manifest_has_required_scenarios_and_single_dimension_mismatches() -> No
     assert MANIFEST["source"] == "yahoo_tw_stock_and_search"
     cases = {case["scenario"]: case for case in MANIFEST["cases"]}
     assert len(cases) == len(MANIFEST["cases"])
-    assert set(cases) == set(ARTICLE_CASES) | SEARCH_CASES | {
+    assert set(cases) == set(ARTICLE_CASES) | STEP_46_ARTICLE_CASES | SEARCH_CASES | {
         "rate_limit", "unexpected_page", "search_redirect"
     }
 
@@ -115,7 +121,7 @@ def test_manifest_has_required_scenarios_and_single_dimension_mismatches() -> No
 def test_page_kind_matches_observed_response() -> None:
     kinds = {case["scenario"]: case["page_kind"] for case in MANIFEST["cases"]}
     assert kinds == {
-        **{scenario: "article" for scenario in ARTICLE_CASES},
+        **{scenario: "article" for scenario in set(ARTICLE_CASES) | STEP_46_ARTICLE_CASES},
         "unexpected_page": "quote_page",
         "search_redirect": "search_redirect",
         **{scenario: "search_results" for scenario in SEARCH_CASES},
