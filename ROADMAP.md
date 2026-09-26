@@ -1285,6 +1285,28 @@ report_period
 個體
 ```
 
+Step-44 實測（見 `tests/fixtures/yahoo/README.md`）：只含上列欄位的查詢，
+SERP 只帶出第三方財報頁，沒有 `tw.stock.yahoo.com` 公告鏡像。須加入公告
+用語（如「董事會通過」）並以真實 SERP fixture 驗證能否帶出公告頁。
+
+抓取方式：
+
+```text
+預設使用真實瀏覽器（Playwright）
+必須完成 /_bv/ bot 驗證轉址（307 → /_bv/v.gif 設定 YBV → 307 → 200）
+/_bv/ 回 HTTP 500 = 可重試的抓取失敗，不是查無結果
+```
+
+純 curl 在 Step-44 實測中無法通過 `/_bv/`。
+
+「查無結果」定義：
+
+```text
+SERP 中沒有任何符合 target identity 的候選
+```
+
+Yahoo 對任何查詢都會回傳填充結果，不得以「找不到結果」字樣判斷。
+
 ---
 
 ## Step-46 — 優先採用 MOPS 形式的公告鏡像
