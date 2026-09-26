@@ -9,12 +9,13 @@ from pathlib import Path
 from typing import Callable
 from wsgiref.simple_server import make_server
 
-from .domain import RetryableFailure, SemanticExhaustion
+from .domain import Engine, RetryableFailure, SemanticExhaustion, next_active_engine
 from .storage import connect_database
 
 _SEMANTIC_OUTCOMES = frozenset(SemanticExhaustion)
 _RETRYABLE_OUTCOMES = frozenset(RetryableFailure)
 _RESULT_OUTCOMES = _SEMANTIC_OUTCOMES | _RETRYABLE_OUTCOMES | {"success"}
+_MOPS_FALLBACK_ENGINE = next_active_engine(Engine.MOPS).value
 
 
 def _utc_timestamp(value: datetime) -> str:
@@ -85,12 +86,12 @@ class TaskStore:
                 (now,),
             )
             connection.execute(
-                """UPDATE task SET state = 'undone', engine = 'goodinfo',
+                """UPDATE task SET state = 'undone', engine = ?,
                        worker_id = NULL, dispatched_at = NULL,
                        retry_at = NULL, updated_at = ?
                    WHERE state IN ('not_found', 'rejected')
                      AND engine = 'mops'""",
-                (now,),
+                (_MOPS_FALLBACK_ENGINE, now),
             )
             row = connection.execute(
                 """UPDATE task SET state = 'dispatched', worker_id = ?,
