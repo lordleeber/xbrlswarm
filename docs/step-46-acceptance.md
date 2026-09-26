@@ -57,6 +57,7 @@ ROADMAP 要求的四個欄位對應如下：
 | `report_period` | 迄日等於曆年制期末；起日為 1 月 1 日（累計）或該季起日 |
 | `report_scope` | task 指定範圍時，主旨須含 `合併`，或 `個體`／`個別` |
 | `financial_report_subject` | 主旨含 `財務報告` |
+| `reporting_entity` | 主旨不含 `子公司`（`代子公司…`、`代重要子公司…` 的公司名稱與代號是母公司的，但報告屬於子公司） |
 
 只支援曆年制；非曆年制公司的期間會被判為不符。
 
@@ -67,7 +68,8 @@ ROADMAP 要求的四個欄位對應如下：
 | HTTP 200、MOPS 形式、身分相符 | `accepted` |
 | HTTP 200、缺必要欄位 | `not_mops_form` |
 | HTTP 200、MOPS 形式、身分不符 | `identity_mismatch`（附不符的檢查） |
-| HTTP 200，但 final URL 不是 `tw.stock.yahoo.com/news/` | `not_article_page` |
+| HTTP 200，final URL 在 `tw.stock.yahoo.com` 但不是 `/news/`（首頁、個股頁） | `not_article_page` |
+| HTTP 200，final URL 離開 `tw.stock.yahoo.com`（consent、登入頁等） | `temporary_error` |
 | HTTP 200，但沒有唯一的文章本體 | `temporary_error` |
 | HTTP 404／410 | `article_unavailable` |
 | HTTP 429 | `rate_limited` |
@@ -84,7 +86,8 @@ ROADMAP 要求的四個欄位對應如下：
 
 ## 驗收證據
 
-測試：`pytest` 由 Step-45 合併後的 566 passed 增至 **628 passed**。
+測試：`pytest` 由 Step-45 合併後的 566 passed 增至 **628 passed**，code review 修正後為
+**635 passed**。
 
 - `tests/test_yahoo_announcement.py` 先在只有介面的 stub 上執行，52 項全部 FAILED
   之後才開始實作。
@@ -132,6 +135,22 @@ Step-44 的五篇公告鏡像依 manifest 的 `observed_identity`，各自只在
   使用舊版重大訊息格式（事實發生日、發生緣由），沒有這個欄位，因此不被接受。
 - 「興櫃：…合併財報…」新聞標題用的是「財報」而非「財務報告」，Step-45 的候選
   篩選本來就不會選中它。在這裡它只作為非 MOPS 形式的解析反例。
+
+## Code review 修正（2026-09-26）
+
+- **代子公司公告**：主旨寫「代子公司…董事會通過…合併財務報告」時，公司名稱、
+  代號和期間都是母公司的，原本會通過全部檢查。串接流程裡 Step-45 的公司名稱
+  邊界規則碰巧擋下了（`公信代…` 不符邊界），但 Step-46 是接受關卡，必須自己
+  擋住。新增 `reporting_entity` 檢查：主旨含 `子公司` 就不接受。
+- **跳到其他網站的轉址**：原本 final URL 只要不是 Yahoo 新聞頁就判為
+  `not_article_page`（最終判定）。consent 或登入頁擋住所有候選時，task 會被判為
+  `rejected`。現在改為：離開 `tw.stock.yahoo.com` 就是 `temporary_error`；仍在
+  `tw.stock.yahoo.com` 但不是 `/news/` 的，維持最終判定。不全部改成可重試，是
+  因為 Step-27 沒有重試上限，已移除的文章會讓 task 永遠重試。
+- 同類問題的另一個位置（未在本 PR 修改）：Step-45 的
+  `classify_yahoo_serp_capture()` 遇到 final URL 不是 Yahoo 搜尋頁時會丟出
+  `ValueError`，不會被誤判成 `not_found`，但也不會回報成可重試。等實作 Yahoo
+  worker 時再一併處理。
 
 ## 限制與未完成
 

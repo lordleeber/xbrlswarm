@@ -29,7 +29,7 @@ from .yahoo_search import MIRROR_HOST, ReportScope, YahooTarget
 REQUIRED_FIELDS = ("公司代號", "公司名稱", "主旨", "財務報告期間")
 IDENTITY_CHECKS = (
     "stock_id", "company", "fiscal_year", "report_period", "report_scope",
-    "financial_report_subject",
+    "financial_report_subject", "reporting_entity",
 )
 _SCOPE_WORDS = {ReportScope.CONSOLIDATED: ("合併",), ReportScope.INDIVIDUAL: ("個體", "個別")}
 _QUARTER_START_MONTH = {ReportPeriod.Q1: 1, ReportPeriod.Q2: 4, ReportPeriod.Q3: 7, ReportPeriod.FY: 1}
@@ -209,7 +209,9 @@ def verify_yahoo_announcement(
 
     Periods follow a calendar-year fiscal calendar: the period must end on the
     target's period end and start on January 1 (cumulative) or the quarter start.
-    When the target fixes a scope, the subject must name it.
+    When the target fixes a scope, the subject must name it. A subject naming a
+    子公司 (e.g. 代子公司… or 代重要子公司…) reports a subsidiary's financial report
+    under the parent's 公司名稱 and code, so it is not the target's report.
     """
 
     failed = set()
@@ -234,6 +236,8 @@ def verify_yahoo_announcement(
         failed.add("report_scope")
     if "財務報告" not in subject:
         failed.add("financial_report_subject")
+    if "子公司" in subject:
+        failed.add("reporting_entity")
     return tuple(check for check in IDENTITY_CHECKS if check in failed)
 
 
@@ -268,8 +272,10 @@ def review_yahoo_article(
 ) -> YahooArticleReview:
     """Classify one fetched candidate article for ``target``.
 
-    A removed article (404/410) is a final answer for that candidate. Rate limits,
-    other statuses and pages without a recognizable article body are retryable.
+    A removed article (404/410), or a redirect to another Yahoo stock page, is a
+    final answer for that candidate. Rate limits, other statuses, redirects off the
+    stock site (consent or login gates) and pages without a recognizable article
+    body are retryable.
     """
 
     if status in {404, 410}:
@@ -277,6 +283,9 @@ def review_yahoo_article(
     if status == 429:
         return YahooArticleReview(url, RetryableFailure.RATE_LIMITED)
     if status != 200:
+        return YahooArticleReview(url, RetryableFailure.TEMPORARY_ERROR)
+    final = urlsplit(final_url)
+    if final.scheme not in {"http", "https"} or final.hostname != MIRROR_HOST:
         return YahooArticleReview(url, RetryableFailure.TEMPORARY_ERROR)
     if not _is_news_article(final_url):
         return YahooArticleReview(url, YahooArticleOutcome.NOT_ARTICLE_PAGE)

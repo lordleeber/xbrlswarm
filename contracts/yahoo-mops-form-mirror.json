@@ -17,8 +17,10 @@
     "fiscal_year",
     "report_period",
     "report_scope",
-    "financial_report_subject"
+    "financial_report_subject",
+    "reporting_entity"
   ],
+  "subsidiary_subject_marker": "子公司",
   "fiscal_calendar": "calendar_year",
   "period_start_accepted": ["january_1", "quarter_start"],
   "scope_words": {
@@ -34,7 +36,8 @@
     "http_404_or_410": "article_unavailable",
     "http_429": "rate_limited",
     "other_status": "temporary_error",
-    "final_url_not_yahoo_news_article": "not_article_page"
+    "final_url_yahoo_stock_non_news_page": "not_article_page",
+    "final_url_off_yahoo_stock_site": "temporary_error"
   },
   "selection": {
     "accepted": "every MOPS-form article matching the target, in candidate order",

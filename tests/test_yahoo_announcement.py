@@ -250,6 +250,19 @@ def test_quarter_period_start_must_be_january_or_quarter_start(period_line, expe
     assert verify_yahoo_announcement(announcement, target) == expected
 
 
+@pytest.mark.parametrize("subject", [
+    "公信代子公司公信國際股份有限公司公告董事會通過113年度合併財務報告",
+    "本公司代重要子公司公信投資董事會通過113年度合併財務報告",
+    "公信子公司董事會通過113年度合併財務報告",
+])
+def test_subsidiary_reports_are_not_the_parents_report(subject) -> None:
+    """公司名稱／代號 and period stay the parent's, but the report is a subsidiary's."""
+
+    body = _page(*HEADER[:2], f"主\u3000\u3000旨：{subject}", *HEADER[3:], PERIOD)
+    announcement = parse_yahoo_announcement(body, url=URL)
+    assert verify_yahoo_announcement(announcement, FY_TARGET) == ("reporting_entity",)
+
+
 def test_subject_must_be_a_financial_report() -> None:
     body = _page(*HEADER[:2], "主　　旨：公信董事會通過113年度合併盈餘分配", *HEADER[3:], PERIOD)
     announcement = parse_yahoo_announcement(body, url=URL)
@@ -293,12 +306,29 @@ def test_review_status_handling(status, expected) -> None:
 @pytest.mark.parametrize("final_url", [
     "https://tw.stock.yahoo.com/",
     "https://tw.stock.yahoo.com/quote/8119.TWO",
-    "https://example.test/news/x.html",
 ])
-def test_redirect_off_a_news_article_is_not_accepted(final_url) -> None:
+def test_redirect_to_another_yahoo_stock_page_is_final(final_url) -> None:
     url, body = _raw("valid_result")
     review = review_yahoo_article(FY_TARGET, url=url, final_url=final_url, status=200, body=body)
     assert review.outcome == "not_article_page"
+
+
+@pytest.mark.parametrize("final_url", [
+    "https://guce.yahoo.com/consent?sessionId=x",
+    "https://consent.yahoo.com/v2/collectConsent?sessionId=x",
+    "https://login.yahoo.com/?done=https%3A%2F%2Ftw.stock.yahoo.com%2Fnews%2Fx.html",
+    "https://example.test/news/x.html",
+    "http://tw.stock.yahoo.com.evil.test/news/x.html",
+])
+def test_redirect_off_the_stock_site_is_retryable(final_url) -> None:
+    """A consent or login gate says nothing about the article; retry instead of rejecting."""
+
+    url, body = _raw("valid_result")
+    review = review_yahoo_article(FY_TARGET, url=url, final_url=final_url, status=200, body=body)
+    assert review.outcome is RetryableFailure.TEMPORARY_ERROR
+    assert select_yahoo_announcements((review, _review("wrong_year"))).outcome is (
+        RetryableFailure.TEMPORARY_ERROR
+    )
 
 
 def test_mops_form_mirror_is_preferred_over_an_earlier_non_mops_article() -> None:
@@ -374,8 +404,9 @@ def test_contract_matches_behaviour() -> None:
     assert set(CONTRACT["required_fields"]) == {"公司代號", "公司名稱", "主旨", "財務報告期間"}
     assert CONTRACT["identity_checks"] == [
         "stock_id", "company", "fiscal_year", "report_period", "report_scope",
-        "financial_report_subject",
+        "financial_report_subject", "reporting_entity",
     ]
+    assert CONTRACT["article_outcomes"]["final_url_off_yahoo_stock_site"] == "temporary_error"
     assert CONTRACT["non_mops_form_articles_accepted"] is False
     assert CONTRACT["writes_evidence"] is False
     assert CONTRACT["article_published_at_is_announcement_at"] is False
