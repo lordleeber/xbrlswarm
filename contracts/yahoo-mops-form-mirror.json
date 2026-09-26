@@ -1,0 +1,47 @@
+{
+  "contract": "yahoo_mops_form_mirror",
+  "version": 1,
+  "article_pages": "https://tw.stock.yahoo.com/news/*",
+  "article_body": "the single div.atoms[data-component=blocks] of the article",
+  "required_fields": {
+    "公司代號": "code in parentheses of the 公司名稱 header line",
+    "公司名稱": "公司名稱 header line before 說明",
+    "主旨": "主旨 header line before 說明",
+    "財務報告期間": "報導期間起訖日期 after 說明, ROC dates"
+  },
+  "header_fields_must_precede": "說明",
+  "announcement_date": "日期 header line; a date only, not an announcement time",
+  "identity_checks": [
+    "stock_id",
+    "company",
+    "fiscal_year",
+    "report_period",
+    "report_scope",
+    "financial_report_subject"
+  ],
+  "fiscal_calendar": "calendar_year",
+  "period_start_accepted": ["january_1", "quarter_start"],
+  "scope_words": {
+    "consolidated": ["合併"],
+    "individual": ["個體", "個別"]
+  },
+  "scope_required_in_subject_when_target_scope_set": true,
+  "article_outcomes": {
+    "http_200_mops_form_matching_target": "accepted",
+    "http_200_missing_required_field": "not_mops_form",
+    "http_200_identity_mismatch": "identity_mismatch",
+    "http_200_without_article_body": "temporary_error",
+    "http_404_or_410": "article_unavailable",
+    "http_429": "rate_limited",
+    "other_status": "temporary_error",
+    "final_url_not_yahoo_news_article": "not_article_page"
+  },
+  "selection": {
+    "accepted": "every MOPS-form article matching the target, in candidate order",
+    "no_accepted_with_retryable_review": "rate_limited if any review is rate_limited, else temporary_error",
+    "no_accepted_all_reviews_final": "rejected"
+  },
+  "non_mops_form_articles_accepted": false,
+  "writes_evidence": false,
+  "article_published_at_is_announcement_at": false
+}

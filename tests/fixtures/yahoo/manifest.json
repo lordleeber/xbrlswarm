@@ -181,6 +181,86 @@
         "report_period": "FY",
         "report_scope": "consolidated"
       }
+    },
+    {
+      "scenario": "article_other_wording",
+      "origin": "live",
+      "page_kind": "article",
+      "body": "article_other_wording.html.gz",
+      "headers": "article_other_wording.headers.json",
+      "metadata": "article_other_wording.meta.json",
+      "sha256": "2c322d74fcf20abb46e06f6644bddb3f7057f244abe65c4a4dd1f2110410176d",
+      "observed_identity": {
+        "stock_id": "6147",
+        "company": "頎邦",
+        "fiscal_year": 2024,
+        "report_period": "FY",
+        "report_scope": "consolidated"
+      }
+    },
+    {
+      "scenario": "article_not_mops_form",
+      "origin": "live",
+      "page_kind": "article",
+      "body": "article_not_mops_form.html.gz",
+      "headers": "article_not_mops_form.headers.json",
+      "metadata": "article_not_mops_form.meta.json",
+      "sha256": "d5c924a086eed7e1fa2a767b1b7e7b63140a62f7e61a8f7e899a3795ff96621a",
+      "observed_identity": {
+        "stock_id": "8119",
+        "company": "公信",
+        "fiscal_year": 2020,
+        "report_period": "FY",
+        "report_scope": "consolidated"
+      }
+    },
+    {
+      "scenario": "article_without_report_period",
+      "origin": "live",
+      "page_kind": "article",
+      "body": "article_without_report_period.html.gz",
+      "headers": "article_without_report_period.headers.json",
+      "metadata": "article_without_report_period.meta.json",
+      "sha256": "5ae15189ed6ab280642b86e2a9428fe02f587970a72dfccfd6b960f6d9b80b58",
+      "observed_identity": {
+        "stock_id": "8119",
+        "company": "公信",
+        "fiscal_year": 2018,
+        "report_period": "FY",
+        "report_scope": "individual_and_consolidated"
+      }
+    },
+    {
+      "scenario": "builder_q3_other_wording",
+      "origin": "live",
+      "page_kind": "search_results",
+      "body": "builder_q3_other_wording.html.gz",
+      "headers": "builder_q3_other_wording.headers.json",
+      "metadata": "builder_q3_other_wording.meta.json",
+      "sha256": "2b299de7512f7f32f419f004737c29df95c79ba2ac419a5bb9e080e8b966dbd9",
+      "query_target": {
+        "stock_id": "6147",
+        "company": "頎邦",
+        "fiscal_year": 2024,
+        "report_period": "Q3",
+        "report_scope": "consolidated"
+      }
+    },
+    {
+      "scenario": "article_q3_other_wording",
+      "origin": "live",
+      "page_kind": "article",
+      "body": "article_q3_other_wording.html.gz",
+      "headers": "article_q3_other_wording.headers.json",
+      "metadata": "article_q3_other_wording.meta.json",
+      "sha256": "aab4f191dc4e9487ade3aa2e8cdfd9d7ad1d234e8e069bf8a68629920707efc3",
+      "observed_identity": {
+        "stock_id": "6147",
+        "company": "頎邦",
+        "fiscal_year": 2024,
+        "report_period": "Q3",
+        "report_scope": "consolidated"
+      }
     }
   ]
 }

@@ -1,7 +1,7 @@
 # Step-44／45 Yahoo worker fixtures
 
 `manifest.json` 固定 Yahoo worker 後續開發使用的 raw response 案例：Step-44 的十個
-案例及 Step-45 的三個 `builder_*` SERP。Step-44 案例共同的目標任務是 **公信 (8119)、2024 年 FY、合併財務報告**。五篇公告鏡像均由
+案例、Step-45／46 的 `builder_*` SERP，以及 Step-46 的 `article_*` 文章頁。Step-44 案例共同的目標任務是 **公信 (8119)、2024 年 FY、合併財務報告**。五篇公告鏡像均由
 `tw.stock.yahoo.com` 在 2026-09-25（台灣時間）實際回傳 HTTP 200；
 「wrong」案例各自只與目標任務相差一個條件（公司名稱與代號視為同一條件）。
 
@@ -20,10 +20,17 @@
 | `builder_fy_consolidated` | 真實 Yahoo SERP（瀏覽器） | Step-45 builder 的 8119 FY 查詢；第 1 筆即 `valid_result` 公告 |
 | `builder_q2_consolidated` | 真實 Yahoo SERP（瀏覽器） | Step-45 builder 的 8119 Q2 查詢；7 筆 Yahoo 結果都不是 113 年第二季公告 |
 | `builder_fy_other_wording` | 真實 Yahoo SERP（瀏覽器） | Step-45 builder 的 6147 頎邦 FY 查詢；公告標題用「業經董事會決議」 |
+| `builder_q3_other_wording` | 真實 Yahoo SERP（瀏覽器） | Step-46 擷取的 6147 頎邦 Q3 查詢；唯一候選即 `article_q3_other_wording` |
+| `article_other_wording` | 真實 Yahoo 公告頁 | 頎邦、113 年度、合併；期間標籤拆成兩行 |
+| `article_q3_other_wording` | 真實 Yahoo 公告頁 | 頎邦、113 年第 3 季、合併，期間 113/01/01~113/09/30 |
+| `article_not_mops_form` | 真實 Yahoo 新聞頁 | 「興櫃：公信(8119)109年度合併財報…」：有期間，沒有公司名稱與主旨標頭 |
+| `article_without_report_period` | 真實 Yahoo 公告頁 | 2019 年舊版重大訊息格式，公信 107 年度個體及合併；沒有報導期間欄位 |
 
-三個 `builder_*` 案例由 Step-45 於 2026-09-26 擷取，manifest 的 `query_target`
+`builder_*` 案例於 2026-09-26 擷取，manifest 的 `query_target`
 記錄各自的查詢對象（不一定是上方的 `target_task`），其 request URL 必須等於
-`xbrlswarm.yahoo_search.yahoo_search_plan()` 對該對象產生的 URL。
+`xbrlswarm.yahoo_search.yahoo_search_plan()` 對該對象產生的 URL。`article_*` 案例
+由 Step-46 以與 Step-44 相同的一般 HTTP 請求擷取，`observed_identity` 記錄頁面
+可見的身分。
 
 每筆 `.html.gz` 只對 response bytes 做無損 gzip。對應的 `.meta.json` 保存
 request URL、method、可重現的 request headers、HTTP status、final URL、
