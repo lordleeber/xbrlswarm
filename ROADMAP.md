@@ -1323,6 +1323,21 @@ SERP 中沒有任何符合 target identity 的候選
 
 Yahoo 對任何查詢都會回傳填充結果，不得以「找不到結果」字樣判斷。
 
+Step-45 決策（2026-09-26，驗收見 `docs/step-45-acceptance.md`）：
+
+```text
+site:tw.stock.yahoo.com {stock_id} {company} 董事會通過 {民國年}{年度|年第N季} {合併|個體|}財務報告
+```
+
+- 年份用民國年，對齊 Yahoo 公告鏡像照抄的 MOPS 主旨。
+- 限定 `site:tw.stock.yahoo.com`；未限定時頎邦的 SERP 全是第三方頁。
+  跨站鏡像留給 Step-48。
+- 抓取沿用 `tools/yahoo_serp_capture.js`；`/_bv/` 轉址、500、無 HTTP 200 文件及
+  無法辨識的頁面一律為 `temporary_error`，429 為 `rate_limited`。
+- 候選 = `tw.stock.yahoo.com/news/` 結果中，標題或 slug 含公司、民國年期別、
+  `財務報告` 且範圍不相反者。候選不是採信證據，頁面驗證屬 Step-46。
+- 實測：8119 FY、6147 FY 均命中；8119 Q2 公告存在但未被帶出（`not_found`）。
+
 ---
 
 ## Step-46 — 優先採用 MOPS 形式的公告鏡像
