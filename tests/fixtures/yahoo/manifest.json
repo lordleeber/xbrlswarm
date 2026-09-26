@@ -108,13 +108,22 @@
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
+      "scenario": "search_results",
+      "origin": "live",
+      "page_kind": "search_results",
+      "body": "search_results.html.gz",
+      "headers": "search_results.headers.json",
+      "metadata": "search_results.meta.json",
+      "sha256": "3bf28c29ee46e96330386799431f068427ea56176769d67eebf323ca0441bab9"
+    },
+    {
       "scenario": "no_result",
-      "origin": "synthetic",
+      "origin": "live",
       "page_kind": "search_results",
       "body": "no_result.html.gz",
       "headers": "no_result.headers.json",
       "metadata": "no_result.meta.json",
-      "sha256": "08e30ae5ed8c261adbc8054630c1c838a9e49a15f0886e97a6c74f98b5a8679f"
+      "sha256": "12aeb3456425e4b8254151032ac77708bbe7e0a78fbad1a94c7c87cc8bfe1af8"
     },
     {
       "scenario": "rate_limit",
