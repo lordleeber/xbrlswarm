@@ -5,6 +5,7 @@ from __future__ import annotations
 import gzip
 import hashlib
 import json
+import re
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -239,3 +240,21 @@ def test_live_no_result_serp_has_filler_results_without_target_candidates() -> N
     assert targets
     assert not any("8119" in target or "公信" in unquote(target) for target in targets)
     assert "找不到符合搜尋條件的結果" not in text
+
+
+def test_serp_capture_tool_keeps_fixture_header_format() -> None:
+    tool = (Path(__file__).parents[1] / "tools" / "yahoo_serp_capture.js").read_text(
+        encoding="utf-8"
+    )
+    kept = re.search(r"KEPT_RESPONSE_HEADERS = \[([^\]]*)\]", tool)
+    assert kept is not None
+    kept_headers = set(re.findall(r"'([a-z-]+)'", kept.group(1)))
+    assert "set-cookie" not in kept_headers
+    assert "key !== 'cookie'" in tool
+    for scenario in sorted(SEARCH_CASES):
+        case = next(case for case in MANIFEST["cases"] if case["scenario"] == scenario)
+        headers = json.loads((FIXTURES / case["headers"]).read_text(encoding="utf-8"))
+        assert set(headers) <= kept_headers
+    assert "tools/yahoo_serp_capture.js" in (FIXTURES / "README.md").read_text(
+        encoding="utf-8"
+    )
